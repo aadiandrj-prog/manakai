@@ -1,7 +1,9 @@
-from sqlalchemy import or_, select
+import math
+from dataclasses import dataclass
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
-from ..db_models import Citation, Document, DocumentChunk
+from ..db_models import Citation, Document, DocumentChunk, Standard
 
 
 class DocumentRepository:
@@ -39,3 +41,52 @@ class DocumentRepository:
         if pattern == "%%":
             return []
         return list(self.session.scalars(select(DocumentChunk).where(or_(DocumentChunk.text.ilike(pattern), DocumentChunk.section.ilike(pattern)))))
+
+    def lexical_chunks(self, query: str, *, limit: int = 20) -> list[tuple[DocumentChunk, float]]:
+        cleaned = query.strip()
+        if not cleaned:
+            return []
+        dialect = self.session.bind.dialect.name
+        if dialect == "postgresql":
+            vector = func.to_tsvector("english", func.coalesce(DocumentChunk.text, "") + " " + func.coalesce(DocumentChunk.section, ""))
+            tsquery = func.websearch_to_tsquery("english", cleaned)
+            rank = func.ts_rank_cd(vector, tsquery)
+            statement = select(DocumentChunk, rank.label("rank")).where(vector.op("@@")(tsquery)).order_by(rank.desc()).limit(limit)
+            return [(row[0], float(row[1])) for row in self.session.execute(statement)]
+        terms = [term.casefold() for term in cleaned.replace(":", " ").split()]
+        chunks = list(self.session.scalars(select(DocumentChunk)))
+        scored = []
+        for chunk in chunks:
+            haystack = f"{chunk.document_id} {chunk.clause or ''} {chunk.section or ''} {chunk.text}".casefold()
+            hits = sum(haystack.count(term) for term in terms)
+            if hits:
+                scored.append((chunk, float(hits)))
+        return sorted(scored, key=lambda item: (-item[1], item[0].id))[:limit]
+
+    def vector_chunks(self, embedding: list[float], *, limit: int = 20) -> list[tuple[DocumentChunk, float]]:
+        if not embedding:
+            return []
+        if self.session.bind.dialect.name == "postgresql":
+            distance = DocumentChunk.embedding.cosine_distance(embedding)
+            statement = select(DocumentChunk, distance.label("distance")).where(DocumentChunk.embedding.is_not(None)).order_by(distance).limit(limit)
+            return [(row[0], 1.0 - float(row[1])) for row in self.session.execute(statement)]
+        chunks = [chunk for chunk in self.session.scalars(select(DocumentChunk)) if chunk.embedding is not None]
+        def cosine(values: list[float]) -> float:
+            dot = sum(a * b for a, b in zip(values, embedding))
+            norm = math.sqrt(sum(a * a for a in values)) * math.sqrt(sum(b * b for b in embedding))
+            return dot / norm if norm else 0.0
+        return sorted(((chunk, cosine(chunk.embedding)) for chunk in chunks), key=lambda item: (-item[1], item[0].id))[:limit]
+
+    def metadata_chunks(self, query: str, *, limit: int = 30) -> list[DocumentChunk]:
+        import re
+        digits = re.findall(r"\d+", query)
+        clause_match = re.search(r"(?:clause|cl\.?)[ ]*([a-z0-9.()-]+)", query.casefold())
+        filters = []
+        if digits:
+            filters.append(and_(*(Standard.number.ilike(f"%{value}%") for value in digits[:3])))
+        if clause_match:
+            filters.append(func.lower(DocumentChunk.clause) == clause_match.group(1))
+        if not filters:
+            return []
+        statement = select(DocumentChunk).join(Document).outerjoin(Standard).where(or_(*filters)).order_by(DocumentChunk.id).limit(limit)
+        return list(self.session.scalars(statement))

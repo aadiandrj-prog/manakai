@@ -4,7 +4,7 @@
 
 ManakAI is a hackathon-ready regulatory navigation and compliance automation prototype. It turns a product description into a structured product profile, candidate standards, an explicit verification boundary, testing/document tasks, laboratory matches and an auditable compliance journey. Conversational AI is one interaction layer—not the product itself.
 
-> Demo mode is intentionally conservative. Seeded standard metadata and every laboratory record are labelled fixtures. The system does not assert a legal obligation unless a current, authoritative structured source supports it.
+> Two isolated modes are supported. `DEMO_MODE=true` uses labelled synthetic fixtures. `DEMO_MODE=false` uses only ingested BIS/government evidence for the electric-kettle vertical. A missing voltage remains a visible scope warning rather than an invented attribute.
 
 ## What works
 
@@ -21,6 +21,10 @@ ManakAI is a hackathon-ready regulatory navigation and compliance automation pro
 - Explicit compliance rule engine and version-precedence logic
 - Deterministic demo mode with no API key or network dependency
 - Automated frontend contract and backend unit/API tests
+- Authoritative electric-kettle classification, IS 302 Part 2/Sec 15:2009 mapping, IS 302 Part 1:2024 framework, QCO S.O. 1739(E), Scheme I, February 2024 product manual and dated BIS LIMS scopes
+- Source-adapter pipeline with allow-listed fetches, staged validation, ingestion runs, content hashes and non-destructive version history
+- Query-date and enterprise-category QCO resolution
+- Clause-aware chunks, PostgreSQL full-text indexes, configurable local embeddings, hybrid rank fusion and citation validation
 
 ## Architecture
 
@@ -73,6 +77,22 @@ docker compose up --build
 
 This starts the frontend (`3000`), backend (`8000`) and PostgreSQL/pgvector (host `5433`, container `5432`). Set `POSTGRES_PORT` to override the host port. Backend startup applies Alembic migrations and idempotently seeds deterministic demo rows into PostgreSQL.
 
+To run the authoritative kettle vertical after the database is up:
+
+```bash
+DEMO_MODE=false docker compose up -d --build
+docker compose exec backend python -m app.ingestion electric-kettle
+```
+
+The sanitised fixture is a captured official-source snapshot. Re-running ingestion is hash-aware and idempotent; `--dry-run` validates without committing the regulatory graph.
+
+Optional local embeddings are explicitly provisioned and never downloaded at application startup:
+
+```bash
+pip install sentence-transformers
+EMBEDDING_PROVIDER=sentence-transformers python -m app.ingestion embeddings --allow-model-download
+```
+
 ## Test and validate
 
 ```bash
@@ -83,7 +103,7 @@ backend/.venv/bin/pytest backend
 backend/.venv/bin/python scripts/evaluate_demo.py
 ```
 
-Tests never call paid or external model providers.
+Tests use captured/sanitised source fixtures and a fake 384-dimensional embedding provider; they never call live BIS pages or paid model providers.
 
 ## Environment
 
@@ -91,20 +111,20 @@ Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=mock` are safe
 
 ## Data and migrations
 
-SQLAlchemy tables are defined in `backend/app/db_models.py`; the initial Alembic migration creates the relational schema, enables PostgreSQL's `vector` extension and uses a 384-dimensional vector column for document chunks. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
+SQLAlchemy tables are defined in `backend/app/db_models.py`. Migration `4b2f2a8d1c71` adds provenance, ingestion, temporal applicability, category mappings, clause structure, citation validation and PostgreSQL GIN/HNSW indexes; follow-up `7a91d3e5f620` lets demo and authoritative editions coexist without silently merging them. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
 
 The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend request or response schemas.
 
 ## Limitations
 
-- No live BIS, QCO, product-manual, lab-recognition or HUID connection is included.
-- Standard text is not distributed; only demo metadata is stored.
-- Laboratory names are synthetic and are not BIS recognition claims.
+- The authoritative corpus is intentionally limited to one product vertical and a 2 September 2026 capture; continuous refresh and regulatory review operations are not yet deployed.
+- Full standards text is not stored or redistributed. Only official metadata and limited product-manual/QCO/LIMS excerpts needed for technical retrieval are retained.
+- Two official LIMS scopes are integrated. Users must re-check the linked live scope, exclusions and validity before arranging testing.
 - Authentication, submission, payments and native apps are out of scope.
 - Regulatory decisions remain `UNVERIFIED` unless an authoritative source is connected.
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.
 - The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
-See [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+See [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 
 For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).

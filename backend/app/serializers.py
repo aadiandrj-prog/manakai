@@ -18,15 +18,18 @@ def relationship_to_schema(relationship: models.StandardRelationship) -> schemas
 
 
 def recognitions_to_laboratories(recognitions: list[models.LaboratoryRecognition]) -> list[schemas.Laboratory]:
-    grouped: dict[str, dict] = defaultdict(lambda: {"standards": [], "capabilities": []})
+    grouped: dict[str, dict] = defaultdict(lambda: {"standards": [], "capabilities": [], "test_clauses": []})
     for recognition in recognitions:
         item = grouped[recognition.laboratory_id]
         item["laboratory"] = recognition.laboratory
         item["standards"].append(recognition.standard.number)
         item["capabilities"].extend(recognition.capabilities or [])
+        item["test_clauses"].extend(recognition.test_clauses or [])
+        item["recognition"] = recognition
     result = []
     for item in grouped.values():
         laboratory = item["laboratory"]
+        recognition = item["recognition"]
         result.append(
             schemas.Laboratory(
                 id=laboratory.id,
@@ -37,6 +40,15 @@ def recognitions_to_laboratories(recognitions: list[models.LaboratoryRecognition
                 standards=sorted(set(item["standards"])),
                 capabilities=sorted(set(item["capabilities"])),
                 source_kind=laboratory.source_kind,
+                scope_identifier=recognition.scope_identifier,
+                scope=recognition.scope,
+                test_clauses=sorted(set(item["test_clauses"])),
+                valid_from=recognition.valid_from,
+                valid_until=recognition.valid_until,
+                recognition_status=recognition.status,
+                source_url=recognition.source_url,
+                retrieved_at=recognition.retrieved_at,
+                warning=None if recognition.valid_until else "Recognition validity could not be confirmed from the stored source.",
             )
         )
     return sorted(result, key=lambda lab: lab.name)
@@ -58,6 +70,12 @@ def citation_to_schema(citation: models.Citation) -> schemas.Citation:
         effective_date=document.effective_date,
         retrieved_at=document.retrieved_at,
         source_kind=citation.source_kind,
+        source_authority=document.source_authority,
+        document_identifier=document.document_identifier,
+        status=document.status,
+        verification_status=document.verification_status,
+        claim=citation.claim,
+        validation_status=citation.validation_status,
     )
 
 

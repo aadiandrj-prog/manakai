@@ -3,7 +3,7 @@
   "info": {
     "title": "ManakAI API",
     "description": "Database-backed Indian Standards and BIS compliance intelligence prototype",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "paths": {
     "/health": {
@@ -352,17 +352,46 @@
       "get": {
         "summary": "List Labs",
         "operationId": "list_labs_api_v1_labs_get",
+        "parameters": [
+          {
+            "name": "as_of_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of Date"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Laboratory"
                   },
-                  "type": "array",
                   "title": "Response List Labs Api V1 Labs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -637,7 +666,54 @@
           },
           "source_kind": {
             "$ref": "#/components/schemas/SourceKind",
-            "default": "demo"
+            "default": "DEMO"
+          },
+          "source_authority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Authority"
+          },
+          "document_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Identifier"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegulatoryStatus",
+            "default": "UNKNOWN"
+          },
+          "verification_status": {
+            "type": "string",
+            "title": "Verification Status",
+            "default": "UNVERIFIED"
+          },
+          "claim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim"
+          },
+          "validation_status": {
+            "type": "string",
+            "title": "Validation Status",
+            "default": "PENDING"
           }
         },
         "type": "object",
@@ -671,13 +747,12 @@
           "qco": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/QCOEvidence"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Qco"
+            ]
           },
           "certification_scheme": {
             "anyOf": [
@@ -737,6 +812,22 @@
             },
             "type": "array",
             "title": "Warnings"
+          },
+          "as_of_date": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of Date"
+          },
+          "data_mode": {
+            "$ref": "#/components/schemas/SourceKind"
+          },
+          "explanation": {
+            "items": {
+              "$ref": "#/components/schemas/ExplanationNode"
+            },
+            "type": "array",
+            "title": "Explanation",
+            "default": []
           }
         },
         "type": "object",
@@ -753,7 +844,9 @@
           "next_steps",
           "evidence",
           "confidence",
-          "warnings"
+          "warnings",
+          "as_of_date",
+          "data_mode"
         ],
         "title": "ComplianceProfile"
       },
@@ -853,7 +946,7 @@
           },
           "source_kind": {
             "$ref": "#/components/schemas/SourceKind",
-            "default": "demo"
+            "default": "DEMO"
           }
         },
         "type": "object",
@@ -863,6 +956,42 @@
           "document_type"
         ],
         "title": "Document"
+      },
+      "ExplanationNode": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "conclusion": {
+            "type": "string",
+            "title": "Conclusion"
+          },
+          "facts": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Facts",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "conclusion"
+        ],
+        "title": "ExplanationNode"
       },
       "HTTPValidationError": {
         "properties": {
@@ -952,6 +1081,18 @@
               }
             ],
             "title": "Location"
+          },
+          "as_of_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of Date"
           }
         },
         "type": "object",
@@ -1016,7 +1157,100 @@
           },
           "source_kind": {
             "$ref": "#/components/schemas/SourceKind",
-            "default": "demo"
+            "default": "DEMO"
+          },
+          "scope_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Identifier"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          },
+          "test_clauses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Test Clauses",
+            "default": []
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "recognition_status": {
+            "type": "string",
+            "title": "Recognition Status",
+            "default": "UNKNOWN"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
           }
         },
         "type": "object",
@@ -1045,6 +1279,24 @@
             "type": "string",
             "title": "Language",
             "default": "en"
+          },
+          "as_of_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of Date"
+          },
+          "enterprise_category": {
+            "type": "string",
+            "pattern": "^(GENERAL|SMALL|MICRO)$",
+            "title": "Enterprise Category",
+            "default": "GENERAL"
           }
         },
         "type": "object",
@@ -1080,6 +1332,30 @@
             },
             "type": "array",
             "title": "Missing Attributes"
+          },
+          "structured_attributes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Structured Attributes",
+            "default": {}
           }
         },
         "type": "object",
@@ -1091,6 +1367,83 @@
           "missing_attributes"
         ],
         "title": "ProductProfile"
+      },
+      "QCOEvidence": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "notification_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notification Number"
+          },
+          "notification_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notification Date"
+          },
+          "effective_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective From"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegulatoryStatus"
+          },
+          "enterprise_category": {
+            "type": "string",
+            "title": "Enterprise Category"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "enterprise_category",
+          "source_kind"
+        ],
+        "title": "QCOEvidence"
       },
       "QueryRequest": {
         "properties": {
@@ -1153,20 +1506,24 @@
       "RegulatoryStatus": {
         "type": "string",
         "enum": [
+          "DRAFT",
+          "NOTIFIED",
           "ACTIVE",
           "SUPERSEDED",
           "UPCOMING",
           "WITHDRAWN",
-          "AMENDED"
+          "AMENDED",
+          "UNKNOWN"
         ],
         "title": "RegulatoryStatus"
       },
       "SourceKind": {
         "type": "string",
         "enum": [
-          "verified",
-          "demo",
-          "unverified"
+          "AUTHORITATIVE",
+          "VERIFIED_DERIVED",
+          "DEMO",
+          "UNVERIFIED"
         ],
         "title": "SourceKind"
       },
@@ -1237,7 +1594,7 @@
           },
           "source_kind": {
             "$ref": "#/components/schemas/SourceKind",
-            "default": "demo"
+            "default": "DEMO"
           }
         },
         "type": "object",

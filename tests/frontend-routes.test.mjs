@@ -38,3 +38,10 @@ test('regulatory screens use the typed API and no frontend fixture module remain
   assert.ok(existsSync('lib/api-schema.d.ts'));
   assert.match(readFileSync('lib/api-client.ts', 'utf8'), /components\['schemas'\]/);
 });
+
+test('frontend does not scrape or hardcode BIS source endpoints', () => {
+  for (const route of routes) {
+    const source = readFileSync(route, 'utf8');
+    assert.doesNotMatch(source, /bis\.gov\.in|lims\.bis\.gov\.in/);
+  }
+});

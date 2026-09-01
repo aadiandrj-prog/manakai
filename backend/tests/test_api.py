@@ -29,7 +29,7 @@ def test_seeded_endpoints_and_relationships(client):
     assert len(standards.json()) == 5
     assert len(labs.json()) == 4
     assert relationships.json()[0]["target_standard"]["id"] == "is-302-2-15"
-    assert document.json()["source_kind"] == "demo"
+    assert document.json()["source_kind"] == "DEMO"
 
 
 def test_lab_search_combines_standard_and_location(client):

@@ -2,6 +2,21 @@
 
 ManakAI uses a modular monolith: one React/Vinext web surface, one FastAPI service and one relational data layer. This keeps the prototype demonstrable while preserving seams for authoritative data, retrieval and model providers.
 
+The Phase 2B authoritative path is deliberately one-way:
+
+```text
+Official BIS/DPIIT/LIMS source
+→ source-specific adapter
+→ normalized record + validation
+→ staged transaction + ingestion run
+→ PostgreSQL
+→ repository/service/rule engine
+→ FastAPI
+→ typed frontend
+```
+
+The browser never calls or parses BIS pages. Source failure rolls back the staged transaction and retains the last verified graph.
+
 ```mermaid
 flowchart TB
   UI[Workflow UI] --> API[FastAPI REST API]
@@ -21,7 +36,7 @@ flowchart TB
   DB[(PostgreSQL + pgvector)] --> PRODUCT & RULES & SEARCH & LABS
 ```
 
-The current demo uses the complete canonical path: Vinext pages call a generated, typed API client; TanStack Query owns remote state; FastAPI delegates to services and SQLAlchemy repositories; PostgreSQL stores all regulatory demo entities. Deterministic seed data replaces only the external authoritative source adapters and model provider—not the persistence or API layers.
+Both modes use the complete canonical path. `DEMO_MODE=true` filters APIs to deterministic `DEMO` rows. `DEMO_MODE=false` filters to `AUTHORITATIVE` / `VERIFIED_DERIVED` rows and currently accepts only the kettle vertical.
 
 Key boundaries:
 
@@ -32,3 +47,5 @@ Key boundaries:
 - The UI distinguishes fixture, verified and unverified states.
 - Browser code does not import regulatory fixture modules or calculate compliance status.
 - Alembic owns schema evolution; startup never calls `create_all()`.
+- URL validation permits only HTTPS BIS/DPIIT hosts, follows only allow-listed redirects, applies timeouts and enforces a 12 MiB maximum document size.
+- Retrieval selects evidence; the temporal rule engine remains the only source of regulatory status.

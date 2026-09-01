@@ -270,8 +270,26 @@ export interface components {
             effective_date?: string | null;
             /** Retrieved At */
             retrieved_at?: string | null;
-            /** @default demo */
+            /** @default DEMO */
             source_kind: components["schemas"]["SourceKind"];
+            /** Source Authority */
+            source_authority?: string | null;
+            /** Document Identifier */
+            document_identifier?: string | null;
+            /** @default UNKNOWN */
+            status: components["schemas"]["RegulatoryStatus"];
+            /**
+             * Verification Status
+             * @default UNVERIFIED
+             */
+            verification_status: string;
+            /** Claim */
+            claim?: string | null;
+            /**
+             * Validation Status
+             * @default PENDING
+             */
+            validation_status: string;
         };
         /** ComplianceProfile */
         ComplianceProfile: {
@@ -282,8 +300,7 @@ export interface components {
             applicable_standards: components["schemas"]["Standard"][];
             /** Mandatory Status */
             mandatory_status: string;
-            /** Qco */
-            qco: string | null;
+            qco: components["schemas"]["QCOEvidence"] | null;
             /** Certification Scheme */
             certification_scheme: string | null;
             /** Tests */
@@ -300,6 +317,17 @@ export interface components {
             confidence: number;
             /** Warnings */
             warnings: string[];
+            /**
+             * As Of Date
+             * Format: date
+             */
+            as_of_date: string;
+            data_mode: components["schemas"]["SourceKind"];
+            /**
+             * Explanation
+             * @default []
+             */
+            explanation: components["schemas"]["ExplanationNode"][];
         };
         /** Document */
         Document: {
@@ -323,8 +351,22 @@ export interface components {
             effective_date?: string | null;
             /** Retrieved At */
             retrieved_at?: string | null;
-            /** @default demo */
+            /** @default DEMO */
             source_kind: components["schemas"]["SourceKind"];
+        };
+        /** ExplanationNode */
+        ExplanationNode: {
+            /** Question */
+            question: string;
+            /** Conclusion */
+            conclusion: string;
+            /**
+             * Facts
+             * @default []
+             */
+            facts: {
+                [key: string]: string | null;
+            }[];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -358,6 +400,8 @@ export interface components {
             standard_number?: string | null;
             /** Location */
             location?: string | null;
+            /** As Of Date */
+            as_of_date?: string | null;
         };
         /** Laboratory */
         Laboratory: {
@@ -375,8 +419,32 @@ export interface components {
             standards: string[];
             /** Capabilities */
             capabilities: string[];
-            /** @default demo */
+            /** @default DEMO */
             source_kind: components["schemas"]["SourceKind"];
+            /** Scope Identifier */
+            scope_identifier?: string | null;
+            /** Scope */
+            scope?: string | null;
+            /**
+             * Test Clauses
+             * @default []
+             */
+            test_clauses: string[];
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid Until */
+            valid_until?: string | null;
+            /**
+             * Recognition Status
+             * @default UNKNOWN
+             */
+            recognition_status: string;
+            /** Source Url */
+            source_url?: string | null;
+            /** Retrieved At */
+            retrieved_at?: string | null;
+            /** Warning */
+            warning?: string | null;
         };
         /** ProductAnalyseRequest */
         ProductAnalyseRequest: {
@@ -392,6 +460,13 @@ export interface components {
              * @default en
              */
             language: string;
+            /** As Of Date */
+            as_of_date?: string | null;
+            /**
+             * Enterprise Category
+             * @default GENERAL
+             */
+            enterprise_category: string;
         };
         /** ProductProfile */
         ProductProfile: {
@@ -405,6 +480,32 @@ export interface components {
             attributes: string[];
             /** Missing Attributes */
             missing_attributes: string[];
+            /**
+             * Structured Attributes
+             * @default {}
+             */
+            structured_attributes: {
+                [key: string]: string | number | boolean | null;
+            };
+        };
+        /** QCOEvidence */
+        QCOEvidence: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Notification Number */
+            notification_number?: string | null;
+            /** Notification Date */
+            notification_date?: string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            status: components["schemas"]["RegulatoryStatus"];
+            /** Enterprise Category */
+            enterprise_category: string;
+            /** Source Url */
+            source_url?: string | null;
+            source_kind: components["schemas"]["SourceKind"];
         };
         /** QueryRequest */
         QueryRequest: {
@@ -432,12 +533,12 @@ export interface components {
          * RegulatoryStatus
          * @enum {string}
          */
-        RegulatoryStatus: "ACTIVE" | "SUPERSEDED" | "UPCOMING" | "WITHDRAWN" | "AMENDED";
+        RegulatoryStatus: "DRAFT" | "NOTIFIED" | "ACTIVE" | "SUPERSEDED" | "UPCOMING" | "WITHDRAWN" | "AMENDED" | "UNKNOWN";
         /**
          * SourceKind
          * @enum {string}
          */
-        SourceKind: "verified" | "demo" | "unverified";
+        SourceKind: "AUTHORITATIVE" | "VERIFIED_DERIVED" | "DEMO" | "UNVERIFIED";
         /** Standard */
         Standard: {
             /** Id */
@@ -459,7 +560,7 @@ export interface components {
             effective_date?: string | null;
             /** Retrieved At */
             retrieved_at?: string | null;
-            /** @default demo */
+            /** @default DEMO */
             source_kind: components["schemas"]["SourceKind"];
         };
         /** StandardRelationship */
@@ -766,7 +867,9 @@ export interface operations {
     };
     list_labs_api_v1_labs_get: {
         parameters: {
-            query?: never;
+            query?: {
+                as_of_date?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -780,6 +883,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Laboratory"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

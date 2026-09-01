@@ -1,0 +1,133 @@
+{
+  "captured_on": "2026-09-02",
+  "sources": {
+    "consumer_guide": {
+      "source_url": "https://www.services.bis.gov.in/tmp/tbl5_2024-11-11_1130.pdf",
+      "source_authority": "Bureau of Indian Standards",
+      "source_type": "BIS_CONSUMER_GUIDE",
+      "document_identifier": "Guide for safety of Electrical Appliances for Heating Liquids",
+      "published_at": null,
+      "standard_number": "IS 302 (Part 2/Sec 15)",
+      "standard_year": 2009,
+      "text": "Common examples of appliances for heating liquids include Electric Kettle, Coffee-makers, Egg boilers, Electric Rice Cookers and Yogurt Makers. The Indian standard IS 302-2-15 deals with safety requirements for appliances intended to heat liquids."
+    },
+    "product_manual": {
+      "source_url": "https://www.bis.gov.in/wp-content/uploads/2024/03/PM_302-2-15.pdf",
+      "source_authority": "Bureau of Indian Standards",
+      "source_type": "BIS_PRODUCT_MANUAL",
+      "document_identifier": "PM/IS 302-2-15/1/February 2024",
+      "published_at": null,
+      "standard_number": "IS 302 (Part 2/Sec 15)",
+      "standard_year": 2009,
+      "pages": [
+        {
+          "page": 1,
+          "heading": "Product Manual",
+          "paragraphs": [
+            {"clause": "1", "text": "IS No.: IS 302-2-15 : 2009. Title: Safety of household and similar electrical appliances: Part 2 particular requirements: Sec 15 Appliances for heating liquids (First Revision)."},
+            {"clause": "2(a)", "heading": "Sampling Guidelines — Raw material", "text": "Raw Material and Components used in the product shall be tested as per relevant Indian Standard, wherever applicable."}
+          ]
+        },
+        {
+          "page": 4,
+          "heading": "Annex A — Grouping Guidelines",
+          "paragraphs": [
+            {"clause": "A.1", "text": "The manufacturer declares the appliance type, model, ratings and capacity or size for each model."},
+            {"clause": "A.2", "text": "For grant of licence or change in scope of licence, each model of each type of appliance is tested separately."},
+            {"clause": "A.3(a)", "text": "A tested model with a higher input rating may cover similar lower input rating models when other scope parameters remain the same."},
+            {"clause": "A.4", "text": "Separate samples are tested for grant of licence or change in scope for cordless kettles."},
+            {"clause": "A.5", "text": "For each model, the manufacturer declares appliance class, degree of protection, material group, pollution degree, and the instruction or operation manual with product photographs."}
+          ]
+        }
+      ]
+    },
+    "qco_2026": {
+      "source_url": "https://www.bis.gov.in/wp-content/uploads/2026/04/Safety-of-Household-Commercial-and-Similar-Electrical-Appliances-Quality-Control-Order-2026.pdf",
+      "source_authority": "Department for Promotion of Industry and Internal Trade, Government of India",
+      "source_type": "OFFICIAL_GAZETTE_QCO",
+      "document_identifier": "Safety of Household, Commercial and Similar Electrical Appliances (Quality Control) Order, 2026",
+      "official_notification_number": "S.O. 1739(E)",
+      "gazette_reference": "The Gazette of India, Extraordinary, Part II—Section 3(ii)",
+      "published_at": "2026-04-06",
+      "text": "The Order supersedes the 2025 Order, applies within its stated voltage scope, comes into force on 1 October 2026, requires the Standard Mark under Scheme-1, lists Appliances for Heating Liquids, and sets implementation dates of 1 October 2026 for general enterprises, 1 January 2027 for small enterprises and 1 April 2027 for micro enterprises."
+    },
+    "scheme_i": {
+      "source_url": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en",
+      "source_authority": "Bureau of Indian Standards",
+      "source_type": "BIS_COMPULSORY_CERTIFICATION_LIST",
+      "document_identifier": "Scheme I (ISI Mark Scheme) compulsory certification list",
+      "published_at": null,
+      "text": "The BIS Scheme-I compulsory certification list maps the Safety of Household, Commercial and Similar Electrical Appliances QCO instruments to IS 302 (Part 1):2024 and includes Appliances for Heating Liquids."
+    },
+    "lims_shri_krishna": {
+      "source_url": "https://lims.bis.gov.in/home_lab_scope/93/?page=2",
+      "source_authority": "Bureau of Indian Standards Laboratory Information Management System",
+      "source_type": "BIS_LIMS_SCOPE",
+      "document_identifier": "Shri Krishna Test House recognition scope",
+      "published_at": null,
+      "standard_number": "IS 302 (Part 2/Sec 15)",
+      "standard_year": 2009,
+      "text": "Shri Krishna Test House, Plot No 88, Sector-E, Bawana-II, DSIIDC Industrial Complex, New Delhi 110040, has a listed scope for IS 302 Part 2 Section 15 (2009) with validity date 5 October 2028."
+    },
+    "lims_msme": {
+      "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number_doc_no=18112&lab_lab_nameicontains=&page=1&page=2&page=472&page=473",
+      "source_authority": "Bureau of Indian Standards Laboratory Information Management System",
+      "source_type": "BIS_LIMS_SCOPE",
+      "document_identifier": "MSME Testing Centre New Delhi recognition scope",
+      "published_at": null,
+      "standard_number": "IS 302 (Part 2/Sec 15)",
+      "standard_year": 2009,
+      "text": "MSME Testing Centre, New Delhi, OSL code 8101204, has a listed scope for IS 302 Part 2 Section 15 (2009) valid until 31 December 2026, excluding clauses 19.11.4.1 through 19.11.4.7 for EMI/EMC tests."
+    }
+  },
+  "standards": [
+    {"id": "is-302-2-15-auth", "number": "IS 302 (Part 2/Sec 15)", "version": "2009", "title": "Safety of household and similar electrical appliances — Part 2: Particular requirements — Section 15: Appliances for heating liquids (First Revision)", "status": "ACTIVE", "category": "Electrical safety", "scope": "Appliances for heating liquids", "source": "consumer_guide"},
+    {"id": "is-302-1-2024-auth", "number": "IS 302 (Part 1)", "version": "2024", "title": "Household and Similar Electrical Appliances — Safety — Part 1: General Requirements", "status": "ACTIVE", "category": "Electrical safety", "scope": "General safety requirements for household, commercial and similar electrical appliances within the applicable scope", "source": "qco_2026"}
+  ],
+  "qcos": [
+    {
+      "id": "qco-household-appliances-2026",
+      "title": "Safety of Household, Commercial and Similar Electrical Appliances (Quality Control) Order, 2026",
+      "notification_number": "S.O. 1739(E)",
+      "notification_date": "2026-04-06",
+      "publication_date": "2026-04-06",
+      "status": "NOTIFIED",
+      "supersedes": "qco-household-appliances-2025",
+      "source": "qco_2026",
+      "applicability": [
+        {"enterprise_category": "GENERAL", "effective_from": "2026-10-01"},
+        {"enterprise_category": "SMALL", "effective_from": "2027-01-01"},
+        {"enterprise_category": "MICRO", "effective_from": "2027-04-01"}
+      ]
+    }
+  ],
+  "laboratories": [
+    {
+      "id": "lab-shri-krishna",
+      "name": "Shri Krishna Test House",
+      "address": "Plot No 88, Sector-E, Bawana-II, DSIIDC Industrial Complex, New Delhi, Delhi 110040",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "scope_identifier": "LIMS laboratory 93",
+      "scope": "IS 302 (Part 2/Sec 15):2009; scope listing does not state a narrower grade/type/designation",
+      "test_clauses": ["6", "7", "8", "10", "11", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32"],
+      "valid_until": "2028-10-05",
+      "status": "RECOGNISED",
+      "source": "lims_shri_krishna"
+    },
+    {
+      "id": "lab-msme-new-delhi",
+      "name": "MSME Testing Centre, New Delhi",
+      "address": null,
+      "city": "New Delhi",
+      "state": "Delhi",
+      "scope_identifier": "OSL 8101204",
+      "scope": "IS 302 (Part 2/Sec 15):2009 with EMI/EMC exclusions",
+      "test_clauses": ["6", "7", "8", "10", "11", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30"],
+      "scope_exclusions": ["19.11.4.1-19.11.4.7 EMI/EMC tests"],
+      "valid_until": "2026-12-31",
+      "status": "RECOGNISED",
+      "source": "lims_msme"
+    }
+  ]
+}

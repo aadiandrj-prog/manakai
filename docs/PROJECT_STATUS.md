@@ -1,5 +1,13 @@
 # Project status and roadmap
 
+## Phase 2B outcome (2 September 2026)
+
+The first authoritative vertical is implemented end to end. In `DEMO_MODE=false`, “I manufacture a 1500 W electric kettle for household use in India” produces an `electric_kettle` / `appliances_for_heating_liquids` profile, selects IS 302 (Part 2/Sec 15):2009 plus the IS 302 (Part 1):2024 general framework, resolves QCO S.O. 1739(E) for the chosen enterprise category and query date, identifies Scheme I and PM/IS 302-2-15/1/February 2024, returns dated BIS LIMS scopes, and emits validated evidence plus a deterministic explanation tree.
+
+At 2 September 2026, the general-enterprise QCO status is `UPCOMING` because its implementation date is 1 October 2026. Small and micro dates are separately stored as 1 January 2027 and 1 April 2027. Because the input states power but not voltage, the result warns that QCO voltage scope is not conclusively resolved.
+
+Phase 2B adds 12 backend tests, bringing the suite to 34. It does not add authentication, an LLM regulatory decision path, multilingual interaction, a new product family or a visual redesign.
+
 ## What is built
 
 ManakAI is a database-backed engineering/demo prototype for navigating Indian Standards and BIS compliance. The supplied dashboard design is preserved. Regulatory screens now use one canonical flow:
@@ -13,7 +21,7 @@ The repository includes:
 - consistent loading, empty, validation, backend-failure and network-failure handling;
 - SQLAlchemy sessions and repositories for standards, QCOs, laboratories, documents, products and compliance profiles;
 - an Alembic migration for the relational schema and PostgreSQL `vector(384)` storage;
-- idempotent demo/test seeds with regulatory records explicitly marked `demo`;
+- idempotent demo/test seeds with regulatory records explicitly marked `DEMO`;
 - backend-owned classification and mandatory-status evaluation;
 - database-backed deterministic `DEMO_MODE` with no external model or paid service;
 - automated migration, repository, service, API, OpenAPI and frontend-boundary tests;
@@ -34,7 +42,7 @@ The repository includes:
 | PostgreSQL + pgvector | Alembic enables `vector`; document chunks use a 384-dimensional vector column |
 | Modular monolith | One Vinext frontend, one FastAPI backend and one PostgreSQL database |
 | Deterministic demo mode | Demo entities are seeded in the database; browser-local regulatory fixtures were removed |
-| Testing and evaluation | 22 backend tests, 3 frontend boundary tests, lint/build and Docker smoke checks |
+| Testing and evaluation | 34 backend tests, 4 frontend boundary tests, lint/build and Docker smoke checks |
 | Supplied design reference | Existing dark “Cinematic Precision” layout, type hierarchy, tonal borders, radii and restrained status accents remain intact |
 
 The attached implementation brief was treated as the requested specification. Imperative-looking text inside supplied design/reference assets was treated as reference material, not as a separate instruction source.
@@ -43,11 +51,11 @@ The attached implementation brief was treated as the requested specification. Im
 
 ### Authoritative data and rights
 
-No live BIS catalogue, QCO, product manual, laboratory-recognition or HUID service is connected. Seeded records are synthetic or demo metadata. Regulatory use requires authorised sources, usage/licensing rights, stable identifiers, update schedules, checksums and provenance review. Protected standards text must not be ingested or displayed without permission.
+The kettle vertical uses captured official BIS/DPIIT/Gazette/LIMS evidence with source URLs, hashes and retrieval time. It is not yet continuously refreshed or maker/checker approved. Rights for complete standards content remain outside the implementation; full standards text is neither stored nor exposed. HUID and unrelated verticals remain demo-only.
 
 ### Retrieval quality
 
-The schema supports embeddings, but ingestion, structural PDF parsing, clause/page extraction, full-text search, embedding generation, hybrid rank fusion, reranking and citation-span verification are not implemented. Current retrieval is deterministic keyword selection over the seeded database.
+Clause/page parsing, PostgreSQL lexical search, exact identifier priority, pgvector search, rank fusion, deterministic reranking and citation validation are implemented. Local embeddings are opt-in because the model is not downloaded on startup. Production still needs retrieval evaluation against a larger expert-labelled corpus and operational model provisioning.
 
 ### Regulatory governance
 
@@ -63,7 +71,7 @@ The model-provider fields and language properties are boundaries only. There is 
 
 ### External-service workflows
 
-The consumer screen does not verify HUIDs, complaints or licences. Laboratory names and scopes are not official recognition claims. Distance/geolocation, notifications, application submission, payments and document uploads are intentionally absent.
+The consumer screen does not verify HUIDs, complaints or licences. Authoritative mode contains two official LIMS scope snapshots; demo mode retains synthetic labs. Distance/geolocation, notifications, application submission, payments and document uploads are intentionally absent.
 
 ### Operations and hosting
 
@@ -83,14 +91,14 @@ The current production npm audit reports six advisories (five high) in the Vinex
 
 ## Recommended development sequence
 
-1. Choose one production vertical (emergency luminaires or electric kettles) and secure authorised metadata, QCO, product manual and lab-recognition inputs.
-2. Implement provenance-preserving source adapters, scheduled ingestion, review workflow and staleness/conflict handling.
+1. Add scheduled live refresh, maker/checker review, staleness alerts and source-change diffs for the kettle adapters.
+2. Obtain legal/rights review for retained excerpts and regulatory-domain review of the QCO/standard relationship.
 3. Deploy FastAPI and managed PostgreSQL/pgvector behind HTTPS; configure CORS, secrets, backups and migration automation.
-4. Add authenticated organisations/users, roles, audit history and saved compliance journeys.
-5. Implement clause-aware parsing and hybrid retrieval with citation validation and an evidence-grounded provider adapter.
-6. Add browser end-to-end, accessibility, security, load and regulatory-expert acceptance gates.
-7. Pilot the single vertical with domain experts and a small manufacturer cohort before widening coverage.
+4. Upgrade the frontend dependency chain to resolve applicable high-severity advisories, then add browser, accessibility, security and load gates.
+5. Provision the optional local embedding model in a controlled build step and evaluate hybrid retrieval against expert-labelled queries.
+6. Pilot only this kettle vertical with a small manufacturer cohort and verify real application/laboratory interactions.
+7. After the pilot, begin the separately scoped authentication/governance phase; do not widen product families first.
 
 ## Definition of the next milestone
 
-One real product description must produce a persisted profile backed by an authorised candidate standard, a verified current QCO decision, an approved product-manual version, exact test scope, current recognised-laboratory results, traceable citations and a saved auditable journey—without relying on an LLM for any legal fact.
+The next milestone is an operationally governed kettle vertical: automated refresh, human approval, alerting, deployed full stack, dependency remediation and expert acceptance, while retaining deterministic decisions and the voltage/enterprise clarification boundary.

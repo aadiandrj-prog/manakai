@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +29,7 @@ logger = logging.getLogger("manakai")
 
 app = FastAPI(
     title="ManakAI API",
-    version="0.2.0",
+    version="0.3.0",
     description="Database-backed Indian Standards and BIS compliance intelligence prototype",
 )
 app.add_middleware(
@@ -54,7 +55,8 @@ def health(session: Session = Depends(get_db)):
 def list_standards(q: str = Query(default=""), session: Session = Depends(get_db)):
     repository = StandardRepository(session)
     records = repository.search(q) if q else repository.list()
-    return [standard_to_schema(record) for record in records]
+    expected = "DEMO" if settings.demo_mode else "AUTHORITATIVE"
+    return [standard_to_schema(record) for record in records if record.source_kind == expected or (not settings.demo_mode and record.source_kind == "VERIFIED_DERIVED")]
 
 
 @app.get("/api/v1/standards/{standard_id}", response_model=Standard)
@@ -111,8 +113,13 @@ def get_journey(profile_id: str, session: Session = Depends(get_db)):
 
 
 @app.get("/api/v1/labs", response_model=list[Laboratory])
-def list_labs(session: Session = Depends(get_db)):
-    return recognitions_to_laboratories(LaboratoryRepository(session).list_recognitions())
+def list_labs(as_of_date: date | None = Query(default=None), session: Session = Depends(get_db)):
+    repository = LaboratoryRepository(session)
+    records = repository.list_recognitions()
+    records = [record for record in records if record.source_kind == ("DEMO" if settings.demo_mode else "AUTHORITATIVE")]
+    if as_of_date:
+        records = [record for record in records if record.status == "RECOGNISED" and (record.valid_from is None or record.valid_from <= as_of_date) and (record.valid_until is None or record.valid_until >= as_of_date)]
+    return recognitions_to_laboratories(records)
 
 
 @app.post("/api/v1/labs/search", response_model=list[Laboratory])
@@ -121,7 +128,9 @@ def labs_search(request: LabSearchRequest, session: Session = Depends(get_db)):
         query=request.query,
         standard_number=request.standard_number,
         location=request.location,
+        as_of_date=request.as_of_date,
     )
+    records = [record for record in records if record.source_kind == ("DEMO" if settings.demo_mode else "AUTHORITATIVE")]
     return recognitions_to_laboratories(records)
 
 

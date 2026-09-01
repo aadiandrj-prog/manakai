@@ -69,7 +69,7 @@ export function AppShell({
               variant="outline"
               className="hidden border-cyan-400/20 bg-cyan-400/5 text-cyan-300 sm:inline-flex"
             >
-              <span className="size-1.5 rounded-full bg-cyan-300" /> Demo
+              <span className="size-1.5 rounded-full bg-cyan-300" /> Source-aware
               dataset
             </Badge>
             <Button
@@ -104,8 +104,7 @@ export function AppShell({
                 design
               </div>
               <p className="text-[11px] leading-4 text-muted-foreground">
-                Demo records are labelled. Verify legal obligations against
-                current official BIS sources.
+                Authoritative, derived, demo and unverified records are labelled. Resolve warnings before relying on a compliance decision.
               </p>
             </div>
           </div>

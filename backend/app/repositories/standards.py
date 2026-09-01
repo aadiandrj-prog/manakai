@@ -50,3 +50,6 @@ class StandardRepository:
 
     def scheme_for(self, standard_id: str) -> CertificationScheme | None:
         return self.session.scalar(select(CertificationScheme).where(CertificationScheme.standard_id == standard_id))
+
+    def scheme_for_qco(self, qco_id: str) -> CertificationScheme | None:
+        return self.session.scalar(select(CertificationScheme).where(CertificationScheme.qco_id == qco_id))

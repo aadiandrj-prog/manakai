@@ -15,7 +15,8 @@ services:
     ports: ['8000:8000']
     environment:
       DATABASE_URL: postgresql+psycopg://manakai:manakai@postgres:5432/manakai
-      DEMO_MODE: 'true'
+      DEMO_MODE: ${DEMO_MODE:-true}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-disabled}
       CORS_ORIGINS: http://localhost:3000
     depends_on:
       postgres:
