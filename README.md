@@ -97,3 +97,5 @@ SQLAlchemy tables are defined in `backend/app/db_models.py`. Alembic is included
 - Regulatory decisions remain `UNVERIFIED` unless an authoritative source is connected.
 
 See [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+
+For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).
