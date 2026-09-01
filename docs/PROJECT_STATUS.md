@@ -1,5 +1,13 @@
 # Project status and roadmap
 
+## Phase 2C outcome
+
+The controlled intelligence layer is implemented without transferring regulatory authority to a model. `/ask` now supports persistent conversations, explicit-value extraction, voltage clarification and follow-up merging, query-date questions, English/Hindi/Hinglish responses, structured compliance/lab/evidence cards, and safe operation with no AI key.
+
+OpenAI and Gemini are available through one schema-validated provider boundary. Before prose generation the backend constructs a canonical answer package with stable evidence IDs. Generated standard identifiers, QCO status and evidence IDs are validated; contradictions, malformed output, timeouts and missing keys fall back to deterministic templates. Prompt-injection and misinformation tests confirm the Phase 2B compliance result remains unchanged.
+
+Phase 2C adds 12 backend tests, bringing the backend suite to 46, while the four frontend boundary tests, lint, production build, Alembic migration and PostgreSQL/Docker chat smoke test also pass.
+
 ## Phase 2B outcome (2 September 2026)
 
 The first authoritative vertical is implemented end to end. In `DEMO_MODE=false`, “I manufacture a 1500 W electric kettle for household use in India” produces an `electric_kettle` / `appliances_for_heating_liquids` profile, selects IS 302 (Part 2/Sec 15):2009 plus the IS 302 (Part 1):2024 general framework, resolves QCO S.O. 1739(E) for the chosen enterprise category and query date, identifies Scheme I and PM/IS 302-2-15/1/February 2024, returns dated BIS LIMS scopes, and emits validated evidence plus a deterministic explanation tree.
@@ -67,7 +75,7 @@ There is no authentication, authorisation, tenant isolation, rate limiting, cons
 
 ### AI and multilingual capability
 
-The model-provider fields and language properties are boundaries only. There is no production LLM adapter, evidence-only structured generation, prompt-injection defence, Hindi/Hinglish normalisation or multilingual evaluation. A future model may explain evidence, but must never set a regulatory fact.
+Provider adapters, evidence-only structured generation, the injection boundary, Hindi/Hinglish interpretation and deterministic evaluation are implemented. Production still needs provider privacy/legal review, real-key staging evaluations, rate limits, cost dashboards, broader red-team cases and expert review of translated explanations.
 
 ### External-service workflows
 

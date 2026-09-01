@@ -26,27 +26,33 @@ class ComplianceService:
     @staticmethod
     def classify(description: str, *, authoritative: bool = False) -> dict:
         text = description.casefold()
-        if "kettle" in text:
+        if "kettle" in text or "केतली" in text:
             power = re.search(r"(?<!\d)(\d{2,5})\s*w(?:att)?s?\b", text)
-            household = "household" in text or "domestic" in text or "home" in text
-            india = "india" in text or "indian" in text
+            power_kw = re.search(r"(?<![\d.])(\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", text)
+            voltage = re.search(r"(?<!\d)(\d{2,4})\s*(?:v|volt|volts|वोल्ट)\b", text)
+            household = any(term in text for term in ("household", "domestic", "home", "homes", "ghar", "घरेलू", "घर"))
+            india = any(term in text for term in ("india", "indian", "भारत", "bis"))
+            rated_power = int(power.group(1)) if power else int(float(power_kw.group(1)) * 1000) if power_kw else None
             structured = {
                 "product_type": "electric_kettle",
                 "category": "appliances_for_heating_liquids",
                 "intended_use": "household" if household else None,
-                "rated_power_w": int(power.group(1)) if power else None,
+                "rated_power_w": rated_power,
                 "country": "India" if india else None,
             }
+            if voltage:
+                structured["rated_voltage_v"] = int(voltage.group(1))
             attributes = ["Electric kettle", "Appliance for heating liquids"]
             if household: attributes.append("Household use")
-            if power: attributes.append(f"{power.group(1)} W rated power")
+            if rated_power: attributes.append(f"{rated_power} W rated power")
+            if voltage: attributes.append(f"{voltage.group(1)} V rated voltage")
             if india: attributes.append("Market: India")
             return {
                 "standard_id": "is-302-2-15-auth" if authoritative else "is-302-2-15",
                 "category": "Appliances for Heating Liquids" if authoritative else "Household electrical appliance",
                 "attributes": attributes,
                 "structured": structured,
-                "missing": ["rated voltage"],
+                "missing": ["rated voltage"] if not voltage else [],
                 "confidence": 0.98 if authoritative else 0.86,
             }
         if "helmet" in text:
@@ -92,7 +98,8 @@ class ComplianceService:
         warnings = []
         if not classified["structured"].get("rated_power_w"):
             warnings.append("Rated power was not supplied; model grouping implications cannot be evaluated.")
-        warnings.append("Rated voltage was not supplied. The QCO voltage scope cannot be conclusively evaluated; confirm whether the appliance is within 250 V single-phase or the other stated voltage limits.")
+        if not classified["structured"].get("rated_voltage_v"):
+            warnings.append("Rated voltage was not supplied. The QCO voltage scope cannot be conclusively evaluated; confirm whether the appliance is within 250 V single-phase or the other stated voltage limits.")
         if not classified["structured"].get("country"):
             warnings.append("Country was not explicit; this profile assumes the requested regulatory context is India.")
         product_profile = self.products.create_profile(

@@ -17,6 +17,13 @@ services:
       DATABASE_URL: postgresql+psycopg://manakai:manakai@postgres:5432/manakai
       DEMO_MODE: ${DEMO_MODE:-true}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-disabled}
+      LLM_PROVIDER: ${LLM_PROVIDER:-disabled}
+      LLM_MODEL: ${LLM_MODEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      AI_TIMEOUT_SECONDS: ${AI_TIMEOUT_SECONDS:-12}
+      AI_MAX_RETRIES: ${AI_MAX_RETRIES:-1}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-700}
       CORS_ORIGINS: http://localhost:3000
     depends_on:
       postgres:

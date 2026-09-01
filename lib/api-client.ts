@@ -6,6 +6,7 @@ export type Laboratory = components['schemas']['Laboratory'];
 export type ComplianceProfile = components['schemas']['ComplianceProfile'];
 export type JourneyStep = components['schemas']['JourneyStep'];
 export type QueryResponse = components['schemas']['QueryResponse'];
+export type ConversationResponse = components['schemas']['ConversationResponse'];
 export type Document = components['schemas']['Document'];
 export type ProductAnalyseRequest = components['schemas']['ProductAnalyseRequest'];
 export type LabSearchRequest = components['schemas']['LabSearchRequest'];
@@ -63,6 +64,12 @@ export const api = {
     request<Laboratory[]>('/api/v1/labs/search', { method: 'POST', body: JSON.stringify(payload) }),
   ask: (query: string) =>
     request<QueryResponse>('/api/v1/qa', { method: 'POST', body: JSON.stringify({ query, language: 'auto' }) }),
+  chat: (message: string, language = 'auto') =>
+    request<ConversationResponse>('/api/v1/chat', { method: 'POST', body: JSON.stringify({ message, language }) }),
+  conversationMessage: (id: string, message: string, language = 'auto') =>
+    request<ConversationResponse>(`/api/v1/conversations/${encodeURIComponent(id)}/messages`, {
+      method: 'POST', body: JSON.stringify({ message, language }),
+    }),
   document: (id: string) => request<Document>(`/api/v1/documents/${encodeURIComponent(id)}`),
 };
 

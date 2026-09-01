@@ -14,7 +14,13 @@ class Settings:
         "DATABASE_URL",
         "postgresql+psycopg://manakai:manakai@localhost:5432/manakai",
     )
-    llm_provider: str = os.getenv("LLM_PROVIDER", "mock")
+    llm_provider: str = os.getenv("LLM_PROVIDER", "disabled").lower()
+    llm_model: str = os.getenv("LLM_MODEL", "")
+    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    ai_timeout_seconds: float = float(os.getenv("AI_TIMEOUT_SECONDS", "12"))
+    ai_max_retries: int = int(os.getenv("AI_MAX_RETRIES", "1"))
+    ai_max_output_tokens: int = int(os.getenv("AI_MAX_OUTPUT_TOKENS", "700"))
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "disabled")
     cors_origins: tuple[str, ...] = _csv("CORS_ORIGINS", "http://localhost:3000")
     sql_echo: bool = os.getenv("SQL_ECHO", "false").lower() == "true"

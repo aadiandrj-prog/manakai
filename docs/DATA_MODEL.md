@@ -1,5 +1,7 @@
 # Data model
 
+Phase 2C adds `conversations` and `conversation_messages`. A conversation stores detected language, current intent, structured product state, unresolved attributes, active compliance profile, relevant standard and evidence references. Messages store role, content, language and non-sensitive provider/fallback metadata. Neither table stores chain-of-thought.
+
 The relational model is defined in `backend/app/db_models.py` and covers users, products, product profiles, standards, standard relationships, documents, chunks, QCOs, certification schemes, tests, laboratories, recognition scopes, product manuals, rules, compliance profiles, journeys and citations.
 
 Standards form a relational graph through `standard_relationships`; supported relationship labels include `REFERENCES`, `SUPERSEDES`, `AMENDS`, `RELATED_TO`, `TESTED_USING`, `IMPLEMENTED_BY` and `REGULATED_BY`. Neo4j is unnecessary for the MVP.

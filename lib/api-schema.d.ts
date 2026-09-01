@@ -225,6 +225,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Conversation */
+        post: operations["create_conversation_api_v1_conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Conversation */
+        get: operations["get_conversation_api_v1_conversations__conversation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Conversation Message */
+        post: operations["add_conversation_message_api_v1_conversations__conversation_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_api_v1_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents/{document_id}": {
         parameters: {
             query?: never;
@@ -329,6 +397,84 @@ export interface components {
              */
             explanation: components["schemas"]["ExplanationNode"][];
         };
+        /** ConversationCreateRequest */
+        ConversationCreateRequest: {
+            /**
+             * Language
+             * @default auto
+             */
+            language: string;
+        };
+        /** ConversationMessage */
+        ConversationMessage: {
+            /** Id */
+            id: string;
+            /** Role */
+            role: string;
+            /** Content */
+            content: string;
+            language: components["schemas"]["SupportedLanguage"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ConversationMessageRequest */
+        ConversationMessageRequest: {
+            /** Message */
+            message: string;
+            /**
+             * Language
+             * @default auto
+             */
+            language: string;
+        };
+        /** ConversationResponse */
+        ConversationResponse: {
+            /** Conversation Id */
+            conversation_id: string;
+            language: components["schemas"]["SupportedLanguage"];
+            intent: components["schemas"]["Intent"];
+            /** Answer */
+            answer: string;
+            /**
+             * Clarification Required
+             * @default false
+             */
+            clarification_required: boolean;
+            /**
+             * Unresolved Attributes
+             * @default []
+             */
+            unresolved_attributes: string[];
+            compliance_profile?: components["schemas"]["ComplianceProfile"] | null;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: components["schemas"]["EvidenceReference"][];
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: string[];
+            /**
+             * Provider
+             * @default deterministic
+             */
+            provider: string;
+            /**
+             * Used Fallback
+             * @default true
+             */
+            used_fallback: boolean;
+            /**
+             * Messages
+             * @default []
+             */
+            messages: components["schemas"]["ConversationMessage"][];
+        };
         /** Document */
         Document: {
             /** Id */
@@ -354,6 +500,12 @@ export interface components {
             /** @default DEMO */
             source_kind: components["schemas"]["SourceKind"];
         };
+        /** EvidenceReference */
+        EvidenceReference: {
+            /** Evidence Id */
+            evidence_id: string;
+            citation: components["schemas"]["Citation"];
+        };
         /** ExplanationNode */
         ExplanationNode: {
             /** Question */
@@ -377,7 +529,7 @@ export interface components {
          * Intent
          * @enum {string}
          */
-        Intent: "PRODUCT_COMPLIANCE" | "STANDARD_QA" | "CERTIFICATION_QUERY" | "LAB_SEARCH" | "CONSUMER_QUERY" | "HALLMARKING_QUERY" | "GENERAL_BIS_QUERY";
+        Intent: "PRODUCT_COMPLIANCE" | "STANDARD_QA" | "CERTIFICATION_QUERY" | "LAB_SEARCH" | "CONSUMER_QUERY" | "HALLMARKING_QUERY" | "GENERAL_BIS_QUERY" | "UNKNOWN";
         /** JourneyStep */
         JourneyStep: {
             /** Title */
@@ -573,6 +725,11 @@ export interface components {
             source_standard_id: string;
             target_standard: components["schemas"]["Standard"];
         };
+        /**
+         * SupportedLanguage
+         * @enum {string}
+         */
+        SupportedLanguage: "en" | "hi" | "hinglish";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -982,6 +1139,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QueryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_conversation_api_v1_conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_conversation_api_v1_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_conversation_message_api_v1_conversations__conversation_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_api_v1_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
                 };
             };
             /** @description Validation Error */

@@ -33,6 +33,13 @@ class Intent(str, Enum):
     CONSUMER_QUERY = "CONSUMER_QUERY"
     HALLMARKING_QUERY = "HALLMARKING_QUERY"
     GENERAL_BIS_QUERY = "GENERAL_BIS_QUERY"
+    UNKNOWN = "UNKNOWN"
+
+
+class SupportedLanguage(str, Enum):
+    ENGLISH = "en"
+    HINDI = "hi"
+    HINGLISH = "hinglish"
 
 
 class Citation(APIModel):
@@ -119,6 +126,40 @@ class ProductAnalyseRequest(APIModel):
     enterprise_category: str = Field(default="GENERAL", pattern="^(GENERAL|SMALL|MICRO)$")
 
 
+class IntentClassification(APIModel):
+    intent: Intent
+    confidence: float = Field(ge=0, le=1)
+    route_reason: str
+
+
+class ProductExtraction(APIModel):
+    product_type: str | None = None
+    category: str | None = None
+    actor: str | None = None
+    intended_use: str | None = None
+    rated_power_w: int | None = None
+    rated_voltage_v: int | None = None
+    country: str | None = None
+    enterprise_category: str | None = None
+    additional_attributes: dict[str, str | int | float | bool | None] = {}
+    missing_required_fields: list[str] = []
+    confidence: float = Field(default=0, ge=0, le=1)
+
+
+class ClarificationDecision(APIModel):
+    required: bool
+    fields: list[str] = []
+    question: str | None = None
+
+
+class ConversationInterpretation(APIModel):
+    language: SupportedLanguage
+    intent: IntentClassification
+    product: ProductExtraction | None = None
+    as_of_date: date | None = None
+    clarification: ClarificationDecision
+
+
 class ProductProfile(APIModel):
     interpreted_product: str
     role: str
@@ -183,6 +224,52 @@ class QueryResponse(APIModel):
     citations: list[Citation]
     confidence: float
     warnings: list[str]
+
+
+class EvidenceReference(APIModel):
+    evidence_id: str
+    citation: Citation
+
+
+class RegulatoryAnswerPackage(APIModel):
+    intent: Intent
+    language: SupportedLanguage
+    product_profile: ProductProfile | None = None
+    compliance_result: ComplianceProfile | None = None
+    evidence: list[EvidenceReference] = []
+    warnings: list[str] = []
+
+
+class ConversationCreateRequest(APIModel):
+    language: str = "auto"
+
+
+class ConversationMessageRequest(APIModel):
+    message: str = Field(min_length=1, max_length=4000)
+    language: str = "auto"
+
+
+class ConversationMessage(APIModel):
+    id: str
+    role: str
+    content: str
+    language: SupportedLanguage
+    created_at: datetime
+
+
+class ConversationResponse(APIModel):
+    conversation_id: str
+    language: SupportedLanguage
+    intent: Intent
+    answer: str
+    clarification_required: bool = False
+    unresolved_attributes: list[str] = []
+    compliance_profile: ComplianceProfile | None = None
+    evidence: list[EvidenceReference] = []
+    warnings: list[str] = []
+    provider: str = "deterministic"
+    used_fallback: bool = True
+    messages: list[ConversationMessage] = []
 
 
 class LabSearchRequest(APIModel):

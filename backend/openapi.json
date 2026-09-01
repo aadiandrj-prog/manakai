@@ -3,7 +3,7 @@
   "info": {
     "title": "ManakAI API",
     "description": "Database-backed Indian Standards and BIS compliance intelligence prototype",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "paths": {
     "/health": {
@@ -517,6 +517,170 @@
         }
       }
     },
+    "/api/v1/conversations": {
+      "post": {
+        "summary": "Create Conversation",
+        "operationId": "create_conversation_api_v1_conversations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}": {
+      "get": {
+        "summary": "Get Conversation",
+        "operationId": "get_conversation_api_v1_conversations__conversation_id__get",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/messages": {
+      "post": {
+        "summary": "Add Conversation Message",
+        "operationId": "add_conversation_message_api_v1_conversations__conversation_id__messages_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat": {
+      "post": {
+        "summary": "Chat",
+        "operationId": "chat_api_v1_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/documents/{document_id}": {
       "get": {
         "summary": "Get Document",
@@ -850,6 +1014,153 @@
         ],
         "title": "ComplianceProfile"
       },
+      "ConversationCreateRequest": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "auto"
+          }
+        },
+        "type": "object",
+        "title": "ConversationCreateRequest"
+      },
+      "ConversationMessage": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "language": {
+            "$ref": "#/components/schemas/SupportedLanguage"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "content",
+          "language",
+          "created_at"
+        ],
+        "title": "ConversationMessage"
+      },
+      "ConversationMessageRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "auto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ConversationMessageRequest"
+      },
+      "ConversationResponse": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id"
+          },
+          "language": {
+            "$ref": "#/components/schemas/SupportedLanguage"
+          },
+          "intent": {
+            "$ref": "#/components/schemas/Intent"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "clarification_required": {
+            "type": "boolean",
+            "title": "Clarification Required",
+            "default": false
+          },
+          "unresolved_attributes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Attributes",
+            "default": []
+          },
+          "compliance_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComplianceProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceReference"
+            },
+            "type": "array",
+            "title": "Evidence",
+            "default": []
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings",
+            "default": []
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "default": "deterministic"
+          },
+          "used_fallback": {
+            "type": "boolean",
+            "title": "Used Fallback",
+            "default": true
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationMessage"
+            },
+            "type": "array",
+            "title": "Messages",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "language",
+          "intent",
+          "answer"
+        ],
+        "title": "ConversationResponse"
+      },
       "Document": {
         "properties": {
           "id": {
@@ -957,6 +1268,23 @@
         ],
         "title": "Document"
       },
+      "EvidenceReference": {
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/Citation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "citation"
+        ],
+        "title": "EvidenceReference"
+      },
       "ExplanationNode": {
         "properties": {
           "question": {
@@ -1015,7 +1343,8 @@
           "LAB_SEARCH",
           "CONSUMER_QUERY",
           "HALLMARKING_QUERY",
-          "GENERAL_BIS_QUERY"
+          "GENERAL_BIS_QUERY",
+          "UNKNOWN"
         ],
         "title": "Intent"
       },
@@ -1635,6 +1964,15 @@
           "target_standard"
         ],
         "title": "StandardRelationship"
+      },
+      "SupportedLanguage": {
+        "type": "string",
+        "enum": [
+          "en",
+          "hi",
+          "hinglish"
+        ],
+        "title": "SupportedLanguage"
       },
       "ValidationError": {
         "properties": {

@@ -25,6 +25,9 @@ ManakAI is a hackathon-ready regulatory navigation and compliance automation pro
 - Source-adapter pipeline with allow-listed fetches, staged validation, ingestion runs, content hashes and non-destructive version history
 - Query-date and enterprise-category QCO resolution
 - Clause-aware chunks, PostgreSQL full-text indexes, configurable local embeddings, hybrid rank fusion and citation validation
+- Controlled OpenAI/Gemini provider boundary with Pydantic outputs and deterministic failure fallback
+- PostgreSQL-backed conversations with clarification/follow-up merging and English/Hindi/Hinglish support
+- Evidence-ID answer packages, regulatory-fact validation and prompt-injection resistance
 
 ## Architecture
 
@@ -103,17 +106,17 @@ backend/.venv/bin/pytest backend
 backend/.venv/bin/python scripts/evaluate_demo.py
 ```
 
-Tests use captured/sanitised source fixtures and a fake 384-dimensional embedding provider; they never call live BIS pages or paid model providers.
+Tests use captured/sanitised source fixtures, a fake 384-dimensional embedding provider and recorded/disabled AI providers; they never call live BIS pages or paid model providers.
 
 ## Environment
 
-Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=mock` are safe defaults. Provider keys are optional and must never be committed. A real provider is intentionally not invoked until an evidence source is available; changing the model must never change a structured regulatory fact.
+Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=disabled` are safe defaults. Provider keys are optional and must never be committed. Set `LLM_PROVIDER=openai` or `gemini`, select `LLM_MODEL`, and provide only the corresponding key. Changing or disabling the model cannot change a structured regulatory fact.
 
 ## Data and migrations
 
 SQLAlchemy tables are defined in `backend/app/db_models.py`. Migration `4b2f2a8d1c71` adds provenance, ingestion, temporal applicability, category mappings, clause structure, citation validation and PostgreSQL GIN/HNSW indexes; follow-up `7a91d3e5f620` lets demo and authoritative editions coexist without silently merging them. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
 
-The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend request or response schemas.
+Migration `91c3d7e2a4b8` adds structured conversation and recent-message persistence. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend request or response schemas.
 
 ## Limitations
 
@@ -125,6 +128,6 @@ The frontend contract is generated from FastAPI's OpenAPI document with `npm run
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.
 - The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
-See [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+See [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 
 For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).

@@ -1,3 +1,5 @@
+import re
+
 from ..schemas import Intent
 
 
@@ -7,12 +9,14 @@ def classify_intent(query: str) -> Intent:
         return Intent.HALLMARKING_QUERY
     if any(term in text for term in ("lab", "laboratory", "testing near", "test near")):
         return Intent.LAB_SEARCH
-    if any(term in text for term in ("clause", "what does is ", "standard say", "amendment")):
+    if re.search(r"\bis\s*\d{3,}", text) or any(term in text for term in ("clause", "what does is ", "standard say", "amendment")):
         return Intent.STANDARD_QA
-    if any(term in text for term in ("mandatory", "certification", "qco", "licence", "license")):
+    if any(term in text for term in ("mandatory", "certification", "qco", "licence", "license", "requirement", "required", "bis ka kya", "बीआईएस")):
         return Intent.CERTIFICATION_QUERY
-    if any(term in text for term in ("manufacture", "import", "product", "kettle", "lamp", "helmet")):
+    if any(term in text for term in ("manufacture", "import", "product", "kettle", "केतली", "बनाता", "बनाती", "lamp", "helmet")):
         return Intent.PRODUCT_COMPLIANCE
     if any(term in text for term in ("consumer", "complaint", "mark")):
         return Intent.CONSUMER_QUERY
-    return Intent.GENERAL_BIS_QUERY
+    if any(term in text for term in ("bis", "bureau of indian standards", "भारतीय मानक")):
+        return Intent.GENERAL_BIS_QUERY
+    return Intent.UNKNOWN

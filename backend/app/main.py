@@ -10,6 +10,9 @@ from .database import database_is_ready, get_db
 from .repositories import DocumentRepository, LaboratoryRepository, StandardRepository
 from .schemas import (
     ComplianceProfile,
+    ConversationCreateRequest,
+    ConversationMessageRequest,
+    ConversationResponse,
     Document,
     JourneyStep,
     Laboratory,
@@ -22,6 +25,7 @@ from .schemas import (
 )
 from .serializers import document_to_schema, recognitions_to_laboratories, relationship_to_schema, standard_to_schema
 from .services.compliance import ComplianceService
+from .services.conversations import ConversationService
 from .services.retrieval import RetrievalService
 
 logging.basicConfig(level=logging.INFO, format='{"level":"%(levelname)s","event":"%(message)s"}')
@@ -29,7 +33,7 @@ logger = logging.getLogger("manakai")
 
 app = FastAPI(
     title="ManakAI API",
-    version="0.3.0",
+    version="0.4.0",
     description="Database-backed Indian Standards and BIS compliance intelligence prototype",
 )
 app.add_middleware(
@@ -139,6 +143,34 @@ def labs_search(request: LabSearchRequest, session: Session = Depends(get_db)):
 def query(request: QueryRequest, session: Session = Depends(get_db)):
     logger.info("intent_classified")
     return RetrievalService(session).answer(request.query)
+
+
+@app.post("/api/v1/conversations", response_model=ConversationResponse)
+def create_conversation(request: ConversationCreateRequest, session: Session = Depends(get_db)):
+    return ConversationService(session).create(request.language)
+
+
+@app.get("/api/v1/conversations/{conversation_id}", response_model=ConversationResponse)
+def get_conversation(conversation_id: str, session: Session = Depends(get_db)):
+    try:
+        return ConversationService(session).get(conversation_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/conversations/{conversation_id}/messages", response_model=ConversationResponse)
+def add_conversation_message(conversation_id: str, request: ConversationMessageRequest, session: Session = Depends(get_db)):
+    try:
+        return ConversationService(session).message(conversation_id, request.message, request.language)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/api/v1/chat", response_model=ConversationResponse)
+def chat(request: ConversationMessageRequest, session: Session = Depends(get_db)):
+    service = ConversationService(session)
+    conversation = service.create(request.language)
+    return service.message(conversation.conversation_id, request.message, request.language)
 
 
 @app.get("/api/v1/documents/{document_id}", response_model=Document)

@@ -57,6 +57,27 @@ class ProductProfile(IdMixin, Base):
     product: Mapped["Product"] = relationship()
 
 
+class Conversation(IdMixin, Base):
+    __tablename__ = "conversations"
+    detected_language: Mapped[str] = mapped_column(String(16), default="en")
+    current_intent: Mapped[str] = mapped_column(String(48), default="UNKNOWN", index=True)
+    structured_state: Mapped[dict] = mapped_column(JSON, default=dict)
+    unresolved_attributes: Mapped[list] = mapped_column(JSON, default=list)
+    active_compliance_profile_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    relevant_standard_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    evidence_references: Mapped[list] = mapped_column(JSON, default=list)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ConversationMessage(IdMixin, Base):
+    __tablename__ = "conversation_messages"
+    conversation_id: Mapped[str] = mapped_column(ForeignKey("conversations.id", ondelete="CASCADE"), index=True)
+    role: Mapped[str] = mapped_column(String(16), index=True)
+    content: Mapped[str] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(String(16), default="en")
+    metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class Standard(IdMixin, Base):
     __tablename__ = "standards"
     __table_args__ = (UniqueConstraint("number", "version", "source_kind", name="uq_standard_number_version_source"),)

@@ -1,152 +1,96 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import {
-  ArrowRight,
-  BookOpenText,
-  CheckCircle2,
-  CircleAlert,
-  LoaderCircle,
-  Search,
-} from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { ArrowRight, BookOpenText, Bot, CheckCircle2, CircleAlert, FlaskConical, Languages, LoaderCircle, MessageSquareText, RotateCcw, ShieldCheck } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ErrorState, LoadingState } from '@/components/manakai/data-state';
-import { api, errorMessage } from '@/lib/api-client';
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { ErrorState } from '@/components/manakai/data-state';
+import { api, errorMessage, type ConversationResponse } from '@/lib/api-client';
+
+const starters = [
+  'I manufacture a 1500W 230V electric kettle for household use.',
+  'I manufacture a household electric kettle.',
+  '230V ka ghar wala electric kettle manufacture kar raha hu, BIS ka kya requirement hai?',
+];
 
 export default function AskPage() {
-  const [question, setQuestion] = useState(
-    'What tests are relevant to a rechargeable emergency luminaire?',
-  );
-  const [submitted, setSubmitted] = useState(question);
-  const answerQuery = useQuery({ queryKey: ['qa', submitted], queryFn: () => api.ask(submitted), enabled: Boolean(submitted) });
-  function ask() {
-    setSubmitted(question.trim());
+  const [question, setQuestion] = useState(starters[0]);
+  const [language, setLanguage] = useState('auto');
+  const [conversation, setConversation] = useState<ConversationResponse | null>(null);
+  const mutation = useMutation({
+    mutationFn: async (message: string) => conversation
+      ? api.conversationMessage(conversation.conversation_id, message, language)
+      : api.chat(message, language),
+    onSuccess: (data) => { setConversation(data); setQuestion(''); },
+  });
+  function send() {
+    const message = question.trim();
+    if (message) mutation.mutate(message);
   }
   return (
     <AppShell current="/ask">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
-        <div className="mx-auto max-w-[1000px]">
-          <PageHeader
-            eyebrow="Evidence Q&A"
-            title="Ask ManakAI"
-            description="Questions are routed through structured metadata and evidence retrieval. Explanations stay separate from authoritative text and disclose missing verification."
-          />
-          <div className="analysis-box">
-            <label
-              htmlFor="question"
-              className="flex items-center gap-2 text-sm font-medium"
-            >
-              <Search className="size-4 text-primary" /> Ask about a standard,
-              clause, test or BIS service
-            </label>
-            <textarea
-              id="question"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              className="mt-4 min-h-24 w-full resize-none rounded-md border border-input bg-[#0b0c0d] p-3 text-sm leading-6 outline-none focus:border-primary"
-            />
-            <div className="mt-3 flex justify-between gap-3">
-              <p className="text-[11px] text-muted-foreground">
-                Language detected: English · Canonical query preserved
-              </p>
-              <Button
-                onClick={ask}
-                disabled={answerQuery.isFetching || !question.trim()}
-                className="rounded-md"
-              >
-                {answerQuery.isFetching ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <>
-                    Retrieve evidence <ArrowRight />
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-          {answerQuery.isPending && <div className="mt-5"><LoadingState label="Retrieving database evidence…" /></div>}
-          {answerQuery.isError && <div className="mt-5"><ErrorState message={errorMessage(answerQuery.error)} /></div>}
-          {answerQuery.data && (
-            <div aria-live="polite" className="mt-5 space-y-5">
-              <div className="panel overflow-hidden">
-                <div className="panel-header">
-                  <div>
-                    <span className="eyebrow">Structured answer</span>
-                    <h2 className="panel-title">
-                      {answerQuery.data.intent.replaceAll('_', ' ')}
-                    </h2>
-                  </div>
-                  <Badge className="bg-amber-300/10 text-amber-300">
-                    {Math.round(answerQuery.data.confidence * 100)}% confidence
-                  </Badge>
-                </div>
-                <div className="p-5">
-                  <p className="text-sm leading-7 text-foreground/85">
-                    {answerQuery.data.answer}
-                  </p>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    {answerQuery.data.warnings.map((item) => (
-                      <div
-                        key={item}
-                        className="flex gap-2 rounded-md border border-border bg-[#0c0d0e] p-3 text-xs"
-                      >
-                        <CheckCircle2 className="size-3.5 shrink-0 text-cyan-300" />
-                        {item}
+        <div className="mx-auto max-w-[1100px]">
+          <PageHeader eyebrow="Controlled intelligence" title="Ask ManakAI" description="Describe an electric-kettle compliance question naturally. AI may interpret and explain; PostgreSQL evidence and deterministic rules remain the regulatory authority." />
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="space-y-5">
+              {conversation?.messages.length ? (
+                <div className="panel max-h-[430px] space-y-3 overflow-y-auto p-4" aria-live="polite">
+                  {conversation.messages.map((message) => (
+                    <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[88%] rounded-md border p-3 text-sm leading-6 ${message.role === 'user' ? 'border-primary/30 bg-primary/10' : 'border-border bg-[#0c0d0e]'}`}>
+                        <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-[.15em] text-muted-foreground">{message.role === 'user' ? <MessageSquareText className="size-3" /> : <Bot className="size-3 text-cyan-300" />}{message.role === 'user' ? 'You' : 'ManakAI'} · {message.language}</div>
+                        {message.content}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-5 md:grid-cols-[1.2fr_.8fr]">
-                <div className="panel p-5">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <BookOpenText className="size-4 text-primary" /> Evidence
-                    used
-                  </div>
-                  {answerQuery.data.citations.map((citation) => <div key={citation.id} className="mt-4 rounded-md border border-border bg-[#0c0d0e] p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium">
-                        {citation.document_title}
-                      </p>
-                      <Badge variant="outline">Demo metadata</Badge>
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {citation.standard_number ?? citation.document_type} · {citation.version ?? 'version not recorded'}
-                    </p>
-                    <Button
-                      nativeButton={false}
-                      render={
-                        <Link
-                          aria-label="Inspect source record"
-                          href={citation.standard_number?.includes('10322') ? '/standards/is-10322-5-8' : '/standards'}
-                        />
-                      }
-                      variant="link"
-                      className="mt-2 h-auto p-0 text-xs"
-                    >
-                      Inspect source record <ArrowRight />
-                    </Button>
-                  </div>)}
-                  {answerQuery.data.citations.length === 0 && <p className="mt-4 text-xs text-muted-foreground">No matching evidence records were found.</p>}
+                  ))}
                 </div>
+              ) : (
                 <div className="panel p-5">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <CircleAlert className="size-4 text-amber-300" />{' '}
-                    Verification boundary
-                  </div>
-                  <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                    {answerQuery.data.warnings.join(' · ')}
-                  </p>
+                  <div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck className="size-4 text-cyan-300" /> Start with a supported kettle workflow</div>
+                  <div className="mt-4 grid gap-2">{starters.map((item) => <button key={item} onClick={() => setQuestion(item)} className="rounded-md border border-border bg-[#0c0d0e] p-3 text-left text-xs leading-5 text-muted-foreground transition hover:border-primary/40 hover:text-foreground">{item}</button>)}</div>
+                </div>
+              )}
+              <div className="analysis-box">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <label htmlFor="question" className="flex items-center gap-2 text-sm font-medium"><MessageSquareText className="size-4 text-primary" /> {conversation ? 'Continue this compliance analysis' : 'Describe the product or ask about evidence'}</label>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground"><Languages className="size-3.5" /><NativeSelect aria-label="Response language" size="sm" value={language} onChange={(event) => setLanguage(event.target.value)}><NativeSelectOption value="auto">Detect language</NativeSelectOption><NativeSelectOption value="en">English</NativeSelectOption><NativeSelectOption value="hi">Hindi</NativeSelectOption><NativeSelectOption value="hinglish">Hinglish</NativeSelectOption></NativeSelect></div>
+                </div>
+                <textarea id="question" value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder={conversation?.clarification_required ? 'Answer the clarification, for example: 230V' : 'Ask about an electric kettle, a standard clause, testing or certification…'} className="mt-4 min-h-24 w-full resize-none rounded-md border border-input bg-[#0b0c0d] p-3 text-sm leading-6 outline-none focus:border-primary" />
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-[11px] text-muted-foreground">No hidden reasoning is stored · Evidence IDs control citations</p>
+                  <div className="flex gap-2">{conversation && <Button variant="outline" size="sm" onClick={() => { setConversation(null); setQuestion(starters[0]); }}><RotateCcw /> New analysis</Button>}<Button onClick={send} disabled={mutation.isPending || !question.trim()} className="rounded-md">{mutation.isPending ? <><LoaderCircle className="animate-spin" /> Analysing</> : <>Send <ArrowRight /></>}</Button></div>
                 </div>
               </div>
+              {mutation.isError && <ErrorState message={errorMessage(mutation.error)} />}
             </div>
-          )}
+            <aside className="space-y-4">
+              <div className="panel p-4"><div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck className="size-4 text-cyan-300" /> Trust boundary</div><p className="mt-3 text-xs leading-5 text-muted-foreground">AI can interpret, translate and explain. It cannot select standards, alter QCO dates, recognise laboratories or invent citations.</p><p className="mt-3 text-[10px] uppercase tracking-[.12em] text-amber-300">Demo mode responses remain labelled and separate from authoritative data.</p></div>
+              {conversation && <div className="panel p-4 text-xs"><div className="flex flex-wrap gap-2"><Badge variant="outline">{conversation.intent.replaceAll('_', ' ')}</Badge><Badge variant="outline">{conversation.language}</Badge><Badge className={conversation.used_fallback ? 'bg-amber-300/10 text-amber-300' : 'bg-cyan-300/10 text-cyan-300'}>{conversation.used_fallback ? 'Safe fallback' : conversation.provider}</Badge></div>{conversation.clarification_required && <div className="mt-3 rounded-md border border-amber-300/20 bg-amber-300/5 p-3 text-amber-100"><CircleAlert className="mb-2 size-4" />Clarification required: {conversation.unresolved_attributes.join(', ')}</div>}</div>}
+            </aside>
+          </div>
+          {conversation?.compliance_profile && <ComplianceCards response={conversation} />}
+          {conversation && conversation.warnings.length > 0 && <div className="mt-5 panel p-5"><div className="flex items-center gap-2 text-sm font-medium"><CircleAlert className="size-4 text-amber-300" /> Warnings</div><div className="mt-3 grid gap-2 sm:grid-cols-2">{conversation.warnings.map((warning) => <div key={warning} className="rounded-md border border-border bg-[#0c0d0e] p-3 text-xs leading-5 text-muted-foreground">{warning}</div>)}</div></div>}
+          {conversation && <EvidenceCards response={conversation} />}
         </div>
       </section>
     </AppShell>
   );
+}
+
+function ComplianceCards({ response }: { response: ConversationResponse }) {
+  const profile = response.compliance_profile!;
+  return <div className="mt-5 grid gap-4 md:grid-cols-3">
+    <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><BookOpenText className="size-4 text-primary" /> Standards</div><div className="mt-3 space-y-2">{profile.applicable_standards.map((standard) => <div key={standard.id}><p className="text-sm font-medium">{standard.number}:{standard.version}</p><p className="text-xs text-muted-foreground">{standard.title}</p></div>)}</div></div>
+    <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><ShieldCheck className="size-4 text-cyan-300" /> Regulatory status</div><p className="mt-3 text-xl font-semibold">{profile.qco?.status ?? profile.mandatory_status}</p><p className="mt-1 text-xs text-muted-foreground">{profile.qco?.notification_number} · {profile.qco?.effective_from ?? 'date unavailable'}</p><p className="mt-3 text-xs">{profile.certification_scheme}</p></div>
+    <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><FlaskConical className="size-4 text-amber-300" /> Recognised labs</div><p className="mt-3 text-xl font-semibold">{profile.laboratories.length}</p><div className="mt-2 space-y-1 text-xs text-muted-foreground">{profile.laboratories.slice(0, 3).map((lab) => <p key={lab.id}>{lab.name}</p>)}</div></div>
+  </div>;
+}
+
+function EvidenceCards({ response }: { response: ConversationResponse }) {
+  if (!response.evidence.length) return null;
+  return <div className="mt-5 panel p-5"><div className="flex items-center gap-2 text-sm font-medium"><BookOpenText className="size-4 text-primary" /> Authoritative evidence</div><div className="mt-4 grid gap-3 md:grid-cols-2">{response.evidence.map(({ evidence_id, citation }) => <div key={evidence_id} className="rounded-md border border-border bg-[#0c0d0e] p-4"><div className="flex items-start justify-between gap-3"><p className="text-sm font-medium">{citation.document_title}</p><Badge className="bg-cyan-300/10 text-cyan-300">{evidence_id}</Badge></div><p className="mt-2 text-xs leading-5 text-muted-foreground">{citation.standard_number ?? citation.document_type}{citation.clause ? ` · Clause ${citation.clause}` : ''}{citation.page ? ` · Page ${citation.page}` : ''}</p>{citation.source_url && <a href={citation.source_url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline">View official source <ArrowRight className="size-3" /></a>}<div className="mt-3 flex items-center gap-1 text-[10px] text-cyan-300"><CheckCircle2 className="size-3" /> {citation.validation_status}</div></div>)}</div></div>;
 }

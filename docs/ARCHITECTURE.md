@@ -2,7 +2,7 @@
 
 ManakAI uses a modular monolith: one React/Vinext web surface, one FastAPI service and one relational data layer. This keeps the prototype demonstrable while preserving seams for authoritative data, retrieval and model providers.
 
-The Phase 2B authoritative path is deliberately one-way:
+The authoritative path remains deliberately one-way:
 
 ```text
 Official BIS/DPIIT/LIMS source
@@ -16,6 +16,8 @@ Official BIS/DPIIT/LIMS source
 ```
 
 The browser never calls or parses BIS pages. Source failure rolls back the staged transaction and retains the last verified graph.
+
+Phase 2C adds an optional language boundary: `message → structured interpretation → deterministic engine/retrieval → regulatory answer package → optional provider explanation → answer validator → prose + structured UI payload`. Provider output never feeds standards, QCO, certification, laboratory or temporal-rule tables. Conversation rows retain structured state and recent messages, not hidden reasoning. Evidence IDs are assigned only after citation validation.
 
 ```mermaid
 flowchart TB
@@ -49,3 +51,5 @@ Key boundaries:
 - Alembic owns schema evolution; startup never calls `create_all()`.
 - URL validation permits only HTTPS BIS/DPIIT hosts, follows only allow-listed redirects, applies timeouts and enforces a 12 MiB maximum document size.
 - Retrieval selects evidence; the temporal rule engine remains the only source of regulatory status.
+- OpenAI and Gemini calls are isolated behind one provider boundary with Pydantic validation, timeouts, bounded retries and output limits.
+- Provider failure or contradiction cannot make compliance unavailable; deterministic templates are mandatory fallbacks.
