@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api-client';
 
 const workflows = [
   {
@@ -63,6 +65,8 @@ const workflows = [
 
 export default function Home() {
   const [query, setQuery] = useState('');
+  const standardsQuery = useQuery({ queryKey: ['standards'], queryFn: () => api.standards() });
+  const labsQuery = useQuery({ queryKey: ['labs'], queryFn: api.labs });
   return (
     <AppShell current="/">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -167,7 +171,7 @@ export default function Home() {
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <div>
                   <div className="font-heading text-3xl tracking-[-.05em]">
-                    5
+                    {standardsQuery.data?.length ?? '—'}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     seeded standard records
@@ -175,7 +179,7 @@ export default function Home() {
                 </div>
                 <div>
                   <div className="font-heading text-3xl tracking-[-.05em]">
-                    4
+                    {labsQuery.data?.length ?? '—'}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     demo lab records

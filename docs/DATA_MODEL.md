@@ -4,7 +4,7 @@ The relational model is defined in `backend/app/db_models.py` and covers users, 
 
 Standards form a relational graph through `standard_relationships`; supported relationship labels include `REFERENCES`, `SUPERSEDES`, `AMENDS`, `RELATED_TO`, `TESTED_USING`, `IMPLEMENTED_BY` and `REGULATED_BY`. Neo4j is unnecessary for the MVP.
 
-Document chunks retain document ID, page, clause, section and text. Retrieval vectors are logically separate; the placeholder JSONB field should become a pgvector `Vector` column in the first production migration.
+Document chunks retain document ID, page, clause, section and text. The initial migration stores embeddings as `vector(384)` on PostgreSQL/pgvector and uses JSON only as a portable SQLite test fallback.
 
 Temporal records store status, publication/effective dates, supersession links and retrieval timestamps. The rule engine must reject missing provenance and must never let an older superseded record silently override a current active record.
 

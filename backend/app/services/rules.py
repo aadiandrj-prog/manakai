@@ -5,14 +5,14 @@ from datetime import date
 @dataclass(frozen=True)
 class QCORecord:
     standard_number: str
-    effective_date: date
+    effective_date: date | None
     status: str
     source_verified: bool
 
 
 def evaluate_certification(qco: QCORecord | None, on_date: date | None = None) -> str:
     """Only a current, verified, active QCO can produce a mandatory decision."""
-    if qco is None or not qco.source_verified:
+    if qco is None or not qco.source_verified or qco.effective_date is None:
         return "UNVERIFIED"
     decision_date = on_date or date.today()
     if qco.status == "ACTIVE" and decision_date >= qco.effective_date:

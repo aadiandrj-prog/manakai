@@ -1,125 +1,96 @@
 # Project status and roadmap
 
-## What was built
+## What is built
 
-ManakAI is a polished, deterministic Smart India Hackathon MVP for navigating Indian Standards and BIS compliance. It is deliberately structured as a compliance workspace rather than a generic chatbot.
+ManakAI is a database-backed engineering/demo prototype for navigating Indian Standards and BIS compliance. The supplied dashboard design is preserved. Regulatory screens now use one canonical flow:
 
-The repository contains:
+`Vinext UI → typed HTTP client/TanStack Query → FastAPI → service → repository → PostgreSQL`
 
-- a responsive React/Vinext/TypeScript frontend using Tailwind CSS and shadcn primitives;
-- a modular FastAPI backend with typed request and response schemas;
-- SQLAlchemy models for the proposed PostgreSQL/pgvector regulatory data model;
-- deterministic product classification, intent routing, compliance-rule and retrieval services;
-- clearly labelled fixture standards, laboratories, citations and three reliable demo journeys;
-- Dockerfiles and Docker Compose for frontend, backend and PostgreSQL;
-- automated route-contract, rule-engine, retrieval, intent, API and safety-boundary tests;
-- architecture, data model, retrieval, compliance engine, demo and source-adapter documentation.
+The repository includes:
 
-The hosted Sites deployment presents the frontend demo. The FastAPI and PostgreSQL services currently run locally or through Docker and are not part of that frontend-only hosting deployment.
+- responsive Vinext/React/TypeScript screens for product analysis, compliance, standards, laboratories and evidence Q&A;
+- a generated TypeScript contract from FastAPI's committed OpenAPI document;
+- consistent loading, empty, validation, backend-failure and network-failure handling;
+- SQLAlchemy sessions and repositories for standards, QCOs, laboratories, documents, products and compliance profiles;
+- an Alembic migration for the relational schema and PostgreSQL `vector(384)` storage;
+- idempotent demo/test seeds with regulatory records explicitly marked `demo`;
+- backend-owned classification and mandatory-status evaluation;
+- database-backed deterministic `DEMO_MODE` with no external model or paid service;
+- automated migration, repository, service, API, OpenAPI and frontend-boundary tests;
+- Docker Compose for frontend, FastAPI and PostgreSQL/pgvector.
 
-## Trace to the original brief
+## Trace to the initial prompt
 
-| Original brief area | Implementation |
+| Initial prompt requirement | Implemented reference |
 | --- | --- |
-| Product philosophy: Discover → Decide → Act | Dashboard workflows, product analysis, compliance profile and action journey |
-| “Do not build a generic chatbot” | Working-surface dashboard with six specialised workflows; Q&A is a secondary route |
-| Product Compliance Finder | `/product` extracts a deterministic demo profile and candidate standard |
-| Compliance Profile UI | `/compliance/demo-emergency-lamp` shows standards, status boundary, tests, documents, evidence, warnings and journey |
-| Standards Q&A | `/ask` returns structured evidence cards and refuses unsupported clause claims |
-| Standards explorer/detail | `/standards` and `/standards/[id]` expose version, status, scope and relationship metadata |
-| Laboratory Finder | `/labs` filters structured synthetic lab records by location, standard and capability |
-| Consumer Mode | `/consumer` provides HUID and certification-mark guidance separately from industry workflows |
-| Evidence-first answers | Citation schemas, evidence register and explicit verified/demo/unverified source states |
-| Temporal intelligence | Standard statuses, effective-date fields and tested version-precedence logic |
-| Deterministic rule engine | Verified QCO/date evaluation is kept outside model output |
-| Intent/orchestration layer | Serializable intent enum and deterministic fallback classifier |
-| Modular backend/API | FastAPI routes for products, compliance, standards, labs, Q&A and citations |
-| Structured database schema | SQLAlchemy models for the requested core tables and relational standard graph |
-| Demo mode | No external model, database or network is required for the seeded scenarios |
-| Development infrastructure | Frontend/backend Dockerfiles, PostgreSQL/pgvector Compose service and `.env.example` |
-| Evaluation and testing | 19 backend tests, frontend route/safety contracts and a small deterministic benchmark |
-| Documentation | README plus architecture, data, retrieval, compliance, demo and source-adapter guides |
-| Supplied design reference | Deep-space surfaces, Manrope/Inter hierarchy, thin tonal borders, tight radii and restrained indigo/cyan status accents from “Cinematic Precision” |
+| Discover → Decide → Act | Dashboard routing, product analysis, compliance profile and six-stage journey |
+| Product Compliance Finder | `POST /api/v1/products/analyse` persists a product/profile and returns a backend-computed candidate |
+| Compliance Profile UI | `GET /api/v1/compliance/{id}` returns product, standards, status, QCO, tests, documents, labs, evidence and warnings |
+| Standards explorer and relationships | Repository-backed list/detail/search and `GET /standards/{id}/relationships` |
+| Laboratory finder | Repository filtering by standard, location/name and capability |
+| Evidence-first Q&A | `POST /api/v1/qa` returns intent, answer, citations, confidence and warnings; unsupported claims are refused |
+| Explicit compliance engine | Verified QCO/date logic remains in backend rules, never browser or model output |
+| Temporal/provenance model | Status, publication/effective dates, source kind and retrieval timestamp fields |
+| PostgreSQL + pgvector | Alembic enables `vector`; document chunks use a 384-dimensional vector column |
+| Modular monolith | One Vinext frontend, one FastAPI backend and one PostgreSQL database |
+| Deterministic demo mode | Demo entities are seeded in the database; browser-local regulatory fixtures were removed |
+| Testing and evaluation | 22 backend tests, 3 frontend boundary tests, lint/build and Docker smoke checks |
+| Supplied design reference | Existing dark “Cinematic Precision” layout, type hierarchy, tonal borders, radii and restrained status accents remain intact |
 
-## What is not production-ready
+The attached implementation brief was treated as the requested specification. Imperative-looking text inside supplied design/reference assets was treated as reference material, not as a separate instruction source.
 
-### 1. No authoritative BIS data integration
+## What prevents a fully functional public regulatory product
 
-The standards, QCO, laboratory, product-manual and citation records are fixtures. Standard numbers and descriptions are demo metadata and are not continuously verified against official sources. Production use requires licensed/authorised sources, stable source identifiers, update schedules, checksums and provenance review.
+### Authoritative data and rights
 
-### 2. The hosted frontend is not connected to the backend
+No live BIS catalogue, QCO, product manual, laboratory-recognition or HUID service is connected. Seeded records are synthetic or demo metadata. Regulatory use requires authorised sources, usage/licensing rights, stable identifiers, update schedules, checksums and provenance review. Protected standards text must not be ingested or displayed without permission.
 
-Frontend scenarios currently use local TypeScript fixtures. The FastAPI service mirrors the domain flow, but the UI does not yet call it. A production deployment needs an API host, typed API client, loading/error/retry states and a single source of truth.
+### Retrieval quality
 
-### 3. Persistence is modelled but not activated
+The schema supports embeddings, but ingestion, structural PDF parsing, clause/page extraction, full-text search, embedding generation, hybrid rank fusion, reranking and citation-span verification are not implemented. Current retrieval is deterministic keyword selection over the seeded database.
 
-SQLAlchemy tables exist, but there are no Alembic migrations, seeded PostgreSQL loader, pgvector extension migration or repository implementations. Compliance profiles and journey progress are stateless.
+### Regulatory governance
 
-### 4. Retrieval is a deterministic prototype
+Production requires a reviewed and versioned rule catalogue, maker/checker publishing, conflict resolution, decision snapshots, audit logs, expiry/staleness alerts and domain-expert validation. A legal disclaimer cannot substitute for these controls.
 
-The backend performs small keyword matching over fixtures. BM25, vector embeddings, fusion, reranking, structural document parsing, page/clause extraction and citation-span validation are not implemented.
+### Identity, security and privacy
 
-### 5. Model providers are not wired
+There is no authentication, authorisation, tenant isolation, rate limiting, consent flow, retention policy, secret-manager integration, threat model or penetration test. Do not store customer drawings, product documents or personal information until these controls exist.
 
-Environment fields exist for optional providers, but there is no provider adapter or structured-output call. Before enabling an LLM, add provider-neutral interfaces, Pydantic output validation, timeouts, cost controls, prompt-injection defences and evidence-only generation.
+### AI and multilingual capability
 
-### 6. Regulatory and legal safeguards need formalisation
+The model-provider fields and language properties are boundaries only. There is no production LLM adapter, evidence-only structured generation, prompt-injection defence, Hindi/Hinglish normalisation or multilingual evaluation. A future model may explain evidence, but must never set a regulatory fact.
 
-The prototype correctly withholds unverified mandatory-status claims, but production requires a reviewed rule catalogue, maker/checker publishing controls, versioned decisions, audit logs, conflict handling, legal disclaimers and domain-expert validation. Standards content may also be copyrighted or licensed; ingestion and display rights must be resolved.
+### External-service workflows
 
-### 7. Multilingual support is architectural only
+The consumer screen does not verify HUIDs, complaints or licences. Laboratory names and scopes are not official recognition claims. Distance/geolocation, notifications, application submission, payments and document uploads are intentionally absent.
 
-The schema carries language fields and the UI signals English/Hindi intent, but there is no real language detection, canonical-query translation or Hindi/Hinglish response generation.
+### Operations and hosting
 
-### 8. Consumer and laboratory integrations are guidance-only
+The full stack needs a public FastAPI runtime and managed PostgreSQL/pgvector service, backups, point-in-time recovery, CI/CD migrations, metrics/traces, alerting, dependency scanning, accessibility/browser tests, load tests and disaster-recovery exercises. A frontend-only Sites deployment cannot provide the backend/database; `NEXT_PUBLIC_API_URL` must point at a separately deployed HTTPS API before the integrated frontend is redeployed publicly.
 
-HUID verification, complaint routing, BIS licence/mark checking, lab recognition status, distance and geolocation are not connected to official services. The app must not imply that it performed those checks.
-
-### 9. Identity, security and privacy are intentionally minimal
-
-There is no authentication, authorisation, tenant isolation, consent flow, rate limiting, secret manager, data-retention policy, security headers review, threat model or penetration test. These are mandatory before storing user/product documents or exposing provider-backed endpoints.
-
-### 10. Production operations are incomplete
-
-The project needs hosted API/database infrastructure, migrations, backups, health/readiness checks, structured traces and metrics, alerting, CI/CD, dependency scanning, accessibility testing, browser end-to-end tests, load testing and disaster-recovery procedures.
+The current production npm audit reports six advisories (five high) in the Vinext/Vite/React Server Components/Undici toolchain. Several remediations require version changes outside the currently pinned ranges. Upgrade them on a dedicated compatibility branch, rerun browser and Docker tests, and do not release publicly while applicable high-severity findings remain.
 
 ## Constraints to preserve
 
-- Never let model output determine legal or mandatory status.
-- Never present fixture, stale or inferred data as an official BIS record.
-- Keep the exact source, version, page/clause, effective date and retrieval time for every important claim.
-- Prefer the newest verified authoritative record and surface conflicts.
-- Do not distribute protected standards text without permission.
-- Keep demo mode deterministic and usable without external services.
-- Continue using one modular backend and one primary relational database until scale proves otherwise.
+- Never let browser code or an LLM determine legal/mandatory status.
+- Never present demo, stale or inferred data as an official BIS record.
+- Preserve source, version, location, effective date and retrieval time for important claims.
+- Prefer current verified authoritative records and surface conflicts or missing evidence.
+- Do not distribute protected standards content without permission.
+- Keep demo mode deterministic, database-backed and usable without paid services.
+- Keep the modular monolith until scale or isolation requirements justify more services.
 
-## Recommended next steps
+## Recommended development sequence
 
-### Phase 1 — make the vertical slice real
-
-1. Select one product vertical, ideally emergency luminaires or electric kettles.
-2. Obtain authoritative standard metadata, QCO, product manual and lab-recognition sources with documented usage rights.
-3. Implement source adapters and ingestion provenance.
-4. Create Alembic migrations and PostgreSQL repository implementations.
-5. Host FastAPI and PostgreSQL, then connect `/product` and `/compliance/[id]` to the API.
-6. Add contract and end-to-end tests for that live vertical slice.
-
-### Phase 2 — evidence retrieval and controlled AI
-
-1. Parse authorised documents into clause/page-aware chunks.
-2. Add PostgreSQL full-text search and pgvector embeddings.
-3. Implement rank fusion, reranking and citation-span validation.
-4. Add a provider abstraction with structured outputs and evidence-only prompts.
-5. Build evaluation gates for citation correctness, version choice, clarification and hallucination rate.
-
-### Phase 3 — production safeguards and broader workflows
-
-1. Add authentication, roles, audit history and saved journeys.
-2. Integrate verified lab, HUID/consumer and official BIS service links.
-3. Implement English, Hindi and Hinglish query normalisation and responses.
-4. Add CI/CD, security scanning, observability, accessibility and browser tests.
-5. Run regulatory expert review and a pilot with manufacturers/consumers before public release.
+1. Choose one production vertical (emergency luminaires or electric kettles) and secure authorised metadata, QCO, product manual and lab-recognition inputs.
+2. Implement provenance-preserving source adapters, scheduled ingestion, review workflow and staleness/conflict handling.
+3. Deploy FastAPI and managed PostgreSQL/pgvector behind HTTPS; configure CORS, secrets, backups and migration automation.
+4. Add authenticated organisations/users, roles, audit history and saved compliance journeys.
+5. Implement clause-aware parsing and hybrid retrieval with citation validation and an evidence-grounded provider adapter.
+6. Add browser end-to-end, accessibility, security, load and regulatory-expert acceptance gates.
+7. Pilot the single vertical with domain experts and a small manufacturer cohort before widening coverage.
 
 ## Definition of the next milestone
 
-The next release should support one real product description end to end: persisted profile, authoritative candidate standard, verified current QCO decision, product manual, exact test scope, currently recognised laboratory results, evidence citations and a saved compliance journey—without relying on an LLM for any legal fact.
+One real product description must produce a persisted profile backed by an authorised candidate standard, a verified current QCO decision, an approved product-manual version, exact test scope, current recognised-laboratory results, traceable citations and a saved auditable journey—without relying on an LLM for any legal fact.

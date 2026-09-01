@@ -1,29 +1,27 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { ArrowUpRight, BookOpenText, Search } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
-import { standards } from '@/lib/demo-data';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
 export default function StandardsPage() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
+  const standardsQuery = useQuery({ queryKey: ['standards'], queryFn: () => api.standards() });
+  const standards = standardsQuery.data ?? [];
   const categories = [
     'All',
     ...Array.from(new Set(standards.map((item) => item.category))),
   ];
-  const filtered = useMemo(
-    () =>
-      standards.filter(
-        (item) =>
-          (category === 'All' || item.category === category) &&
-          `${item.number} ${item.title}`
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-      ),
-    [query, category],
+  const filtered = standards.filter(
+    (item) =>
+      (category === 'All' || item.category === category) &&
+      `${item.number} ${item.title}`.toLowerCase().includes(query.toLowerCase()),
   );
   return (
     <AppShell current="/standards">
@@ -63,6 +61,9 @@ export default function StandardsPage() {
             </select>
           </div>
           <div className="panel overflow-hidden">
+            {standardsQuery.isPending && <LoadingState label="Loading standards from the database…" />}
+            {standardsQuery.isError && <ErrorState message={errorMessage(standardsQuery.error)} />}
+            {standardsQuery.isSuccess && <>
             <div className="hidden grid-cols-[1.1fr_2fr_.7fr_.7fr_36px] border-b border-border px-5 py-3 text-[10px] uppercase tracking-[.1em] text-muted-foreground md:grid">
               <span>Standard</span>
               <span>Title</span>
@@ -116,6 +117,7 @@ export default function StandardsPage() {
                 </div>
               </div>
             )}
+            </>}
           </div>
         </div>
       </section>

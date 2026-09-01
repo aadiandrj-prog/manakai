@@ -1,0 +1,1317 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ManakAI API",
+    "description": "Database-backed Indian Standards and BIS compliance intelligence prototype",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/standards": {
+      "get": {
+        "summary": "List Standards",
+        "operationId": "list_standards_api_v1_standards_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Standard"
+                  },
+                  "title": "Response List Standards Api V1 Standards Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/standards/{standard_id}": {
+      "get": {
+        "summary": "Get Standard",
+        "operationId": "get_standard_api_v1_standards__standard_id__get",
+        "parameters": [
+          {
+            "name": "standard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Standard Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Standard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/standards/{standard_id}/relationships": {
+      "get": {
+        "summary": "Get Standard Relationships",
+        "operationId": "get_standard_relationships_api_v1_standards__standard_id__relationships_get",
+        "parameters": [
+          {
+            "name": "standard_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Standard Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StandardRelationship"
+                  },
+                  "title": "Response Get Standard Relationships Api V1 Standards  Standard Id  Relationships Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/standards/search": {
+      "post": {
+        "summary": "Standards Search",
+        "operationId": "standards_search_api_v1_standards_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Standard"
+                  },
+                  "type": "array",
+                  "title": "Response Standards Search Api V1 Standards Search Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products/analyse": {
+      "post": {
+        "summary": "Products Analyse",
+        "operationId": "products_analyse_api_v1_products_analyse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAnalyseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/compliance/analyse": {
+      "post": {
+        "summary": "Compliance Analyse",
+        "operationId": "compliance_analyse_api_v1_compliance_analyse_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAnalyseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/compliance/{profile_id}": {
+      "get": {
+        "summary": "Get Compliance",
+        "operationId": "get_compliance_api_v1_compliance__profile_id__get",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/compliance/{profile_id}/journey": {
+      "get": {
+        "summary": "Get Journey",
+        "operationId": "get_journey_api_v1_compliance__profile_id__journey_get",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Profile Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JourneyStep"
+                  },
+                  "title": "Response Get Journey Api V1 Compliance  Profile Id  Journey Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/labs": {
+      "get": {
+        "summary": "List Labs",
+        "operationId": "list_labs_api_v1_labs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Laboratory"
+                  },
+                  "type": "array",
+                  "title": "Response List Labs Api V1 Labs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/labs/search": {
+      "post": {
+        "summary": "Labs Search",
+        "operationId": "labs_search_api_v1_labs_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Laboratory"
+                  },
+                  "type": "array",
+                  "title": "Response Labs Search Api V1 Labs Search Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/query": {
+      "post": {
+        "summary": "Query",
+        "operationId": "query_api_v1_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qa": {
+      "post": {
+        "summary": "Query",
+        "operationId": "query_api_v1_qa_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_id}": {
+      "get": {
+        "summary": "Get Document",
+        "operationId": "get_document_api_v1_documents__document_id__get",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Citation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "document_title": {
+            "type": "string",
+            "title": "Document Title"
+          },
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "standard_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Number"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "clause": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clause"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "publication_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publication Date"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind",
+            "default": "demo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "document_title",
+          "document_type"
+        ],
+        "title": "Citation"
+      },
+      "ComplianceProfile": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "product": {
+            "$ref": "#/components/schemas/ProductProfile"
+          },
+          "applicable_standards": {
+            "items": {
+              "$ref": "#/components/schemas/Standard"
+            },
+            "type": "array",
+            "title": "Applicable Standards"
+          },
+          "mandatory_status": {
+            "type": "string",
+            "title": "Mandatory Status"
+          },
+          "qco": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Qco"
+          },
+          "certification_scheme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certification Scheme"
+          },
+          "tests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tests"
+          },
+          "required_documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Documents"
+          },
+          "laboratories": {
+            "items": {
+              "$ref": "#/components/schemas/Laboratory"
+            },
+            "type": "array",
+            "title": "Laboratories"
+          },
+          "next_steps": {
+            "items": {
+              "$ref": "#/components/schemas/JourneyStep"
+            },
+            "type": "array",
+            "title": "Next Steps"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "product",
+          "applicable_standards",
+          "mandatory_status",
+          "qco",
+          "certification_scheme",
+          "tests",
+          "required_documents",
+          "laboratories",
+          "next_steps",
+          "evidence",
+          "confidence",
+          "warnings"
+        ],
+        "title": "ComplianceProfile"
+      },
+      "Document": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "standard_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Id"
+          },
+          "standard_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Number"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "publication_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publication Date"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind",
+            "default": "demo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "document_type"
+        ],
+        "title": "Document"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Intent": {
+        "type": "string",
+        "enum": [
+          "PRODUCT_COMPLIANCE",
+          "STANDARD_QA",
+          "CERTIFICATION_QUERY",
+          "LAB_SEARCH",
+          "CONSUMER_QUERY",
+          "HALLMARKING_QUERY",
+          "GENERAL_BIS_QUERY"
+        ],
+        "title": "Intent"
+      },
+      "JourneyStep": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "next_action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "status",
+          "explanation"
+        ],
+        "title": "JourneyStep"
+      },
+      "LabSearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "default": ""
+          },
+          "standard_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Number"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          }
+        },
+        "type": "object",
+        "title": "LabSearchRequest"
+      },
+      "Laboratory": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "standards": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Standards"
+          },
+          "capabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capabilities"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind",
+            "default": "demo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "standards",
+          "capabilities"
+        ],
+        "title": "Laboratory"
+      },
+      "ProductAnalyseRequest": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Description"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "manufacturer"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "ProductAnalyseRequest"
+      },
+      "ProductProfile": {
+        "properties": {
+          "interpreted_product": {
+            "type": "string",
+            "title": "Interpreted Product"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "attributes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attributes"
+          },
+          "missing_attributes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "interpreted_product",
+          "role",
+          "category",
+          "attributes",
+          "missing_attributes"
+        ],
+        "title": "ProductProfile"
+      },
+      "QueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 2,
+            "title": "Query"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "auto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "QueryRequest"
+      },
+      "QueryResponse": {
+        "properties": {
+          "intent": {
+            "$ref": "#/components/schemas/Intent"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "intent",
+          "answer",
+          "citations",
+          "confidence",
+          "warnings"
+        ],
+        "title": "QueryResponse"
+      },
+      "RegulatoryStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "SUPERSEDED",
+          "UPCOMING",
+          "WITHDRAWN",
+          "AMENDED"
+        ],
+        "title": "RegulatoryStatus"
+      },
+      "SourceKind": {
+        "type": "string",
+        "enum": [
+          "verified",
+          "demo",
+          "unverified"
+        ],
+        "title": "SourceKind"
+      },
+      "Standard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RegulatoryStatus"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope"
+          },
+          "publication_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publication Date"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "retrieved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retrieved At"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind",
+            "default": "demo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "title",
+          "version",
+          "status",
+          "category",
+          "scope"
+        ],
+        "title": "Standard"
+      },
+      "StandardRelationship": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "relationship_type": {
+            "type": "string",
+            "title": "Relationship Type"
+          },
+          "source_standard_id": {
+            "type": "string",
+            "title": "Source Standard Id"
+          },
+          "target_standard": {
+            "$ref": "#/components/schemas/Standard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "relationship_type",
+          "source_standard_id",
+          "target_standard"
+        ],
+        "title": "StandardRelationship"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

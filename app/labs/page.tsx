@@ -1,25 +1,22 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { FlaskConical, MapPin, Search, ShieldAlert } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
-import { laboratories, standards } from '@/lib/demo-data';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
 export default function LabsPage() {
   const [query, setQuery] = useState('');
   const [standard, setStandard] = useState('All standards');
-  const filtered = useMemo(
-    () =>
-      laboratories.filter(
-        (lab) =>
-          (standard === 'All standards' || lab.standards.includes(standard)) &&
-          `${lab.name} ${lab.city} ${lab.state} ${lab.capabilities.join(' ')}`
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-      ),
-    [query, standard],
-  );
+  const standardsQuery = useQuery({ queryKey: ['standards'], queryFn: () => api.standards() });
+  const labsQuery = useQuery({
+    queryKey: ['labs', query, standard],
+    queryFn: () => api.searchLabs({ query, standard_number: standard === 'All standards' ? null : standard, location: null }),
+  });
+  const filtered = labsQuery.data ?? [];
   return (
     <AppShell current="/labs">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -61,12 +58,14 @@ export default function LabsPage() {
               className="h-10 rounded-md border border-input bg-[#0b0c0d] px-3 text-sm"
             >
               <option>All standards</option>
-              {standards.map((item) => (
+              {(standardsQuery.data ?? []).map((item) => (
                 <option key={item.id}>{item.number}</option>
               ))}
             </select>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
+            {labsQuery.isPending && <div className="col-span-full"><LoadingState label="Searching laboratory records…" /></div>}
+            {labsQuery.isError && <div className="col-span-full"><ErrorState message={errorMessage(labsQuery.error)} /></div>}
             {filtered.map((lab) => (
               <article key={lab.id} className="panel p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -105,7 +104,7 @@ export default function LabsPage() {
                 </div>
               </article>
             ))}
-            {filtered.length === 0 && (
+            {labsQuery.isSuccess && filtered.length === 0 && (
               <div className="panel col-span-full grid min-h-56 place-items-center text-center">
                 <div>
                   <FlaskConical className="mx-auto size-6 text-muted-foreground" />

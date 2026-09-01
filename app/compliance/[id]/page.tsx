@@ -1,3 +1,7 @@
+'use client';
+
+import { use } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   AlertTriangle,
@@ -14,12 +18,20 @@ import {
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { emergencyProfile, journeySteps } from '@/lib/demo-data';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
-export default function CompliancePage() {
-  const p = emergencyProfile;
+export default function CompliancePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const profileQuery = useQuery({ queryKey: ['compliance', id], queryFn: () => api.compliance(id) });
+  const journeyQuery = useQuery({ queryKey: ['journey', id], queryFn: () => api.journey(id) });
+  if (profileQuery.isPending || journeyQuery.isPending) return <AppShell current="/compliance"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><LoadingState label="Loading compliance profile…" /></div></section></AppShell>;
+  if (profileQuery.isError || journeyQuery.isError) return <AppShell current="/compliance"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><ErrorState message={errorMessage(profileQuery.error ?? journeyQuery.error)} /></div></section></AppShell>;
+  const p = profileQuery.data;
+  const standard = p.applicable_standards[0];
+  const journeySteps = journeyQuery.data;
   return (
-    <AppShell current="/compliance/demo-emergency-lamp">
+    <AppShell current="/compliance">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-[1180px]">
           <PageHeader
@@ -28,7 +40,7 @@ export default function CompliancePage() {
             description="An auditable interpretation of the product, its candidate standard, known evidence gaps and the next safest actions."
             action={
               <Badge className="bg-emerald-400/10 text-emerald-300">
-                91% classification confidence
+                {Math.round(p.confidence * 100)}% classification confidence
               </Badge>
             }
           />
@@ -51,9 +63,9 @@ export default function CompliancePage() {
                 <div className="panel-header">
                   <div>
                     <span className="eyebrow">Product</span>
-                    <h2 className="panel-title">{p.product}</h2>
+                    <h2 className="panel-title">{p.product.interpreted_product}</h2>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {p.role} · {p.category}
+                      {p.product.role} · {p.product.category}
                     </p>
                   </div>
                   <ShieldCheck className="size-5 text-primary" />
@@ -61,15 +73,15 @@ export default function CompliancePage() {
                 <div className="grid gap-px bg-border sm:grid-cols-2">
                   <div className="metric">
                     <span>Applicable candidate</span>
-                    <strong className="text-lg">{p.standard.number}</strong>
-                    <small>{p.standard.title}</small>
+                    <strong className="text-lg">{standard.number}</strong>
+                    <small>{standard.title}</small>
                   </div>
                   <div className="metric">
                     <span>Certification status</span>
                     <strong className="text-base text-amber-300">
-                      {p.certification}
+                      {p.mandatory_status}
                     </strong>
-                    <small>{p.qco}</small>
+                    <small>{p.qco ?? 'No QCO record connected'}</small>
                   </div>
                 </div>
                 <div className="p-5">
@@ -78,13 +90,13 @@ export default function CompliancePage() {
                     The product is interpreted as a self-contained rechargeable
                     emergency luminaire. Its intended emergency-lighting
                     function matches the seeded scope metadata for{' '}
-                    {p.standard.number}. Voltage, installation type and battery
+                    {standard.number}. Voltage, installation type and battery
                     details should be confirmed before final classification.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Button
                       nativeButton={false}
-                      render={<Link href={`/standards/${p.standard.id}`} />}
+                      render={<Link href={`/standards/${standard.id}`} />}
                       size="sm"
                       className="rounded-md"
                     >
@@ -111,7 +123,7 @@ export default function CompliancePage() {
                 <InfoList
                   icon={<FileCheck2 />}
                   title="Prepare documents"
-                  items={p.documents}
+                  items={p.required_documents}
                 />
               </div>
               <div className="panel p-5">
@@ -133,23 +145,12 @@ export default function CompliancePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      <EvidenceRow
-                        claim="Emergency luminaire candidate"
-                        source={`${p.standard.number}:${p.standard.version}`}
-                        location="Demo scope metadata"
-                        state="Fixture"
-                      />
+                      {p.evidence.map((citation) => <EvidenceRow key={citation.id} claim={citation.document_title} source={citation.standard_number ?? citation.document_type} location={citation.clause ?? citation.document_type} state={citation.source_kind === 'verified' ? 'Verified' : 'Fixture'} />)}
                       <EvidenceRow
                         claim="Mandatory certification"
-                        source="Current QCO source"
+                        source={p.qco ?? 'Current QCO source'}
                         location="Not connected"
                         state="Unverified"
-                      />
-                      <EvidenceRow
-                        claim="Testing pathway"
-                        source="Demo product manual mapping"
-                        location="Fixture record"
-                        state="Fixture"
                       />
                     </tbody>
                   </table>
@@ -188,7 +189,7 @@ export default function CompliancePage() {
                       <div>
                         <p className="text-sm font-medium">{step.title}</p>
                         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          {step.detail}
+                          {step.explanation}
                         </p>
                       </div>
                     </div>

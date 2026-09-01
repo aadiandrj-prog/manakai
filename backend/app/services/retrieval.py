@@ -1,21 +1,30 @@
-from ..fixtures import CITATIONS, STANDARDS
+from sqlalchemy.orm import Session
+
+from ..repositories import DocumentRepository, StandardRepository
+from ..schemas import QueryResponse
+from ..serializers import citation_to_schema, standard_to_schema
+from .intent import classify_intent
 
 
-def search_standards(query: str):
-    terms = {term for term in query.casefold().split() if len(term) > 2}
-    scored = []
-    for standard in STANDARDS:
-        haystack = f"{standard.number} {standard.title} {standard.category} {standard.scope}".casefold()
-        score = sum(term in haystack for term in terms)
-        if score:
-            scored.append((score, standard))
-    return [item for _, item in sorted(scored, key=lambda pair: pair[0], reverse=True)]
+class RetrievalService:
+    def __init__(self, session: Session):
+        self.standards = StandardRepository(session)
+        self.documents = DocumentRepository(session)
 
+    def search_standards(self, query: str):
+        return [standard_to_schema(item) for item in self.standards.search(query)]
 
-def retrieve_citations(query: str):
-    text = query.casefold()
-    if any(term in text for term in ("huid", "hallmark", "jewellery")):
-        return [citation for citation in CITATIONS if citation.id == "cite-huid-guide"]
-    if any(term in text for term in ("emergency", "luminaire", "10322")):
-        return [citation for citation in CITATIONS if "emergency" in citation.id]
-    return []
+    def answer(self, query: str) -> QueryResponse:
+        intent = classify_intent(query)
+        citations = [citation_to_schema(item) for item in self.documents.search_citations(query)]
+        if citations:
+            answer = "The demo database contains relevant structured evidence, but no authoritative clause text is connected. I can explain the workflow while keeping the legal claim unverified."
+        else:
+            answer = "I could not verify this requirement from the available authorised BIS sources."
+        return QueryResponse(
+            intent=intent,
+            answer=answer,
+            citations=citations,
+            confidence=0.62 if citations else 0.0,
+            warnings=["DEMO_MODE is active", "Verify against current official sources"],
+        )

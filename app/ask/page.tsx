@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -13,20 +14,17 @@ import {
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
 export default function AskPage() {
   const [question, setQuestion] = useState(
     'What tests are relevant to a rechargeable emergency luminaire?',
   );
-  const [loading, setLoading] = useState(false);
-  const [answered, setAnswered] = useState(true);
+  const [submitted, setSubmitted] = useState(question);
+  const answerQuery = useQuery({ queryKey: ['qa', submitted], queryFn: () => api.ask(submitted), enabled: Boolean(submitted) });
   function ask() {
-    setLoading(true);
-    setAnswered(false);
-    window.setTimeout(() => {
-      setLoading(false);
-      setAnswered(true);
-    }, 600);
+    setSubmitted(question.trim());
   }
   return (
     <AppShell current="/ask">
@@ -57,10 +55,10 @@ export default function AskPage() {
               </p>
               <Button
                 onClick={ask}
-                disabled={loading || !question.trim()}
+                disabled={answerQuery.isFetching || !question.trim()}
                 className="rounded-md"
               >
-                {loading ? (
+                {answerQuery.isFetching ? (
                   <LoaderCircle className="animate-spin" />
                 ) : (
                   <>
@@ -70,36 +68,28 @@ export default function AskPage() {
               </Button>
             </div>
           </div>
-          {answered && (
+          {answerQuery.isPending && <div className="mt-5"><LoadingState label="Retrieving database evidence…" /></div>}
+          {answerQuery.isError && <div className="mt-5"><ErrorState message={errorMessage(answerQuery.error)} /></div>}
+          {answerQuery.data && (
             <div aria-live="polite" className="mt-5 space-y-5">
               <div className="panel overflow-hidden">
                 <div className="panel-header">
                   <div>
                     <span className="eyebrow">Structured answer</span>
                     <h2 className="panel-title">
-                      Testing depends on product classification and the current
-                      standard edition
+                      {answerQuery.data.intent.replaceAll('_', ' ')}
                     </h2>
                   </div>
                   <Badge className="bg-amber-300/10 text-amber-300">
-                    Evidence incomplete
+                    {Math.round(answerQuery.data.confidence * 100)}% confidence
                   </Badge>
                 </div>
                 <div className="p-5">
                   <p className="text-sm leading-7 text-foreground/85">
-                    For the seeded emergency-luminaire scenario, the demo
-                    testing pathway includes construction and marking review,
-                    insulation resistance, electric strength, endurance and
-                    emergency-mode photometry. These are workflow fixtures, not
-                    quoted requirements.
+                    {answerQuery.data.answer}
                   </p>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    {[
-                      'Insulation resistance and electric strength',
-                      'Emergency-mode endurance and photometry',
-                      'Construction and marking review',
-                      'Battery/charging behaviour',
-                    ].map((item) => (
+                    {answerQuery.data.warnings.map((item) => (
                       <div
                         key={item}
                         className="flex gap-2 rounded-md border border-border bg-[#0c0d0e] p-3 text-xs"
@@ -117,23 +107,22 @@ export default function AskPage() {
                     <BookOpenText className="size-4 text-primary" /> Evidence
                     used
                   </div>
-                  <div className="mt-4 rounded-md border border-border bg-[#0c0d0e] p-4">
+                  {answerQuery.data.citations.map((citation) => <div key={citation.id} className="mt-4 rounded-md border border-border bg-[#0c0d0e] p-4">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-medium">
-                        IS 10322 (Part 5/Sec 8):2013
+                        {citation.document_title}
                       </p>
                       <Badge variant="outline">Demo metadata</Badge>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      Scope record and seeded product-to-test mapping. No clause
-                      text was retrieved.
+                      {citation.standard_number ?? citation.document_type} · {citation.version ?? 'version not recorded'}
                     </p>
                     <Button
                       nativeButton={false}
                       render={
                         <Link
                           aria-label="Inspect source record"
-                          href="/standards/is-10322-5-8"
+                          href={citation.standard_number?.includes('10322') ? '/standards/is-10322-5-8' : '/standards'}
                         />
                       }
                       variant="link"
@@ -141,7 +130,8 @@ export default function AskPage() {
                     >
                       Inspect source record <ArrowRight />
                     </Button>
-                  </div>
+                  </div>)}
+                  {answerQuery.data.citations.length === 0 && <p className="mt-4 text-xs text-muted-foreground">No matching evidence records were found.</p>}
                 </div>
                 <div className="panel p-5">
                   <div className="flex items-center gap-2 text-sm font-medium">
@@ -149,10 +139,7 @@ export default function AskPage() {
                     Verification boundary
                   </div>
                   <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                    I could not verify exact clause numbers or current
-                    requirements from the available authorised BIS sources.
-                    Connect the document source before using this as a test
-                    plan.
+                    {answerQuery.data.warnings.join(' · ')}
                   </p>
                 </div>
               </div>

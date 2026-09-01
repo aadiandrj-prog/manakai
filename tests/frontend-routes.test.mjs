@@ -28,3 +28,13 @@ test('high-risk fixture views disclose demo data', () => {
     assert.match(readFileSync(route, 'utf8'), /demo|Demo/);
   }
 });
+
+test('regulatory screens use the typed API and no frontend fixture module remains', () => {
+  assert.equal(existsSync('lib/demo-data.ts'), false);
+  for (const route of routes.slice(0, 7)) {
+    const source = readFileSync(route, 'utf8');
+    assert.doesNotMatch(source, /@\/lib\/demo-data/);
+  }
+  assert.ok(existsSync('lib/api-schema.d.ts'));
+  assert.match(readFileSync('lib/api-client.ts', 'utf8'), /components\['schemas'\]/);
+});

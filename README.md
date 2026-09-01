@@ -16,6 +16,8 @@ ManakAI is a hackathon-ready regulatory navigation and compliance automation pro
 - Separate consumer/HUID guidance flow
 - English-first UI with Hindi/Hinglish-ready request schema
 - FastAPI REST API and OpenAPI docs
+- Active SQLAlchemy repositories, Alembic migrations and PostgreSQL/pgvector persistence
+- Generated TypeScript API contracts and TanStack Query remote-state handling
 - Explicit compliance rule engine and version-precedence logic
 - Deterministic demo mode with no API key or network dependency
 - Automated frontend contract and backend unit/API tests
@@ -49,12 +51,14 @@ npm install
 npm run dev
 ```
 
-In a second terminal:
+In a second terminal (PostgreSQL must be reachable at `DATABASE_URL`):
 
 ```bash
 python3 -m venv backend/.venv
 source backend/.venv/bin/activate
 pip install -r backend/requirements.txt
+backend/.venv/bin/alembic -c backend/alembic.ini upgrade head
+PYTHONPATH=backend backend/.venv/bin/python -m app.seed
 uvicorn app.main:app --app-dir backend --reload --port 8000
 ```
 
@@ -67,15 +71,16 @@ cp .env.example .env
 docker compose up --build
 ```
 
-This starts the frontend (`3000`), backend (`8000`) and PostgreSQL/pgvector (`5432`). The demo API currently reads deterministic fixtures while the SQLAlchemy model defines the production persistence boundary.
+This starts the frontend (`3000`), backend (`8000`) and PostgreSQL/pgvector (host `5433`, container `5432`). Set `POSTGRES_PORT` to override the host port. Backend startup applies Alembic migrations and idempotently seeds deterministic demo rows into PostgreSQL.
 
 ## Test and validate
 
 ```bash
 npm test
+npm run lint
 npm run build
-python -m pytest backend/tests
-python scripts/evaluate_demo.py
+backend/.venv/bin/pytest backend
+backend/.venv/bin/python scripts/evaluate_demo.py
 ```
 
 Tests never call paid or external model providers.
@@ -86,7 +91,9 @@ Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=mock` are safe
 
 ## Data and migrations
 
-SQLAlchemy tables are defined in `backend/app/db_models.py`. Alembic is included, but the first migration is intentionally deferred until authoritative BIS identifiers and source-adapter contracts are validated; fixture IDs must not become production primary keys accidentally.
+SQLAlchemy tables are defined in `backend/app/db_models.py`; the initial Alembic migration creates the relational schema, enables PostgreSQL's `vector` extension and uses a 384-dimensional vector column for document chunks. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
+
+The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend request or response schemas.
 
 ## Limitations
 
@@ -95,6 +102,8 @@ SQLAlchemy tables are defined in `backend/app/db_models.py`. Alembic is included
 - Laboratory names are synthetic and are not BIS recognition claims.
 - Authentication, submission, payments and native apps are out of scope.
 - Regulatory decisions remain `UNVERIFIED` unless an authoritative source is connected.
+- This is publishable as an engineering/demo prototype, not as a regulatory decision product.
+- The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
 See [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 

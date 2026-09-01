@@ -1,5 +1,8 @@
+'use client';
+
+import { use } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import {
   ArrowRight,
   BookOpenText,
@@ -11,19 +14,23 @@ import {
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { laboratories, standards } from '@/lib/demo-data';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
-export default async function StandardDetail({
+export default function StandardDetail({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const standard = standards.find((item) => item.id === id);
-  if (!standard) notFound();
-  const labs = laboratories.filter((lab) =>
-    lab.standards.includes(standard.number),
-  );
+  const { id } = use(params);
+  const standardQuery = useQuery({ queryKey: ['standard', id], queryFn: () => api.standard(id) });
+  const relationshipsQuery = useQuery({ queryKey: ['relationships', id], queryFn: () => api.relationships(id) });
+  const labsQuery = useQuery({ queryKey: ['labs'], queryFn: api.labs });
+  if (standardQuery.isPending || relationshipsQuery.isPending || labsQuery.isPending) return <AppShell current="/standards"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><LoadingState label="Loading standard record…" /></div></section></AppShell>;
+  if (standardQuery.isError || relationshipsQuery.isError || labsQuery.isError) return <AppShell current="/standards"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><ErrorState message={errorMessage(standardQuery.error ?? relationshipsQuery.error ?? labsQuery.error)} /></div></section></AppShell>;
+  const standard = standardQuery.data;
+  const relationships = relationshipsQuery.data;
+  const labs = labsQuery.data.filter((lab) => lab.standards.includes(standard.number));
   return (
     <AppShell current="/standards">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -70,18 +77,12 @@ export default async function StandardDetail({
                   relationships
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <Relation
-                    label="IMPLEMENTED_BY"
-                    value="Product manual placeholder"
-                  />
+                  {relationships.map((relationship) => <Relation key={relationship.id} label={relationship.relationship_type} value={`${relationship.target_standard.number}: ${relationship.target_standard.title}`} />)}
                   <Relation
                     label="REGULATED_BY"
                     value="QCO source not connected"
                   />
-                  <Relation
-                    label="TESTED_USING"
-                    value={`${labs.length} matching lab fixtures`}
-                  />
+                  <Relation label="TESTED_USING" value={`${labs.length} matching lab records`} />
                 </div>
               </div>
               <div className="panel p-5">
@@ -110,9 +111,9 @@ export default async function StandardDetail({
                 <dl className="mt-4 space-y-3 text-xs">
                   <Meta label="Version" value={standard.version} />
                   <Meta label="Fixture status" value={standard.status} />
-                  <Meta label="Publication date" value="Not verified in demo" />
-                  <Meta label="Effective date" value="Not verified in demo" />
-                  <Meta label="Last retrieved" value={standard.lastChecked} />
+                  <Meta label="Publication date" value={standard.publication_date ?? 'Not verified in demo'} />
+                  <Meta label="Effective date" value={standard.effective_date ?? 'Not verified in demo'} />
+                  <Meta label="Last retrieved" value={standard.retrieved_at ? new Date(standard.retrieved_at).toLocaleDateString('en-IN') : 'Not recorded'} />
                 </dl>
               </div>
               <div className="panel p-5">

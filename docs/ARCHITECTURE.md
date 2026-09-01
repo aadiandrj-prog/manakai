@@ -21,7 +21,7 @@ flowchart TB
   DB[(PostgreSQL + pgvector)] --> PRODUCT & RULES & SEARCH & LABS
 ```
 
-The current demo replaces the database repositories and provider with deterministic fixtures. The API contracts stay the same, so authoritative adapters can replace fixtures without rewriting the UI.
+The current demo uses the complete canonical path: Vinext pages call a generated, typed API client; TanStack Query owns remote state; FastAPI delegates to services and SQLAlchemy repositories; PostgreSQL stores all regulatory demo entities. Deterministic seed data replaces only the external authoritative source adapters and model provider—not the persistence or API layers.
 
 Key boundaries:
 
@@ -30,3 +30,5 @@ Key boundaries:
 - Compliance rules accept structured QCO/standard records only.
 - Evidence carries document/version/location/provenance metadata.
 - The UI distinguishes fixture, verified and unverified states.
+- Browser code does not import regulatory fixture modules or calculate compliance status.
+- Alembic owns schema evolution; startup never calls `create_all()`.

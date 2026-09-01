@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -13,7 +14,8 @@ import {
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { emergencyProfile, standards } from '@/lib/demo-data';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
+import { api, errorMessage } from '@/lib/api-client';
 
 const scenarios = [
   'portable rechargeable LED emergency lamp',
@@ -24,24 +26,12 @@ const scenarios = [
 export default function ProductPage() {
   const [description, setDescription] = useState(scenarios[0]);
   const [role, setRole] = useState('Manufacturer');
-  const [loading, setLoading] = useState(false);
-  const [complete, setComplete] = useState(true);
-  const matched = useMemo(
-    () =>
-      description.toLowerCase().includes('kettle')
-        ? standards[1]
-        : description.toLowerCase().includes('helmet')
-          ? standards[2]
-          : standards[0],
-    [description],
-  );
+  const seededProfile = useQuery({ queryKey: ['compliance', 'demo-emergency-lamp'], queryFn: () => api.compliance('demo-emergency-lamp') });
+  const analysis = useMutation({ mutationFn: api.analyse });
+  const profile = analysis.data ?? seededProfile.data;
+  const matched = profile?.applicable_standards[0];
   function analyse() {
-    setLoading(true);
-    setComplete(false);
-    window.setTimeout(() => {
-      setLoading(false);
-      setComplete(true);
-    }, 650);
+    analysis.mutate({ description: description.trim(), role: role.toLowerCase(), language: 'en' });
   }
   return (
     <AppShell current="/product">
@@ -88,13 +78,12 @@ export default function ProductPage() {
               </select>
               <Button
                 onClick={analyse}
-                disabled={!description.trim() || loading}
+                disabled={!description.trim() || analysis.isPending}
                 className="mt-5 h-11 w-full rounded-md"
               >
-                {loading ? (
+                {analysis.isPending ? (
                   <>
-                    <LoaderCircle className="animate-spin" /> Analysing fixture
-                    data
+                    <LoaderCircle className="animate-spin" /> Analysing database records
                   </>
                 ) : (
                   <>
@@ -118,35 +107,35 @@ export default function ProductPage() {
               </div>
             </div>
             <div>
-              {complete ? (
+              {analysis.isError ? <ErrorState message={errorMessage(analysis.error)} /> : seededProfile.isError && !analysis.data ? <ErrorState message={errorMessage(seededProfile.error)} /> : !profile || analysis.isPending ? <LoadingState label="Building structured product profile…" /> : (
                 <div className="panel overflow-hidden">
                   <div className="panel-header">
                     <div>
                       <span className="eyebrow">Interpreted product</span>
-                      <h2 className="panel-title">{description}</h2>
+                      <h2 className="panel-title">{profile.product.interpreted_product}</h2>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Role: {role}
+                        Role: {profile.product.role}
                       </p>
                     </div>
                     <Badge className="bg-emerald-400/10 text-emerald-300">
-                      High confidence
+                      {Math.round(profile.confidence * 100)}% confidence
                     </Badge>
                   </div>
                   <div className="grid gap-px bg-border sm:grid-cols-3">
                     <div className="metric">
                       <span>Category</span>
-                      <strong className="text-base">{matched.category}</strong>
-                      <small>Demo classifier</small>
+                      <strong className="text-base">{profile.product.category}</strong>
+                      <small>Database-backed classifier</small>
                     </div>
                     <div className="metric">
                       <span>Candidate</span>
-                      <strong className="text-base">{matched.number}</strong>
-                      <small>{matched.version}</small>
+                      <strong className="text-base">{matched?.number}</strong>
+                      <small>{matched?.version}</small>
                     </div>
                     <div className="metric">
                       <span>Status</span>
                       <strong className="text-base text-amber-300">
-                        Verify
+                        {profile.mandatory_status}
                       </strong>
                       <small>No live QCO source</small>
                     </div>
@@ -155,7 +144,7 @@ export default function ProductPage() {
                     <div className="flex gap-3 rounded-md border border-amber-300/20 bg-amber-300/5 p-3">
                       <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-300" />
                       <p className="text-xs leading-5 text-amber-100/75">
-                        Candidate matching is deterministic in demo mode.
+                        The candidate is calculated by the backend in deterministic demo mode.
                         Current mandatory status, amendments and official scope
                         must be checked before a regulatory decision.
                       </p>
@@ -163,9 +152,7 @@ export default function ProductPage() {
                     <div className="mt-5">
                       <div className="eyebrow">Why this candidate</div>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        Product terms align with the fixture’s category and
-                        scope metadata. No regulatory fact was inferred from the
-                        language model.
+                        Product terms align with database-backed category and scope metadata. Regulatory status is evaluated by explicit backend rules.
                       </p>
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2">
@@ -174,7 +161,7 @@ export default function ProductPage() {
                         render={
                           <Link
                             aria-label="Open compliance profile"
-                            href="/compliance/demo-emergency-lamp"
+                            href={`/compliance/${profile.id}`}
                           />
                         }
                         className="rounded-md"
@@ -186,7 +173,7 @@ export default function ProductPage() {
                         render={
                           <Link
                             aria-label="View matched standard"
-                            href={`/standards/${matched.id}`}
+                            href={`/standards/${matched?.id}`}
                           />
                         }
                         variant="outline"
@@ -197,20 +184,11 @@ export default function ProductPage() {
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="panel grid min-h-96 place-items-center">
-                  <div className="text-center">
-                    <LoaderCircle className="mx-auto size-6 animate-spin text-primary" />
-                    <p className="mt-3 text-sm">
-                      Building structured product profile…
-                    </p>
-                  </div>
-                </div>
               )}
             </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {emergencyProfile.attributes.map((attribute) => (
+            {(profile?.product.attributes ?? []).map((attribute) => (
               <div
                 key={attribute}
                 className="flex items-center gap-2 rounded-md border border-border bg-card p-3 text-xs"
