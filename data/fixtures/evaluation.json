@@ -1,0 +1,34 @@
+[
+  {
+    "id": "product-emergency-lamp",
+    "query": "I manufacture a portable rechargeable LED emergency lamp",
+    "expected_intent": "PRODUCT_COMPLIANCE",
+    "expected_standard": "IS 10322 (Part 5/Sec 8)",
+    "must_clarify": true
+  },
+  {
+    "id": "standard-clause",
+    "query": "Explain clause 6.3 for the emergency-lighting standard",
+    "expected_intent": "STANDARD_QA",
+    "requires_citation": true,
+    "must_disclose_fixture": true
+  },
+  {
+    "id": "hallmarking-huid",
+    "query": "How do I verify the HUID on my jewellery?",
+    "expected_intent": "HALLMARKING_QUERY",
+    "requires_citation": true
+  },
+  {
+    "id": "lab-search",
+    "query": "Find laboratories near Delhi for emergency luminaire testing",
+    "expected_intent": "LAB_SEARCH",
+    "source_must_be_structured": true
+  },
+  {
+    "id": "unanswerable",
+    "query": "What unpublished BIS memo applies tomorrow?",
+    "expected_intent": "GENERAL_BIS_QUERY",
+    "expected_answer_contains": "could not verify"
+  }
+]

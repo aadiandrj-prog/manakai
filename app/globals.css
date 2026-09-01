@@ -1,0 +1,215 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-manrope);
+  --font-mono: var(--font-inter);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+:root,
+.dark {
+  --background: #070708;
+  --foreground: #e5e2e3;
+  --card: #101112;
+  --card-foreground: #e5e2e3;
+  --popover: #151617;
+  --popover-foreground: #e5e2e3;
+  --primary: #7a85ff;
+  --primary-foreground: #f0f1f2;
+  --secondary: #50d8e9;
+  --secondary-foreground: #002f35;
+  --muted: #191a1c;
+  --muted-foreground: #9a9da3;
+  --accent: #1c1d20;
+  --accent-foreground: #e5e2e3;
+  --destructive: #ffb4ab;
+  --border: #232426;
+  --input: #2d2f32;
+  --ring: #7a85ff;
+}
+
+* {
+  border-color: var(--border);
+}
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+body {
+  margin: 0;
+  font-family: var(--font-inter), Arial, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+::selection {
+  background: rgb(122 133 255 / 28%);
+}
+
+.nav-item {
+  display: flex;
+  height: 38px;
+  align-items: center;
+  gap: 10px;
+  border-radius: 4px;
+  padding: 0 10px;
+  color: #85888e;
+  font-size: 12px;
+  transition: 160ms ease;
+}
+.nav-item svg {
+  width: 15px;
+  height: 15px;
+}
+.nav-item:hover {
+  background: #121315;
+  color: #e5e2e3;
+}
+.nav-active {
+  background: #17181a;
+  color: #f0f1f2;
+  box-shadow: inset 2px 0 #7a85ff;
+}
+.analysis-box {
+  border: 1px solid #2a2b2e;
+  border-top-color: rgb(255 255 255 / 13%);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #121315 0%, #0d0e0f 100%);
+  padding: clamp(18px, 3vw, 28px);
+}
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #101112;
+}
+.panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 20px;
+}
+.panel-title {
+  margin-top: 5px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 18px;
+  font-weight: 520;
+  letter-spacing: -0.035em;
+}
+.eyebrow {
+  color: #8e9197;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.metric {
+  display: flex;
+  min-height: 118px;
+  flex-direction: column;
+  background: #0d0e0f;
+  padding: 18px;
+}
+.metric span {
+  color: #85888e;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.metric strong {
+  margin-top: 14px;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 20px;
+  font-weight: 520;
+  letter-spacing: -0.04em;
+}
+.metric small {
+  margin-top: 4px;
+  color: #85888e;
+  font-size: 10px;
+}
+.workflow-card {
+  min-height: 192px;
+  border: 1px solid var(--border);
+  border-top-color: rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  background: #0f1011;
+  padding: 18px;
+  transition: 180ms ease;
+}
+.workflow-card:hover {
+  transform: translateY(-2px);
+  border-color: #36383c;
+  background: #141517;
+}
+.icon-box {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid;
+  border-radius: 4px;
+}
+.icon-box svg {
+  width: 16px;
+  height: 16px;
+}
+.icon-box.violet {
+  border-color: rgb(122 133 255 / 25%);
+  background: rgb(122 133 255 / 9%);
+  color: #a7aeff;
+}
+.icon-box.cyan {
+  border-color: rgb(80 216 233 / 24%);
+  background: rgb(80 216 233 / 8%);
+  color: #75dfed;
+}
+.icon-box.orange {
+  border-color: rgb(255 182 137 / 24%);
+  background: rgb(255 182 137 / 8%);
+  color: #ffb689;
+}
+.icon-box.green {
+  border-color: rgb(52 211 153 / 24%);
+  background: rgb(52 211 153 / 8%);
+  color: #6ee7b7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
