@@ -1,6 +1,6 @@
-# Phase 2C evaluation
+# Controlled-provider evaluation
 
-The benchmark fixture is `backend/tests/fixtures/phase2c_benchmark.json`. CI uses deterministic and recorded providers; it never calls a paid provider.
+The Phase 2C benchmark remains in `backend/tests/fixtures/phase2c_benchmark.json`. Phase 2D adds a 70-case set in `backend/app/evaluation/cases.py`, covering wording/numeric formats, missing information, English/Hindi/Hinglish, adversarial instructions, explicit dates and standards Q&A. CI uses deterministic providers and never calls a paid provider.
 
 | Case | Required check |
 | --- | --- |
@@ -23,3 +23,12 @@ backend/.venv/bin/pytest -q backend/tests/test_ai_interpretation.py backend/test
 ```
 
 The full backend suite remains the deterministic ground-truth comparison for the underlying Phase 2B engine.
+
+Run a provider against an authoritative staging database:
+
+```bash
+DEMO_MODE=false LLM_PROVIDER=openai LLM_MODEL=gpt-5-mini OPENAI_API_KEY=... \
+  backend/.venv/bin/python -m app.evaluation.run --provider openai
+```
+
+Use `--provider gemini` for Gemini or `--provider mock` to exercise reporting without network spend. Dated JSON and reviewer summaries go to ignored `artifacts/evaluations/`. Compare reports with `python -m app.evaluation.compare <reports...>`. Ranking prioritises pass rate, fallback rate and p95 latency; price alone does not establish reliability. Never fabricate a real-provider report when a key or authoritative database is unavailable.

@@ -104,6 +104,7 @@ npm run lint
 npm run build
 backend/.venv/bin/pytest backend
 backend/.venv/bin/python scripts/evaluate_demo.py
+npm run test:e2e
 ```
 
 Tests use captured/sanitised source fixtures, a fake 384-dimensional embedding provider and recorded/disabled AI providers; they never call live BIS pages or paid model providers.
@@ -116,11 +117,11 @@ Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=disabled` are 
 
 SQLAlchemy tables are defined in `backend/app/db_models.py`. Migration `4b2f2a8d1c71` adds provenance, ingestion, temporal applicability, category mappings, clause structure, citation validation and PostgreSQL GIN/HNSW indexes; follow-up `7a91d3e5f620` lets demo and authoritative editions coexist without silently merging them. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
 
-Migration `91c3d7e2a4b8` adds structured conversation and recent-message persistence. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend request or response schemas.
+Migration `91c3d7e2a4b8` adds structured conversation persistence. Migration `b48f761da923` adds staging AI-usage and source-change telemetry. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend schemas.
 
 ## Limitations
 
-- The authoritative corpus is intentionally limited to one product vertical and a 2 September 2026 capture; continuous refresh and regulatory review operations are not yet deployed.
+- The authoritative corpus is intentionally limited to one product vertical and a 2 September 2026 capture; scheduled checks flag source change but still require human regulatory review.
 - Full standards text is not stored or redistributed. Only official metadata and limited product-manual/QCO/LIMS excerpts needed for technical retrieval are retained.
 - Two official LIMS scopes are integrated. Users must re-check the linked live scope, exclusions and validity before arranging testing.
 - Authentication, submission, payments and native apps are out of scope.
@@ -128,6 +129,6 @@ Migration `91c3d7e2a4b8` adds structured conversation and recent-message persist
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.
 - The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
-See [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+See [Deployment](docs/DEPLOYMENT.md), [Staging](docs/STAGING.md), [Operations](docs/OPERATIONS.md), [Privacy](docs/PRIVACY.md), [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 
 For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).

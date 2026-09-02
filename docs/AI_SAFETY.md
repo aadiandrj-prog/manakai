@@ -20,4 +20,4 @@ User messages, PDF text, scraped HTML and retrieved chunks are labelled untruste
 
 ## Operational boundary
 
-Prompts and logs exclude API keys and hidden reasoning. Logs record only events, provider name, attempt number, confidence, evidence count and token usage when exposed. Production should additionally apply secret management, provider data-retention review, rate limits, privacy retention rules and adversarial monitoring.
+Prompts and logs exclude API keys and hidden reasoning. Logs record only events and bounded operational metadata. Staging adds model allow-lists, input/evidence/output bounds, a daily call cap, anonymous endpoint limits and persistent usage/validation telemetry. The limiter is process-local and assumes one API instance; horizontal scale requires a shared limiter plus approved retention and provider data-use policies.

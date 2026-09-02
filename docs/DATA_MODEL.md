@@ -23,3 +23,8 @@ Fixture identifiers are for demo stability only and must not be reused as author
 The 2025 household-appliances QCO is retained as `SUPERSEDED`; the 2026 QCO links both directions. Same-number standards may coexist as `DEMO` and `AUTHORITATIVE`, so uniqueness includes `source_kind`.
 
 Documents add authority, verification, identifier, hash and temporal status. Chunks add heading, subclause, table, paragraph index and hash. Lab recognition adds scope, clause list, validity, state and LIMS source. Compliance profiles snapshot query date, mode and the explanation tree.
+
+## Phase 2D telemetry
+
+- `ai_usage_events`: provider/model, operation, status, latency, available token counts, correlation identifiers and answer-validation result. Prompt and answer bodies are deliberately excluded.
+- `source_change_events`: source URL/type, previous/new hash, ingestion run and `REVIEW_REQUIRED` status. A change event never replaces or deletes canonical data automatically.

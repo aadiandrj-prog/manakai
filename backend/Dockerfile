@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY start.sh ./
+COPY start-staging.sh ./
 COPY app ./app
 COPY tests/fixtures/official ./tests/fixtures/official
 EXPOSE 8000

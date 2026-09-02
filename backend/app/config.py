@@ -21,6 +21,18 @@ class Settings:
     ai_timeout_seconds: float = float(os.getenv("AI_TIMEOUT_SECONDS", "12"))
     ai_max_retries: int = int(os.getenv("AI_MAX_RETRIES", "1"))
     ai_max_output_tokens: int = int(os.getenv("AI_MAX_OUTPUT_TOKENS", "700"))
+    ai_daily_request_limit: int = int(os.getenv("AI_DAILY_REQUEST_LIMIT", "500"))
+    ai_max_input_chars: int = int(os.getenv("AI_MAX_INPUT_CHARS", "12000"))
+    ai_max_evidence_chars: int = int(os.getenv("AI_MAX_EVIDENCE_CHARS", "8000"))
+    conversation_history_limit: int = int(os.getenv("CONVERSATION_HISTORY_LIMIT", "12"))
+    max_request_body_bytes: int = int(os.getenv("MAX_REQUEST_BODY_BYTES", "65536"))
+    chat_rate_limit_requests: int = int(os.getenv("CHAT_RATE_LIMIT_REQUESTS", "30"))
+    analysis_rate_limit_requests: int = int(os.getenv("ANALYSIS_RATE_LIMIT_REQUESTS", "60"))
+    rate_limit_window_seconds: int = int(os.getenv("RATE_LIMIT_WINDOW_SECONDS", "60"))
+    trust_proxy_headers: bool = os.getenv("TRUST_PROXY_HEADERS", "false").lower() == "true"
+    openai_allowed_models: tuple[str, ...] = _csv("OPENAI_ALLOWED_MODELS", "gpt-5-mini,gpt-5.4-mini")
+    gemini_allowed_models: tuple[str, ...] = _csv("GEMINI_ALLOWED_MODELS", "gemini-3.6-flash,gemini-3.7-flash")
+    expected_schema_revision: str = os.getenv("EXPECTED_SCHEMA_REVISION", "b48f761da923")
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "disabled")
     cors_origins: tuple[str, ...] = _csv("CORS_ORIGINS", "http://localhost:3000")
     sql_echo: bool = os.getenv("SQL_ECHO", "false").lower() == "true"

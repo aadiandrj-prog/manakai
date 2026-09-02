@@ -43,3 +43,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+/artifacts/evaluations/
+/test-results/
+/playwright-report/

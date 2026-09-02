@@ -9,6 +9,8 @@ from .config import settings
 
 
 def create_database_engine(database_url: str, *, echo: bool = False) -> Engine:
+    if database_url.startswith("postgresql://"):
+        database_url = "postgresql+psycopg://" + database_url.removeprefix("postgresql://")
     url = make_url(database_url)
     options: dict = {"pool_pre_ping": True, "echo": echo}
     if url.get_backend_name() == "sqlite":

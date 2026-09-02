@@ -29,6 +29,7 @@ python -m app.ingestion qco --dry-run
 python -m app.ingestion labs --dry-run
 python -m app.ingestion electric-kettle
 python -m app.ingestion embeddings --allow-model-download
+python -m app.ingestion refresh
 ```
 
 The three sub-target commands currently validate and ingest the same atomic kettle graph so they cannot expose a partially connected regulatory state.
@@ -47,4 +48,4 @@ Public availability is not treated as permission for unrestricted redistribution
 - The exact voltage was absent from the example, so the QCO’s voltage scope is unresolved.
 - Only `GENERAL`, `SMALL` and `MICRO` implementation categories are modeled; exemptions and stock-transition facts are retained in evidence but not automated as eligibility decisions.
 - Lab addresses/scope are stored only where the official page exposed them; missing data is not inferred.
-- Live refresh scheduling, maker/checker approval, notifications and diff review are not deployed.
+- The staging Blueprint schedules byte-level source checks, but maker/checker approval, notifications and semantic diff review remain manual.

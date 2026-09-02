@@ -1,0 +1,72 @@
+services:
+  - type: web
+    name: manakai-staging-api
+    runtime: docker
+    plan: 0.5c-512mb
+    region: singapore
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    dockerCommand: sh start-staging.sh
+    preDeployCommand: alembic -c alembic.ini upgrade head && python -m app.ingestion electric-kettle
+    healthCheckPath: /ready
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: DEMO_MODE
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: manakai-staging-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: https://manakai-sih26.aadiandrj.chatgpt.site
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: EXPECTED_SCHEMA_REVISION
+        value: b48f761da923
+      - key: LLM_PROVIDER
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AI_DAILY_REQUEST_LIMIT
+        value: "500"
+      - key: AI_MAX_OUTPUT_TOKENS
+        value: "700"
+      - key: AI_MAX_INPUT_CHARS
+        value: "12000"
+      - key: CHAT_RATE_LIMIT_REQUESTS
+        value: "30"
+      - key: ANALYSIS_RATE_LIMIT_REQUESTS
+        value: "60"
+  - type: cron
+    name: manakai-authoritative-source-check
+    runtime: docker
+    plan: 0.5c-512mb
+    region: singapore
+    schedule: "30 2 * * *"
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    dockerCommand: python -m app.ingestion refresh
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: DEMO_MODE
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: manakai-staging-db
+          property: connectionString
+
+databases:
+  - name: manakai-staging-db
+    plan: 0.1c-256mb
+    region: singapore
+    postgresMajorVersion: "16"
+    diskSizeGB: 5
+    storageAutoscalingEnabled: true
+    ipAllowList: []

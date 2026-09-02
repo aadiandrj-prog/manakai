@@ -53,3 +53,5 @@ Key boundaries:
 - Retrieval selects evidence; the temporal rule engine remains the only source of regulatory status.
 - OpenAI and Gemini calls are isolated behind one provider boundary with Pydantic validation, timeouts, bounded retries and output limits.
 - Provider failure or contradiction cannot make compliance unavailable; deterministic templates are mandatory fallbacks.
+- `render.yaml` declares public staging: private managed PostgreSQL, one FastAPI service, single pre-deploy migration/ingestion and a daily non-destructive source check. Sites is configured only after the public API URL exists.
+- `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and the authoritative kettle corpus.

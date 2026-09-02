@@ -28,9 +28,16 @@ GEMINI_API_KEY=
 AI_TIMEOUT_SECONDS=12
 AI_MAX_RETRIES=1
 AI_MAX_OUTPUT_TOKENS=700
+AI_DAILY_REQUEST_LIMIT=500
+AI_MAX_INPUT_CHARS=12000
+AI_MAX_EVIDENCE_CHARS=8000
+OPENAI_ALLOWED_MODELS=gpt-5-mini,gpt-5.4-mini
+GEMINI_ALLOWED_MODELS=gemini-3.6-flash,gemini-3.7-flash
 ```
 
 No key is required. `disabled` is the safe default and uses deterministic interpretation and answer templates.
+
+Staging records provider/model, operation, latency, available tokens and validation outcome without storing secrets or prompt bodies. A model outside its allow-list is rejected. Daily call and input/evidence/output bounds protect the anonymous prototype from unbounded spend.
 
 ## Structured state
 

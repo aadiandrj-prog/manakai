@@ -30,6 +30,20 @@ def test_enterprise_category_is_not_inferred_from_ambiguous_small_product():
     assert detect_language("ghar ka kettle") == SupportedLanguage.HINGLISH
 
 
+def test_power_wording_is_not_misrouted_as_an_indian_standard():
+    result = interpret("Cordless kettle for homes, power is 1500W.")
+    assert result.intent.intent == Intent.PRODUCT_COMPLIANCE
+    assert result.product.rated_power_w == 1500
+    assert result.product.missing_required_fields == ["rated_voltage_v"]
+
+
+def test_commercial_and_hindi_power_are_preserved():
+    commercial = interpret("Kettle for a hotel, rated 230V")
+    hindi = interpret("मैं 1500 वाट और 230 वोल्ट की घरेलू इलेक्ट्रिक केतली बनाती हूँ।")
+    assert commercial.product.intended_use == "commercial"
+    assert hindi.product.rated_power_w == 1500
+
+
 def test_phase2c_benchmark_fixture_contains_all_release_cases():
     cases = json.loads((Path(__file__).parent / "fixtures" / "phase2c_benchmark.json").read_text())
     assert {item["id"] for item in cases} == {

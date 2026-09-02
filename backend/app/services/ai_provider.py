@@ -21,6 +21,10 @@ class AIProviderError(RuntimeError):
 
 class AIProvider(ABC):
     name = "unknown"
+    model = ""
+
+    def __init__(self):
+        self.last_usage: dict = {}
 
     @abstractmethod
     def structured(self, *, system: str, user: str, schema: type[T]) -> T:
@@ -30,12 +34,47 @@ class AIProvider(ABC):
 class DisabledProvider(AIProvider):
     name = "disabled"
 
+    def __init__(self):
+        super().__init__()
+
     def structured(self, *, system: str, user: str, schema: type[T]) -> T:
         raise AIProviderError("AI provider is not configured")
 
 
+class MockProvider(AIProvider):
+    """Recorded deterministic provider for CI and regression harnesses."""
+
+    name = "mock"
+    model = "recorded-deterministic-v1"
+
+    def __init__(self):
+        super().__init__()
+
+    def structured(self, *, system: str, user: str, schema: type[T]) -> T:
+        from .ai_interpretation import interpret
+        from .answer_validation import GeneratedAnswer
+        body = json.loads(user)
+        if schema.__name__ == "ConversationInterpretation":
+            result = interpret(body.get("message_untrusted", ""), previous=body.get("previous_structured_state", {}))
+            return schema.model_validate(result.model_dump())
+        if schema is GeneratedAnswer:
+            package = body.get("regulatory_package", {})
+            evidence_ids = [item["evidence_id"] for item in package.get("evidence", [])]
+            profile = package.get("compliance_result") or {}
+            qco = profile.get("qco") or {}
+            standards = profile.get("applicable_standards") or []
+            if standards and qco:
+                answer = f"{standards[0]['number']} applies. {qco.get('notification_number')} is {qco.get('status')} as of {profile.get('as_of_date')}."
+            else:
+                answer = "The answer is limited to the supplied authoritative evidence."
+            answer += " " + " ".join(f"[{item}]" for item in evidence_ids[:3])
+            return schema.model_validate({"answer": answer.strip(), "evidence_ids": evidence_ids[:3]})
+        raise AIProviderError("Mock provider has no recorded response for this schema")
+
+
 class HTTPStructuredProvider(AIProvider):
     def __init__(self, config: Settings):
+        super().__init__()
         self.config = config
 
     def _request(self, *, system: str, user: str, schema: type[T]) -> T:
@@ -58,8 +97,12 @@ class OpenAIProvider(HTTPStructuredProvider):
     def _request(self, *, system: str, user: str, schema: type[T]) -> T:
         if not self.config.openai_api_key:
             raise AIProviderError("OPENAI_API_KEY is not configured")
+        model = self.config.llm_model or "gpt-5-mini"
+        if model not in self.config.openai_allowed_models:
+            raise AIProviderError("Configured OpenAI model is not in OPENAI_ALLOWED_MODELS")
+        self.model = model
         payload = {
-            "model": self.config.llm_model or "gpt-5-mini",
+            "model": model,
             "input": [
                 {"role": "system", "content": [{"type": "input_text", "text": system}]},
                 {"role": "user", "content": [{"type": "input_text", "text": user}]},
@@ -74,6 +117,7 @@ class OpenAIProvider(HTTPStructuredProvider):
         response.raise_for_status()
         body = response.json()
         usage = body.get("usage", {})
+        self.last_usage = {"input_tokens": usage.get("input_tokens"), "output_tokens": usage.get("output_tokens"), "reported": usage}
         logger.info("answer_generated provider=openai input_tokens=%s output_tokens=%s", usage.get("input_tokens"), usage.get("output_tokens"))
         text = next(part["text"] for item in body["output"] if item.get("type") == "message" for part in item.get("content", []) if part.get("type") == "output_text")
         return schema.model_validate_json(text)
@@ -86,6 +130,9 @@ class GeminiProvider(HTTPStructuredProvider):
         if not self.config.gemini_api_key:
             raise AIProviderError("GEMINI_API_KEY is not configured")
         model = self.config.llm_model or "gemini-3.6-flash"
+        if model not in self.config.gemini_allowed_models:
+            raise AIProviderError("Configured Gemini model is not in GEMINI_ALLOWED_MODELS")
+        self.model = model
         payload = {
             "systemInstruction": {"parts": [{"text": system}]},
             "contents": [{"role": "user", "parts": [{"text": user}]}],
@@ -101,12 +148,15 @@ class GeminiProvider(HTTPStructuredProvider):
         response.raise_for_status()
         body = response.json()
         usage = body.get("usageMetadata", {})
+        self.last_usage = {"input_tokens": usage.get("promptTokenCount"), "output_tokens": usage.get("candidatesTokenCount"), "reported": usage}
         logger.info("answer_generated provider=gemini input_tokens=%s output_tokens=%s", usage.get("promptTokenCount"), usage.get("candidatesTokenCount"))
         text = body["candidates"][0]["content"]["parts"][0]["text"]
         return schema.model_validate_json(text)
 
 
 def provider_from_config(config: Settings = settings) -> AIProvider:
+    if config.llm_provider == "mock":
+        return MockProvider()
     if config.llm_provider == "openai":
         return OpenAIProvider(config)
     if config.llm_provider == "gemini":

@@ -3,10 +3,13 @@ from datetime import date
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from .config import settings
+from .db_models import SourceRecord, Standard as StandardRecord
 from .database import database_is_ready, get_db
+from .middleware import StagingSafetyMiddleware
 from .repositories import DocumentRepository, LaboratoryRepository, StandardRepository
 from .schemas import (
     ComplianceProfile,
@@ -36,23 +39,36 @@ app = FastAPI(
     version="0.4.0",
     description="Database-backed Indian Standards and BIS compliance intelligence prototype",
 )
+app.add_middleware(StagingSafetyMiddleware, config=settings)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(settings.cors_origins),
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Request-ID"],
 )
 
 
 @app.get("/health")
-def health(session: Session = Depends(get_db)):
+def health():
+    return {"status": "ok", "app_env": settings.app_env, "demo_mode": settings.demo_mode, "llm_provider": settings.llm_provider, "llm_model": settings.llm_model or None}
+
+
+@app.get("/ready")
+def ready(session: Session = Depends(get_db)):
     try:
         database_is_ready(session)
+        revision = session.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+        if revision != settings.expected_schema_revision:
+            raise RuntimeError("Database migration revision is not current")
+        authoritative_records = session.scalar(select(func.count()).select_from(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE")) or 0
+        kettle_standard = session.get(StandardRecord, "is-302-2-15-auth")
+        if not settings.demo_mode and (authoritative_records == 0 or kettle_standard is None):
+            raise RuntimeError("Required authoritative kettle data is unavailable")
     except Exception as exc:
-        logger.exception("database_health_failed")
-        raise HTTPException(status_code=503, detail="Database unavailable") from exc
-    return {"status": "ok", "database": "ready", "demo_mode": settings.demo_mode, "llm_provider": settings.llm_provider}
+        logger.exception("readiness_failed")
+        raise HTTPException(status_code=503, detail="Service is not ready") from exc
+    return {"status": "ready", "database": "ready", "schema_revision": revision, "authoritative_records": authoritative_records}
 
 
 @app.get("/api/v1/standards", response_model=list[Standard])

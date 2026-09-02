@@ -27,16 +27,17 @@ class ComplianceService:
     def classify(description: str, *, authoritative: bool = False) -> dict:
         text = description.casefold()
         if "kettle" in text or "केतली" in text:
-            power = re.search(r"(?<!\d)(\d{2,5})\s*w(?:att)?s?\b", text)
+            power = re.search(r"(?<!\d)(\d{2,5})\s*(?:w(?:att)?s?|वाट)\b", text)
             power_kw = re.search(r"(?<![\d.])(\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", text)
             voltage = re.search(r"(?<!\d)(\d{2,4})\s*(?:v|volt|volts|वोल्ट)\b", text)
-            household = any(term in text for term in ("household", "domestic", "home", "homes", "ghar", "घरेलू", "घर"))
+            household = any(term in text for term in ("household", "house use", "domestic", "home", "homes", "ghar", "घरेलू", "घर"))
+            commercial = any(term in text for term in ("commercial", "hotel", "restaurant", "व्यावसायिक", "होटल", "रेस्तरां"))
             india = any(term in text for term in ("india", "indian", "भारत", "bis"))
             rated_power = int(power.group(1)) if power else int(float(power_kw.group(1)) * 1000) if power_kw else None
             structured = {
                 "product_type": "electric_kettle",
                 "category": "appliances_for_heating_liquids",
-                "intended_use": "household" if household else None,
+                "intended_use": "household" if household else "commercial" if commercial else None,
                 "rated_power_w": rated_power,
                 "country": "India" if india else None,
             }
@@ -44,6 +45,7 @@ class ComplianceService:
                 structured["rated_voltage_v"] = int(voltage.group(1))
             attributes = ["Electric kettle", "Appliance for heating liquids"]
             if household: attributes.append("Household use")
+            elif commercial: attributes.append("Commercial use")
             if rated_power: attributes.append(f"{rated_power} W rated power")
             if voltage: attributes.append(f"{voltage.group(1)} V rated voltage")
             if india: attributes.append("Market: India")

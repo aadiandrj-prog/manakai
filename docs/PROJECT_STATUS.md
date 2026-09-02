@@ -1,5 +1,13 @@
 # Project status and roadmap
 
+## Phase 2D status (2 September 2026)
+
+The repository is staging-ready but public staging is not yet complete. Render infrastructure-as-code now defines a modest paid API/database deployment, single-process Alembic plus authoritative ingestion, readiness checks and a daily non-destructive source monitor. The API adds anonymous rate/body limits, strict model allow-lists, daily provider caps, secure headers, request IDs and AI/source telemetry. The UI adds a staging banner, footer disclaimer and responsive mobile navigation without redesigning the Cinematic Precision system.
+
+A 70-case provider evaluation runner, report comparator, Playwright critical-flow tests, axe accessibility checks, CI, backup/restore safeguards and deployment/privacy/operations runbooks are included. The release mock-provider regression passes 70/70, the backend suite passes 54 tests, and desktop/mobile Playwright passes 8/8. Eleven npm advisories were remediated; the repeat audit is clean and the production build passes.
+
+The remaining blockers are external and account-owned: create the paid Render resources, enter one model-provider secret, obtain the public API URL, configure/publish Sites against it, then run the real-provider comparison and public smoke checklist. No result from a paid provider has been claimed without those credentials.
+
 ## Phase 2C outcome
 
 The controlled intelligence layer is implemented without transferring regulatory authority to a model. `/ask` now supports persistent conversations, explicit-value extraction, voltage clarification and follow-up merging, query-date questions, English/Hindi/Hinglish responses, structured compliance/lab/evidence cards, and safe operation with no AI key.
@@ -85,7 +93,7 @@ The consumer screen does not verify HUIDs, complaints or licences. Authoritative
 
 The full stack needs a public FastAPI runtime and managed PostgreSQL/pgvector service, backups, point-in-time recovery, CI/CD migrations, metrics/traces, alerting, dependency scanning, accessibility/browser tests, load tests and disaster-recovery exercises. A frontend-only Sites deployment cannot provide the backend/database; `NEXT_PUBLIC_API_URL` must point at a separately deployed HTTPS API before the integrated frontend is redeployed publicly.
 
-The current production npm audit reports six advisories (five high) in the Vinext/Vite/React Server Components/Undici toolchain. Several remediations require version changes outside the currently pinned ranges. Upgrade them on a dedicated compatibility branch, rerun browser and Docker tests, and do not release publicly while applicable high-severity findings remain.
+The 2 September dependency audit is clean after compatible React/RSC, Vinext, Vite and Cloudflare toolchain upgrades. CI enforces the high-severity audit threshold. Continue reviewing advisories because this result is time-bound.
 
 ## Constraints to preserve
 
@@ -99,13 +107,12 @@ The current production npm audit reports six advisories (five high) in the Vinex
 
 ## Recommended development sequence
 
-1. Add scheduled live refresh, maker/checker review, staleness alerts and source-change diffs for the kettle adapters.
-2. Obtain legal/rights review for retained excerpts and regulatory-domain review of the QCO/standard relationship.
-3. Deploy FastAPI and managed PostgreSQL/pgvector behind HTTPS; configure CORS, secrets, backups and migration automation.
-4. Upgrade the frontend dependency chain to resolve applicable high-severity advisories, then add browser, accessibility, security and load gates.
-5. Provision the optional local embedding model in a controlled build step and evaluate hybrid retrieval against expert-labelled queries.
-6. Pilot only this kettle vertical with a small manufacturer cohort and verify real application/laboratory interactions.
-7. After the pilot, begin the separately scoped authentication/governance phase; do not widen product families first.
+1. Provision the declared Render API/database, enter one provider secret and validate `/ready`.
+2. Configure the Sites API origin, publish the integrated frontend and complete the public smoke checklist.
+3. Run the 70-case set against each available real provider; review failures manually and select on measured reliability.
+4. Add maker/checker review, centralized alerts and a tested source-revision approval workflow.
+5. Obtain legal/rights and regulatory-domain review, then perform a managed backup restore drill.
+6. Pilot only the kettle vertical with a small manufacturer cohort; do not widen product families first.
 
 ## Definition of the next milestone
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import date, datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -20,6 +21,7 @@ from .parser import ClauseAwareParser
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "official" / "electric_kettle.json"
+logger = logging.getLogger("manakai")
 
 
 def _date(value: str | None) -> date | None:
@@ -37,6 +39,9 @@ def _source(session: Session, payload: dict, run_id: str, retrieved_at: datetime
     ))
     if existing:
         return existing
+    previous = session.scalar(
+        select(m.SourceRecord).where(m.SourceRecord.source_url == payload["source_url"]).order_by(m.SourceRecord.retrieved_at.desc())
+    )
     record = m.SourceRecord(
         id=f"src-{payload['content_hash'][:20]}",
         source_url=payload["source_url"],
@@ -58,6 +63,17 @@ def _source(session: Session, payload: dict, run_id: str, retrieved_at: datetime
     )
     session.add(record)
     session.flush()
+    if previous and previous.content_hash != record.content_hash:
+        event = m.SourceChangeEvent(
+            id=f"source-change-{uuid4().hex}", source_url=record.source_url, source_type=record.source_type,
+            previous_hash=previous.content_hash, new_hash=record.content_hash, ingestion_run_id=run_id,
+            status="REVIEW_REQUIRED",
+        )
+        session.add(event)
+        logger.warning(
+            "authoritative_source_changed source_type=%s source_url=%s human_review_required=true",
+            record.source_type, record.source_url,
+        )
     return record
 
 

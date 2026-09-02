@@ -78,6 +78,31 @@ class ConversationMessage(IdMixin, Base):
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class AIUsageEvent(IdMixin, Base):
+    __tablename__ = "ai_usage_events"
+    provider: Mapped[str] = mapped_column(String(32), index=True)
+    model: Mapped[str | None] = mapped_column(String(120), index=True)
+    operation: Mapped[str] = mapped_column(String(48), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+    latency_ms: Mapped[float] = mapped_column(Float, default=0)
+    input_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    request_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    validation_result: Mapped[str | None] = mapped_column(String(32), index=True)
+    validation_reason: Mapped[str | None] = mapped_column(String(240))
+
+
+class SourceChangeEvent(IdMixin, Base):
+    __tablename__ = "source_change_events"
+    source_url: Mapped[str] = mapped_column(Text)
+    source_type: Mapped[str] = mapped_column(String(80), index=True)
+    previous_hash: Mapped[str] = mapped_column(String(64))
+    new_hash: Mapped[str] = mapped_column(String(64))
+    ingestion_run_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), default="REVIEW_REQUIRED", index=True)
+
+
 class Standard(IdMixin, Base):
     __tablename__ = "standards"
     __table_args__ = (UniqueConstraint("number", "version", "source_kind", name="uq_standard_number_version_source"),)

@@ -5,7 +5,6 @@ import {
   CircleHelp,
   FlaskConical,
   LayoutDashboard,
-  Menu,
   Search,
   Sparkles,
   Stamp,
@@ -35,19 +34,20 @@ export function AppShell({
   children: React.ReactNode;
   current?: string;
 }) {
+  const isStaging = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
   return (
     <main className="min-h-screen bg-background text-foreground">
+      {isStaging && (
+        <div className="border-b border-amber-300/20 bg-amber-300/10 px-4 py-2 text-center text-[11px] leading-4 text-amber-100">
+          <strong>ManakAI — Prototype / Staging.</strong> Guidance is based on integrated BIS sources and should be independently verified before operational or legal decisions.
+        </div>
+      )}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <button
-              className="grid size-9 place-items-center rounded-md border border-border lg:hidden"
-              aria-label="Open navigation"
-            >
-              <Menu className="size-4" />
-            </button>
             <Link
               href="/"
+              aria-label="ManakAI home"
               className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground"
             >
               <BadgeCheck className="size-5" />
@@ -81,6 +81,13 @@ export function AppShell({
           </div>
         </div>
       </header>
+      <nav aria-label="Mobile primary" className="flex gap-1 overflow-x-auto border-b border-border px-3 py-2 lg:hidden">
+        {nav.map(({ href, label }) => (
+          <Link key={href} href={href} className={`shrink-0 rounded-md px-3 py-2 text-xs ${current === href ? 'bg-primary/15 text-primary' : 'text-muted-foreground'}`}>
+            {label}
+          </Link>
+        ))}
+      </nav>
       <div className="mx-auto grid max-w-[1500px] lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="hidden min-h-[calc(100vh-64px)] border-r border-border px-3 py-5 lg:flex lg:flex-col">
           <nav aria-label="Primary" className="space-y-1">
@@ -111,6 +118,9 @@ export function AppShell({
         </aside>
         <div className="min-w-0">{children}</div>
       </div>
+      <footer className="border-t border-border px-4 py-4 text-center text-[11px] leading-5 text-muted-foreground">
+        Prototype regulatory navigation only. Confirm current requirements and source validity with BIS or qualified advisers before acting.
+      </footer>
     </main>
   );
 }

@@ -29,15 +29,17 @@ def _number(text: str, pattern: str) -> int | None:
 
 def extract_product(text: str, previous: dict | None = None) -> ProductExtraction | None:
     lower = text.casefold()
+    normalized = re.sub(r"(?<=\d),(?=\d)", "", lower)
     previous = previous or {}
-    kettle = any(term in lower for term in ("kettle", "केतली")) or previous.get("product_type") == "electric_kettle"
+    kettle = any(term in lower for term in ("kettle", "electric jug", "water boiler", "केतली")) or previous.get("product_type") == "electric_kettle"
     if not kettle:
         return ProductExtraction.model_validate(previous) if previous.get("product_type") else None
-    power_kw = re.search(r"(?P<kw>\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", lower)
-    power_w = re.search(r"(?<![\d.])(\d{2,5})\s*w(?:att)?s?\b", lower)
-    voltage = re.search(r"(?<!\d)(\d{2,4})\s*(?:v|volt|volts|वोल्ट)\b", lower)
-    household = any(term in lower for term in ("household", "domestic", "home", "homes", "ghar", "घरेलू", "घर"))
-    commercial = any(term in lower for term in ("commercial", "hotel", "restaurant", "व्यावसायिक"))
+    power_kw = re.search(r"(?P<kw>\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", normalized)
+    power_w = re.search(r"(?<![\d.])(\d{2,5})\s*(?:w(?:att)?s?|वाट)\b", normalized)
+    voltage_range = re.search(r"(?<!\d)(\d{2,4})\s*[-–]\s*(\d{2,4})\s*(?:v|volt|volts)\b", normalized)
+    voltage = re.search(r"(?<!\d)(\d{2,4})\s*(?:v|volt|volts|वोल्ट)\b", normalized)
+    household = any(term in lower for term in ("household", "house use", "domestic", "home", "homes", "ghar", "घरेलू", "घर"))
+    commercial = any(term in lower for term in ("commercial", "hotel", "restaurant", "व्यावसायिक", "होटल", "रेस्तरां"))
     enterprise = None
     if re.search(r"\bmicro\s+(?:enterprise|business|startup)|सूक्ष्म\s+(?:उद्यम|व्यवसाय)", lower): enterprise = "MICRO"
     elif re.search(r"\bsmall\s+(?:enterprise|business|startup)|लघु\s+(?:उद्यम|व्यवसाय)", lower): enterprise = "SMALL"
@@ -49,10 +51,14 @@ def extract_product(text: str, previous: dict | None = None) -> ProductExtractio
         "actor": actor,
         "intended_use": "household" if household else "commercial" if commercial else previous.get("intended_use"),
         "rated_power_w": int(float(power_kw.group("kw")) * 1000) if power_kw else int(power_w.group(1)) if power_w else previous.get("rated_power_w"),
-        "rated_voltage_v": int(voltage.group(1)) if voltage else previous.get("rated_voltage_v"),
+        "rated_voltage_v": int(voltage_range.group(2)) if voltage_range else int(voltage.group(1)) if voltage else previous.get("rated_voltage_v"),
         "country": "India" if any(term in lower for term in ("india", "indian", "bis", "भारत")) else previous.get("country"),
         "enterprise_category": enterprise or previous.get("enterprise_category"),
-        "additional_attributes": {**previous.get("additional_attributes", {}), **({"cordless": True} if "cordless" in lower else {})},
+        "additional_attributes": {
+            **previous.get("additional_attributes", {}),
+            **({"cordless": True} if "cordless" in lower else {}),
+            **({"rated_voltage_range_v": f"{voltage_range.group(1)}-{voltage_range.group(2)}"} if voltage_range else {}),
+        },
         "confidence": 0.97 if voltage and (household or previous.get("intended_use")) else 0.88,
     }
     values["missing_required_fields"] = [field for field in ("rated_voltage_v",) if values.get(field) is None]
