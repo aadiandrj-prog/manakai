@@ -13,7 +13,7 @@ Free services can sleep, throttle or change their allowances. This topology is s
 
 ## 1. Neon database
 
-1. Create a free PostgreSQL project in a region near the Render service.
+1. Create a free PostgreSQL project in a region near the Render service. The current staging project and Render service use AWS US East 2 / Ohio.
 2. Copy its pooled connection string and retain `sslmode=require`.
 3. Keep this value secret. It becomes Render's `DATABASE_URL` and the GitHub repository secret `NEON_DATABASE_URL`.
 4. Render startup runs `alembic upgrade head` and the idempotent electric-kettle ingestion. The migration enables `vector`; `/ready` verifies revision `b48f761da923` and authoritative records.

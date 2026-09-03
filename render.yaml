@@ -3,7 +3,7 @@ services:
     name: manakai-staging-api
     runtime: docker
     plan: free
-    region: singapore
+    region: ohio
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     dockerCommand: sh start-free-staging.sh
