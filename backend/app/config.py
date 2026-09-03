@@ -6,6 +6,14 @@ def _csv(name: str, default: str) -> tuple[str, ...]:
     return tuple(value.strip() for value in os.getenv(name, default).split(",") if value.strip())
 
 
+def sqlalchemy_database_url(database_url: str) -> str:
+    """Select the installed Psycopg 3 driver for provider-style Postgres URLs."""
+    for prefix in ("postgresql://", "postgres://"):
+        if database_url.startswith(prefix):
+            return "postgresql+psycopg://" + database_url.removeprefix(prefix)
+    return database_url
+
+
 @dataclass(frozen=True)
 class Settings:
     app_env: str = os.getenv("APP_ENV", "development")

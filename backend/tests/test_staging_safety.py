@@ -4,7 +4,7 @@ import asyncio
 import pytest
 from sqlalchemy import select, text
 
-from app.config import settings
+from app.config import settings, sqlalchemy_database_url
 from app.db_models import SourceChangeEvent, SourceRecord
 from app.evaluation.cases import CASES
 from app.ingestion.base import FetchedSource
@@ -25,6 +25,12 @@ def test_provider_model_allowlists_fail_closed():
         OpenAIProvider(replace(settings, openai_api_key="test", llm_model="unapproved-model")).structured(system="x", user="{}", schema=type("Unused", (), {}))
     with pytest.raises(AIProviderError, match="ALLOWED"):
         GeminiProvider(replace(settings, gemini_api_key="test", llm_model="unapproved-model")).structured(system="x", user="{}", schema=type("Unused", (), {}))
+
+
+def test_provider_postgres_urls_use_installed_psycopg_driver():
+    expected = "postgresql+psycopg://user:secret@example.test/db"
+    assert sqlalchemy_database_url("postgresql://user:secret@example.test/db") == expected
+    assert sqlalchemy_database_url("postgres://user:secret@example.test/db") == expected
 
 
 def test_rate_limiter_expires_old_requests():
