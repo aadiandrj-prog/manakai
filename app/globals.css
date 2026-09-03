@@ -1,3 +1,5 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/manrope';
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
@@ -34,6 +36,8 @@
 
 :root,
 .dark {
+  --font-inter: 'Inter Variable';
+  --font-manrope: 'Manrope Variable';
   --background: #070708;
   --foreground: #e5e2e3;
   --card: #101112;

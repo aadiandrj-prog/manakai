@@ -1,12 +1,12 @@
 # Project status and roadmap
 
-## Phase 2D status (2 September 2026)
+## Phase 2D status (3 September 2026)
 
-The repository is staging-ready but public staging is not yet complete. Render infrastructure-as-code now defines a modest paid API/database deployment, single-process Alembic plus authoritative ingestion, readiness checks and a daily non-destructive source monitor. The API adds anonymous rate/body limits, strict model allow-lists, daily provider caps, secure headers, request IDs and AI/source telemetry. The UI adds a staging banner, footer disclaimer and responsive mobile navigation without redesigning the Cinematic Precision system.
+The repository is staging-ready but public staging is not yet complete. The free profile uses a native Next.js frontend on Vercel, one Render Free Docker API and an external Neon Free PostgreSQL/pgvector database. Render startup performs additive Alembic migration plus idempotent authoritative ingestion; GitHub Actions performs the daily non-destructive source monitor. The API adds anonymous rate/body limits, strict model allow-lists, a 40-call daily provider cap, secure headers, request IDs and AI/source telemetry. The UI retains its staging banner, footer disclaimer and responsive mobile navigation without redesigning the Cinematic Precision system.
 
 A 70-case provider evaluation runner, report comparator, Playwright critical-flow tests, axe accessibility checks, CI, backup/restore safeguards and deployment/privacy/operations runbooks are included. The release mock-provider regression passes 70/70, the backend suite passes 54 tests, and desktop/mobile Playwright passes 8/8. Eleven npm advisories were remediated; the repeat audit is clean and the production build passes.
 
-The remaining blockers are external and account-owned: create the paid Render resources, enter one model-provider secret, obtain the public API URL, configure/publish Sites against it, then run the real-provider comparison and public smoke checklist. No result from a paid provider has been claimed without those credentials.
+The remaining steps are external and account-owned: create Neon, deploy the Render free API, configure/publish Vercel against it, add the Neon GitHub Actions secret, enter one model-provider secret, then run the real-provider comparison and public smoke checklist. No real-provider result has been claimed without those credentials.
 
 ## Phase 2C outcome
 
@@ -28,11 +28,11 @@ Phase 2B adds 12 backend tests, bringing the suite to 34. It does not add authen
 
 ManakAI is a database-backed engineering/demo prototype for navigating Indian Standards and BIS compliance. The supplied dashboard design is preserved. Regulatory screens now use one canonical flow:
 
-`Vinext UI → typed HTTP client/TanStack Query → FastAPI → service → repository → PostgreSQL`
+`Next.js UI → typed HTTP client/TanStack Query → FastAPI → service → repository → PostgreSQL`
 
 The repository includes:
 
-- responsive Vinext/React/TypeScript screens for product analysis, compliance, standards, laboratories and evidence Q&A;
+- responsive Next.js/React/TypeScript screens for product analysis, compliance, standards, laboratories and evidence Q&A;
 - a generated TypeScript contract from FastAPI's committed OpenAPI document;
 - consistent loading, empty, validation, backend-failure and network-failure handling;
 - SQLAlchemy sessions and repositories for standards, QCOs, laboratories, documents, products and compliance profiles;
@@ -56,7 +56,7 @@ The repository includes:
 | Explicit compliance engine | Verified QCO/date logic remains in backend rules, never browser or model output |
 | Temporal/provenance model | Status, publication/effective dates, source kind and retrieval timestamp fields |
 | PostgreSQL + pgvector | Alembic enables `vector`; document chunks use a 384-dimensional vector column |
-| Modular monolith | One Vinext frontend, one FastAPI backend and one PostgreSQL database |
+| Modular monolith | One Next.js frontend, one FastAPI backend and one PostgreSQL database |
 | Deterministic demo mode | Demo entities are seeded in the database; browser-local regulatory fixtures were removed |
 | Testing and evaluation | 34 backend tests, 4 frontend boundary tests, lint/build and Docker smoke checks |
 | Supplied design reference | Existing dark “Cinematic Precision” layout, type hierarchy, tonal borders, radii and restrained status accents remain intact |
@@ -91,9 +91,9 @@ The consumer screen does not verify HUIDs, complaints or licences. Authoritative
 
 ### Operations and hosting
 
-The full stack needs a public FastAPI runtime and managed PostgreSQL/pgvector service, backups, point-in-time recovery, CI/CD migrations, metrics/traces, alerting, dependency scanning, accessibility/browser tests, load tests and disaster-recovery exercises. A frontend-only Sites deployment cannot provide the backend/database; `NEXT_PUBLIC_API_URL` must point at a separately deployed HTTPS API before the integrated frontend is redeployed publicly.
+The full stack still needs the account-owned Vercel, Render and Neon resources, independent backups, metrics/traces, alerting, load tests and disaster-recovery exercises. A frontend-only Vercel deployment cannot provide the canonical backend/database; `NEXT_PUBLIC_API_URL` must point at the deployed HTTPS API before public smoke testing.
 
-The 2 September dependency audit is clean after compatible React/RSC, Vinext, Vite and Cloudflare toolchain upgrades. CI enforces the high-severity audit threshold. Continue reviewing advisories because this result is time-bound.
+The 3 September dependency audit is clean after moving the frontend from the Sites-specific adapter to native Next.js 16.3.4. CI enforces the high-severity audit threshold. Continue reviewing advisories because this result is time-bound.
 
 ## Constraints to preserve
 
@@ -107,12 +107,13 @@ The 2 September dependency audit is clean after compatible React/RSC, Vinext, Vi
 
 ## Recommended development sequence
 
-1. Provision the declared Render API/database, enter one provider secret and validate `/ready`.
-2. Configure the Sites API origin, publish the integrated frontend and complete the public smoke checklist.
-3. Run the 70-case set against each available real provider; review failures manually and select on measured reliability.
-4. Add maker/checker review, centralized alerts and a tested source-revision approval workflow.
-5. Obtain legal/rights and regulatory-domain review, then perform a managed backup restore drill.
-6. Pilot only the kettle vertical with a small manufacturer cohort; do not widen product families first.
+1. Provision Neon and the declared Render Free API, then validate `/ready` with AI disabled.
+2. Configure Vercel with the Render API origin, set exact CORS and complete the public smoke checklist.
+3. Configure the GitHub Actions Neon secret and verify one scheduled-source-check dispatch.
+4. Enter one tightly limited provider secret and run the 70-case real-provider evaluation.
+5. Add maker/checker review, centralized alerts and a tested source-revision approval workflow.
+6. Obtain legal/rights and regulatory-domain review, then perform a managed backup restore drill.
+7. Pilot only the kettle vertical with a small manufacturer cohort; do not widen product families first.
 
 ## Definition of the next milestone
 

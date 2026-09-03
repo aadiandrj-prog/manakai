@@ -15,6 +15,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Ingest captured authoritative BIS records")
     parser.add_argument("target", choices=["standards", "qco", "labs", "electric-kettle", "embeddings", "refresh"])
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--fail-on-change",
+        action="store_true",
+        help="Return a failing exit status when an authoritative source needs review",
+    )
     parser.add_argument("--allow-model-download", action="store_true", help="Permit the explicit embeddings command to download its configured local model")
     args = parser.parse_args()
     # Vertical sub-targets intentionally run the same atomic graph ingest so no partial
@@ -27,6 +32,8 @@ def main() -> None:
         else:
             result = ingest_electric_kettle(session, dry_run=args.dry_run)
     print(json.dumps(result, indent=2))
+    if args.fail_on_change and result.get("changes_review_required", 0):
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

@@ -47,7 +47,7 @@ flowchart LR
     M --> V[Evidence-aware explanation]
 ```
 
-The web app lives at the repository root so it can use the Sites/Cloudflare runtime. The modular Python service lives in `backend/`; fixtures, benchmark data, scripts and design documentation are separated by concern.
+The native Next.js web app lives at the repository root and deploys to Vercel. The modular Python service lives in `backend/` and deploys as a Docker web service; fixtures, benchmark data, scripts and design documentation are separated by concern.
 
 ## Run locally
 
@@ -112,6 +112,8 @@ Tests use captured/sanitised source fixtures, a fake 384-dimensional embedding p
 ## Environment
 
 Copy `.env.example` to `.env`. `DEMO_MODE=true` and `LLM_PROVIDER=disabled` are safe defaults. Provider keys are optional and must never be committed. Set `LLM_PROVIDER=openai` or `gemini`, select `LLM_MODEL`, and provide only the corresponding key. Changing or disabling the model cannot change a structured regulatory fact.
+
+The free staging topology is Vercel (frontend), Render Free (FastAPI) and Neon Free (PostgreSQL/pgvector). `render.yaml` intentionally declares only the free API service. The daily GitHub workflow uses the `NEON_DATABASE_URL` repository secret to detect official-source changes without replacing verified records. See the deployment runbook for the account-owner sequence.
 
 ## Data and migrations
 

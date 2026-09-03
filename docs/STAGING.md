@@ -4,7 +4,7 @@
 
 - `APP_ENV=staging`, `DEMO_MODE=false`
 - managed `DATABASE_URL`; no public database allow-list
-- exact Sites `CORS_ORIGINS`
+- exact Vercel production origin in Render `CORS_ORIGINS`
 - `EXPECTED_SCHEMA_REVISION=b48f761da923`
 - one provider/model/key combination from the allow-list
 - bounded request, AI input/output, daily request and anonymous rate limits
@@ -27,4 +27,4 @@ The UI must show the staging banner and regulatory disclaimer. Records stay labe
 - Source changed: refresh creates `REVIEW_REQUIRED` and preserves known-good data. Review and ingest a new captured revision manually.
 - Readiness failure: keep the service out of traffic and inspect migration/ingestion logs.
 - Suspected bad fact: disable the affected vertical, preserve evidence/audit rows and require domain review.
-- Key exposure: revoke it, rotate the Render secret and review usage telemetry.
+- Key exposure: revoke it at the provider, rotate the Render secret and review usage telemetry.

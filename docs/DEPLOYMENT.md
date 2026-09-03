@@ -1,31 +1,91 @@
-# Staging deployment
+# Free staging deployment
 
-Phase 2D targets one integrated public staging environment:
+Phase 2D uses one integrated public preview:
 
 ```text
-Sites frontend (HTTPS)
-→ Render FastAPI service (HTTPS)
-→ private Render PostgreSQL 16 + pgvector
-→ one configured OpenAI or Gemini model provider
+Vercel Next.js frontend (HTTPS)
+→ Render Free FastAPI service (HTTPS)
+→ Neon Free PostgreSQL + pgvector
+→ one tightly limited OpenAI or Gemini provider
 ```
 
-`render.yaml` declares the API, private managed database and daily authoritative-source change check. The API pre-deploy command runs Alembic once and idempotently ingests the authoritative kettle snapshot. `/health` is process liveness; `/ready` verifies the database, exact Alembic revision and authoritative kettle records.
+Free services can sleep, throttle or change their allowances. This topology is suitable for team review and a small pilot, not a production SLA. The Render API may have a cold start after inactivity, and free database plans do not replace independent backups.
 
-## Account-owner deployment steps
+## 1. Neon database
 
-1. In Render, create a Blueprint from this repository and review the paid staging plans before approving charges.
-2. Enter exactly one provider configuration: `LLM_PROVIDER=openai`, an approved `LLM_MODEL` and `OPENAI_API_KEY`, or the Gemini equivalents. Never put keys in Git or logs.
-3. Wait for pre-deploy and `/ready` to pass. Record the HTTPS API URL.
-4. Set Sites build variables `NEXT_PUBLIC_API_URL=https://<render-api-host>` and `NEXT_PUBLIC_APP_ENV=staging`, then publish.
-5. Change `CORS_ORIGINS` only if the final Sites origin differs from `https://manakai-sih26.aadiandrj.chatgpt.site`.
-6. Run `STAGING.md` and one real-provider evaluation. Do not call the milestone complete until they pass.
+1. Create a free PostgreSQL project in a region near the Render service.
+2. Copy its pooled connection string and retain `sslmode=require`.
+3. Keep this value secret. It becomes Render's `DATABASE_URL` and the GitHub repository secret `NEON_DATABASE_URL`.
+4. Render startup runs `alembic upgrade head` and the idempotent electric-kettle ingestion. The migration enables `vector`; `/ready` verifies revision `b48f761da923` and authoritative records.
 
-The repository cannot create paid infrastructure or model credentials without the account owner. A frontend-only publish is deliberately rejected because it would expose a broken integrated flow.
+## 2. Render API
+
+Create a Blueprint from this repository's `render.yaml`. It declares only one `free` Docker web service and deliberately contains no Render database or paid cron worker.
+
+Required secret/manual values:
+
+```text
+DATABASE_URL=<Neon pooled connection string>
+CORS_ORIGINS=https://<final-vercel-production-host>
+LLM_PROVIDER=disabled
+LLM_MODEL=
+OPENAI_API_KEY=
+GEMINI_API_KEY=
+```
+
+Start with the provider disabled. After deployment, confirm `/health` and `/ready`, then record the public `onrender.com` API URL. Render startup is repeatable: it applies additive migrations, performs hash-aware captured-data ingestion and then starts Uvicorn.
+
+## 3. Vercel frontend
+
+Import the GitHub repository as a Vercel Next.js project. The repository root is the frontend root and `vercel.json` selects native Next.js.
+
+Set these Production and Preview environment values before deploying:
+
+```text
+NEXT_PUBLIC_API_URL=https://<render-api-host>
+NEXT_PUBLIC_APP_ENV=staging
+NEXT_PUBLIC_SITE_URL=https://<final-vercel-production-host>
+```
+
+These values are public by design and must never contain database or model credentials. Once the production hostname is known, update Render's `CORS_ORIGINS` to that exact origin and redeploy the API.
+
+## 4. Scheduled source check
+
+In GitHub, add the Actions secret `NEON_DATABASE_URL` using the same Neon connection string. `.github/workflows/regulatory-refresh.yml` runs daily at 02:30 UTC and can also be dispatched manually.
+
+The workflow fetches allow-listed official pages, records changed hashes as `REVIEW_REQUIRED`, preserves the last verified regulatory graph and exits visibly when review is needed. It never auto-publishes changed regulatory facts.
+
+## 5. Tightly limited provider
+
+After the deterministic public flow passes, configure exactly one provider in Render:
+
+```text
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-5-mini
+OPENAI_API_KEY=<secret>
+```
+
+or:
+
+```text
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-3.7-flash
+GEMINI_API_KEY=<secret>
+```
+
+Staging is capped at 40 provider calls per UTC day, 500 output tokens per call, 8,000 input characters, zero automatic retries, ten chat requests per minute per client and twenty analysis requests per minute per client. Usage events store provider/model/token/validation metadata but not prompt bodies or secrets. Provider failure or quota exhaustion falls back to deterministic output.
+
+## Release order
+
+1. Create Neon and retain the connection string securely.
+2. Deploy Render with AI disabled and a temporary exact CORS value; validate `/ready`.
+3. deploy Vercel with the Render URL.
+4. replace Render CORS with the final Vercel origin and smoke-test the public flow.
+5. add one provider secret, redeploy and run the real-provider evaluation.
+6. add the GitHub Actions secret, dispatch the refresh once and inspect the run.
 
 ## Migration, rollback and backup
 
-Every schema change is a new Alembic revision. Render runs `alembic upgrade head` as a single pre-deploy operation before traffic moves. Revision `b48f761da923` is additive. Do not edit deployed migration history.
+Every schema change is a new Alembic revision. Revision `b48f761da923` is additive. Do not edit deployed migration history. Redeploy an older image only when it remains compatible with the current schema; database downgrade is not the normal rollback.
 
-Redeploy the previous image only when it is compatible with the additive schema. Database downgrade is not the normal rollback. Restore into a separate recovery database, validate it, and switch deliberately.
-
-Use a paid managed database with backups/PITR. `scripts/backup_staging.sh` adds an explicit custom-format dump; `scripts/restore_staging.sh` refuses to run without confirmation that the target is an empty recovery database. Test restore quarterly.
+`scripts/backup_staging.sh` creates an explicit custom-format PostgreSQL dump. `scripts/restore_staging.sh` refuses to run without confirmation that the destination is an empty recovery database. Free hosting has no production recovery guarantee, so make a local encrypted backup before each authoritative-data change.

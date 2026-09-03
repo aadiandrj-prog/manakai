@@ -7,6 +7,7 @@ COPY alembic.ini ./
 COPY alembic ./alembic
 COPY start.sh ./
 COPY start-staging.sh ./
+COPY start-free-staging.sh ./
 COPY app ./app
 COPY tests/fixtures/official ./tests/fixtures/official
 EXPOSE 8000

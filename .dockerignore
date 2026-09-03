@@ -1,7 +1,11 @@
 node_modules
+.next
 dist
 .git
 .env
 backend/.venv
 **/__pycache__
 .pytest_cache
+test-results
+playwright-report
+.wrangler

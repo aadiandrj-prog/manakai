@@ -1,6 +1,6 @@
 # Architecture
 
-ManakAI uses a modular monolith: one React/Vinext web surface, one FastAPI service and one relational data layer. This keeps the prototype demonstrable while preserving seams for authoritative data, retrieval and model providers.
+ManakAI uses a modular monolith: one native Next.js web surface, one FastAPI service and one relational data layer. This keeps the prototype demonstrable while preserving seams for authoritative data, retrieval and model providers.
 
 The authoritative path remains deliberately one-way:
 
@@ -53,5 +53,7 @@ Key boundaries:
 - Retrieval selects evidence; the temporal rule engine remains the only source of regulatory status.
 - OpenAI and Gemini calls are isolated behind one provider boundary with Pydantic validation, timeouts, bounded retries and output limits.
 - Provider failure or contradiction cannot make compliance unavailable; deterministic templates are mandatory fallbacks.
-- `render.yaml` declares public staging: private managed PostgreSQL, one FastAPI service, single pre-deploy migration/ingestion and a daily non-destructive source check. Sites is configured only after the public API URL exists.
+- `render.yaml` declares one free FastAPI Docker service. Its startup applies additive migrations and idempotently loads the captured kettle graph into an external Neon PostgreSQL/pgvector database.
+- Vercel builds the native Next.js frontend only after `NEXT_PUBLIC_API_URL` is set to the public API origin.
+- GitHub Actions runs the daily non-destructive official-source check against Neon; detected changes are recorded as `REVIEW_REQUIRED` and fail the workflow for human attention.
 - `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and the authoritative kettle corpus.

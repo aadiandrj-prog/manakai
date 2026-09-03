@@ -7,7 +7,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: { baseURL: 'http://127.0.0.1:3100', trace: 'retain-on-failure' },
   webServer: {
-    command: 'NEXT_PUBLIC_API_URL=http://localhost:8000 NEXT_PUBLIC_APP_ENV=staging npm run build && npm run start -- --port 3100 --ip 127.0.0.1',
+    command: 'NEXT_PUBLIC_API_URL=http://localhost:8000 NEXT_PUBLIC_APP_ENV=staging npm run build && npm run start -- --port 3100 --hostname 127.0.0.1',
     url: 'http://127.0.0.1:3100',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
