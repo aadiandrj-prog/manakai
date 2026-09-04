@@ -50,6 +50,7 @@ python -m app.ingestion hallmarking
 python -m app.ingestion all-authoritative
 python -m app.ingestion embeddings --allow-model-download
 python -m app.ingestion refresh
+python -m app.ingestion review-report --fail-on-pending
 ```
 
 Each Phase 2E target stages and commits its own graph. `all-authoritative` reports per-vertical success/error results so a failed source does not erase or block unrelated known-good verticals.
@@ -68,5 +69,5 @@ Public availability is not treated as permission for unrestricted redistribution
 - The exact voltage was absent from the example, so the QCO’s voltage scope is unresolved.
 - Kettle implementation categories model `GENERAL`, `SMALL` and `MICRO`; other captured QCOs currently use the general applicability row. Exemptions, district coverage, turnover thresholds and stock-transition facts are not fully automated eligibility decisions.
 - Lab addresses/scope are stored only where the official page exposed them; missing data is not inferred.
-- The staging workflow schedules byte-level source checks and material-change classification, but maker/checker approval, notifications and semantic diff review remain manual.
+- The staging workflow schedules byte-level source checks and material-change classification. Hash-locked, attributed resolution is available through a manual GitHub workflow, while semantic comparison and maker/checker judgment remain human responsibilities.
 - Complete AHC coverage, live HUID verification, full laboratory pagination and source-specific redistribution rights remain unresolved.

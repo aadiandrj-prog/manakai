@@ -16,7 +16,7 @@ Free services can sleep, throttle or change their allowances. This topology is s
 1. Create a free PostgreSQL project in a region near the Render service. The current staging project and Render service use AWS US East 2 / Ohio.
 2. Copy its pooled connection string and retain `sslmode=require`.
 3. Keep this value secret. It becomes Render's `DATABASE_URL` and the GitHub repository secret `NEON_DATABASE_URL`.
-4. Render startup runs `alembic upgrade head` and idempotent `all-authoritative` ingestion. `/ready` verifies revision `d7e2c9a4f610`, authoritative sources and five coverage records.
+4. Render startup runs `alembic upgrade head` and idempotent `all-authoritative` ingestion. `/ready` verifies revision `f3c8a1d2e740`, authoritative sources and five coverage records.
 
 ## 2. Render API
 
@@ -53,7 +53,9 @@ These values are public by design and must never contain database or model crede
 
 In GitHub, add the Actions secret `NEON_DATABASE_URL` using the same Neon connection string. `.github/workflows/regulatory-refresh.yml` runs daily at 02:30 UTC and can also be dispatched manually.
 
-The workflow fetches allow-listed official pages, records changed hashes as `REVIEW_REQUIRED`, preserves the last verified regulatory graph and exits visibly when review is needed. It never auto-publishes changed regulatory facts.
+The workflow fetches allow-listed official pages, records changed hashes as `REVIEW_REQUIRED`, preserves the last verified regulatory graph, reconciles captured known-good verticals, prints exact pending URLs/hashes and exits visibly when review is needed. It never auto-publishes changed regulatory facts.
+
+Use the separately manual `Resolve authoritative source review` workflow only after inspecting the official source. `ACCEPTED_EDITORIAL` advances the raw-byte baseline without changing canonical facts; `REJECTED` retains the canonical record and old baseline; `ACCEPTED_MATERIAL` is rejected unless a newer canonical source has already been ingested and its exact content hash is supplied. Every resolution records reviewer, timestamp, note and canonical source record.
 
 ## 5. Tightly limited provider
 
@@ -86,6 +88,6 @@ Staging is capped at 40 provider calls per UTC day, 500 output tokens per call, 
 
 ## Migration, rollback and backup
 
-Every schema change is a new Alembic revision. Phase 2E revision `d7e2c9a4f610` is additive on `b48f761da923`. Do not edit deployed migration history. Redeploy an older image only when it remains compatible with the current schema; database downgrade is not the normal rollback.
+Every schema change is a new Alembic revision. Phase 2E revision `d7e2c9a4f610` is additive on `b48f761da923`; review-audit revision `f3c8a1d2e740` is additive on Phase 2E. Do not edit deployed migration history. Redeploy an older image only when it remains compatible with the current schema; database downgrade is not the normal rollback.
 
 `scripts/backup_staging.sh` creates an explicit custom-format PostgreSQL dump. `scripts/restore_staging.sh` refuses to run without confirmation that the destination is an empty recovery database. Free hosting has no production recovery guarantee, so make a local encrypted backup before each authoritative-data change.

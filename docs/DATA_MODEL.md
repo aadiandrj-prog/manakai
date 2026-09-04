@@ -27,7 +27,7 @@ Documents add authority, verification, identifier, hash and temporal status. Chu
 ## Phase 2D telemetry
 
 - `ai_usage_events`: provider/model, operation, status, latency, available token counts, correlation identifiers and answer-validation result. Prompt and answer bodies are deliberately excluded.
-- `source_change_events`: source URL/type, previous/new hash, ingestion run and `REVIEW_REQUIRED` status. A change event never replaces or deletes canonical data automatically.
+- `source_change_events`: source URL/type, previous/new hash, ingestion run, `REVIEW_REQUIRED` status and immutable review attribution fields. A change event never replaces or deletes canonical data automatically; material acceptance requires a newer canonical ingest.
 
 ## Phase 2E coverage and regimes
 

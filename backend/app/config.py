@@ -40,7 +40,7 @@ class Settings:
     trust_proxy_headers: bool = os.getenv("TRUST_PROXY_HEADERS", "false").lower() == "true"
     openai_allowed_models: tuple[str, ...] = _csv("OPENAI_ALLOWED_MODELS", "gpt-5-mini,gpt-5.4-mini")
     gemini_allowed_models: tuple[str, ...] = _csv("GEMINI_ALLOWED_MODELS", "gemini-3.6-flash,gemini-3.7-flash")
-    expected_schema_revision: str = os.getenv("EXPECTED_SCHEMA_REVISION", "d7e2c9a4f610")
+    expected_schema_revision: str = os.getenv("EXPECTED_SCHEMA_REVISION", "f3c8a1d2e740")
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "disabled")
     cors_origins: tuple[str, ...] = _csv("CORS_ORIGINS", "http://localhost:3000")
     sql_echo: bool = os.getenv("SQL_ECHO", "false").lower() == "true"

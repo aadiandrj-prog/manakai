@@ -31,9 +31,15 @@ jobs:
         run: test -n "$DATABASE_URL"
       - name: Install backend dependencies
         run: pip install -r backend/requirements.txt
+      - name: Apply additive migrations
+        working-directory: backend
+        run: alembic -c alembic.ini upgrade head
       - name: Check official sources without overwriting verified facts
         working-directory: backend
-        run: python -m app.ingestion refresh --fail-on-change
+        run: python -m app.ingestion refresh
       - name: Reconcile captured authoritative verticals independently
         working-directory: backend
         run: python -m app.ingestion all-authoritative
+      - name: Report unresolved source reviews
+        working-directory: backend
+        run: python -m app.ingestion review-report --fail-on-pending
