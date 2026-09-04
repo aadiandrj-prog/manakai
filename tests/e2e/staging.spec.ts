@@ -18,6 +18,9 @@ const profile = {
   certification_scheme: 'Scheme I (ISI Mark Scheme)', tests: [], required_documents: [],
   laboratories: [{ id: 'lab', name: 'BIS Central Laboratory', city: 'Sahibabad', state: 'Uttar Pradesh', standards: ['IS 302 (Part 2/Sec 15)'], capabilities: ['Complete scope'], source_kind: 'AUTHORITATIVE', recognition_status: 'RECOGNISED' }],
   next_steps: [], evidence: [citation], confidence: 0.94, warnings: [], as_of_date: '2026-09-02', data_mode: 'AUTHORITATIVE', explanation: [],
+  coverage: { id: 'coverage-kettle', category_slug: 'appliances-for-heating-liquids', category_name: 'Appliances for Heating Liquids', primary_standard: 'IS 302 (Part 2/Sec 15):2009', coverage_status: 'VERIFIED', coverage_reason: 'Official BIS evidence captured.', authoritative_sources_count: 5, known_limitations: [], standard_metadata_available: true, compliance_verified: true },
+  regulatory_regime: { id: 'regime-scheme-i', slug: 'scheme-i-product-certification', name: 'Scheme I Product Certification', regime_type: 'PRODUCT_CERTIFICATION', description: 'BIS Standard Mark licensing.' },
+  hallmarking_centres: [], consumer_actions: [],
 };
 
 function response(message: string, clarification = false) {

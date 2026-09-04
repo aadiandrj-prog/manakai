@@ -21,7 +21,7 @@ services:
       - key: TRUST_PROXY_HEADERS
         value: "true"
       - key: EXPECTED_SCHEMA_REVISION
-        value: b48f761da923
+        value: d7e2c9a4f610
       - key: LLM_PROVIDER
         sync: false
       - key: LLM_MODEL

@@ -21,6 +21,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ready */
+        get: operations["ready_ready_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Coverage */
+        get: operations["list_coverage_api_v1_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/coverage/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Coverage Stats */
+        get: operations["coverage_stats_api_v1_coverage_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hallmarking/centres": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hallmarking Centres */
+        get: operations["hallmarking_centres_api_v1_hallmarking_centres_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hallmarking/guidance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hallmarking Guidance */
+        get: operations["hallmarking_guidance_api_v1_hallmarking_guidance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/standards": {
         parameters: {
             query?: never;
@@ -396,6 +481,18 @@ export interface components {
              * @default []
              */
             explanation: components["schemas"]["ExplanationNode"][];
+            coverage: components["schemas"]["CoverageSummary"];
+            regulatory_regime?: components["schemas"]["RegulatoryRegime"] | null;
+            /**
+             * Hallmarking Centres
+             * @default []
+             */
+            hallmarking_centres: components["schemas"]["HallmarkingCentre"][];
+            /**
+             * Consumer Actions
+             * @default []
+             */
+            consumer_actions: string[];
         };
         /** ConversationCreateRequest */
         ConversationCreateRequest: {
@@ -475,6 +572,63 @@ export interface components {
              */
             messages: components["schemas"]["ConversationMessage"][];
         };
+        /** CoverageStats */
+        CoverageStats: {
+            /** Total */
+            total: number;
+            /** Verified */
+            verified: number;
+            /** Partial */
+            partial: number;
+            /** Metadata Only */
+            metadata_only: number;
+            /** Unsupported */
+            unsupported: number;
+            /** Authoritative Sources */
+            authoritative_sources: number;
+        };
+        /**
+         * CoverageStatus
+         * @enum {string}
+         */
+        CoverageStatus: "VERIFIED" | "PARTIAL" | "METADATA_ONLY" | "UNSUPPORTED";
+        /** CoverageSummary */
+        CoverageSummary: {
+            /** Id */
+            id: string;
+            /** Category Slug */
+            category_slug: string;
+            /** Category Name */
+            category_name: string;
+            /** Primary Standard */
+            primary_standard?: string | null;
+            coverage_status: components["schemas"]["CoverageStatus"];
+            /** Coverage Reason */
+            coverage_reason: string;
+            /** Verified At */
+            verified_at?: string | null;
+            /**
+             * Authoritative Sources Count
+             * @default 0
+             */
+            authoritative_sources_count: number;
+            /**
+             * Known Limitations
+             * @default []
+             */
+            known_limitations: string[];
+            /**
+             * Standard Metadata Available
+             * @default false
+             */
+            standard_metadata_available: boolean;
+            /**
+             * Compliance Verified
+             * @default false
+             */
+            compliance_verified: boolean;
+            regulatory_regime?: components["schemas"]["RegulatoryRegime"] | null;
+        };
         /** Document */
         Document: {
             /** Id */
@@ -524,6 +678,53 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HallmarkingCentre */
+        HallmarkingCentre: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Centre Identifier */
+            centre_identifier?: string | null;
+            /** Address */
+            address?: string | null;
+            /** City */
+            city?: string | null;
+            /** State */
+            state?: string | null;
+            /** Status */
+            status: string;
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid Until */
+            valid_until?: string | null;
+            /** Scope */
+            scope?: string | null;
+            /** Source Url */
+            source_url: string;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            source_kind: components["schemas"]["SourceKind"];
+            /** Warning */
+            warning?: string | null;
+        };
+        /** HallmarkingGuidance */
+        HallmarkingGuidance: {
+            /** Id */
+            id: string;
+            /** Topic */
+            topic: string;
+            /** Title */
+            title: string;
+            /** Guidance */
+            guidance: string[];
+            /** Source Url */
+            source_url: string;
+            source_kind: components["schemas"]["SourceKind"];
         };
         /**
          * Intent
@@ -597,6 +798,12 @@ export interface components {
             retrieved_at?: string | null;
             /** Warning */
             warning?: string | null;
+            /** Grade Type */
+            grade_type?: string | null;
+            /** Testing Charge */
+            testing_charge?: string | null;
+            /** Remark */
+            remark?: string | null;
         };
         /** ProductAnalyseRequest */
         ProductAnalyseRequest: {
@@ -681,6 +888,23 @@ export interface components {
             /** Warnings */
             warnings: string[];
         };
+        /** RegulatoryRegime */
+        RegulatoryRegime: {
+            /** Id */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            regime_type: components["schemas"]["RegulatoryRegimeType"];
+            /** Description */
+            description: string;
+        };
+        /**
+         * RegulatoryRegimeType
+         * @enum {string}
+         */
+        RegulatoryRegimeType: "PRODUCT_CERTIFICATION" | "HALLMARKING" | "UNKNOWN";
         /**
          * RegulatoryStatus
          * @enum {string}
@@ -764,6 +988,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    ready_ready_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_coverage_api_v1_coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageSummary"][];
+                };
+            };
+        };
+    };
+    coverage_stats_api_v1_coverage_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageStats"];
+                };
+            };
+        };
+    };
+    hallmarking_centres_api_v1_hallmarking_centres_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                state?: string | null;
+                as_of_date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallmarkingCentre"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hallmarking_guidance_api_v1_hallmarking_guidance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HallmarkingGuidance"][];
                 };
             };
         };

@@ -67,6 +67,8 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const standardsQuery = useQuery({ queryKey: ['standards'], queryFn: () => api.standards() });
   const labsQuery = useQuery({ queryKey: ['labs'], queryFn: api.labs });
+  const coverageQuery = useQuery({ queryKey: ['coverage'], queryFn: api.coverage });
+  const coverageStatsQuery = useQuery({ queryKey: ['coverage-stats'], queryFn: api.coverageStats });
   return (
     <AppShell current="/">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
@@ -78,7 +80,7 @@ export default function Home() {
             action={
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" />{' '}
-                Demo engine ready
+                Authoritative coverage registry ready
               </div>
             }
           />
@@ -97,7 +99,7 @@ export default function Home() {
                 id="product-query"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="e.g. I manufacture a portable rechargeable LED emergency lamp"
+                placeholder="e.g. I manufacture OPC 53 cement in India"
                 className="h-12 flex-1 rounded-md border border-input bg-[#0b0c0d] px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <Button
@@ -121,8 +123,9 @@ export default function Home() {
               <span>Try:</span>
               {[
                 'electric kettle certification',
-                'clause 6.3 explained',
-                'labs near Delhi',
+                'motorcycle helmet IS 4151',
+                'OPC 53 testing labs',
+                'domestic pressure cooker',
                 'verify jewellery HUID',
               ].map((item) => (
                 <button
@@ -174,7 +177,7 @@ export default function Home() {
                     {standardsQuery.data?.length ?? '—'}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    seeded standard records
+                  standard records
                   </p>
                 </div>
                 <div>
@@ -182,15 +185,15 @@ export default function Home() {
                     {labsQuery.data?.length ?? '—'}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    demo lab records
+                    recognised lab records
                   </p>
                 </div>
                 <div>
                   <div className="font-heading text-3xl tracking-[-.05em]">
-                    3
+                    {coverageStatsQuery.data?.verified ?? '—'}
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    reliable demo paths
+                    verified product verticals
                   </p>
                 </div>
               </div>
@@ -209,6 +212,19 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+            </div>
+          </section>
+          <section className="mt-5 panel p-5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div><span className="eyebrow">Authoritative coverage</span><h2 className="mt-2 font-heading text-lg tracking-[-.03em]">What ManakAI can verify today</h2></div>
+              <span className="text-xs text-muted-foreground">{coverageStatsQuery.data?.total ?? '—'} published coverage records</span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {(coverageQuery.data ?? []).map((item) => <article key={item.id} className="rounded-md border border-border bg-[#0c0d0e] p-3">
+                <div className="flex items-start justify-between gap-2"><p className="text-sm font-medium">{item.category_name}</p><span className={`rounded px-1.5 py-0.5 text-[9px] ${item.coverage_status === 'VERIFIED' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-300/10 text-amber-300'}`}>{item.coverage_status}</span></div>
+                <p className="mt-2 text-xs text-muted-foreground">{item.primary_standard ?? 'No primary standard'}</p>
+                <p className="mt-2 line-clamp-3 text-[10px] leading-4 text-muted-foreground">{item.coverage_reason}</p>
+              </article>)}
             </div>
           </section>
         </div>

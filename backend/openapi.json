@@ -22,6 +22,161 @@
         }
       }
     },
+    "/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coverage": {
+      "get": {
+        "summary": "List Coverage",
+        "operationId": "list_coverage_api_v1_coverage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CoverageSummary"
+                  },
+                  "type": "array",
+                  "title": "Response List Coverage Api V1 Coverage Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coverage/stats": {
+      "get": {
+        "summary": "Coverage Stats",
+        "operationId": "coverage_stats_api_v1_coverage_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverageStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hallmarking/centres": {
+      "get": {
+        "summary": "Hallmarking Centres",
+        "operationId": "hallmarking_centres_api_v1_hallmarking_centres_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "State"
+            }
+          },
+          {
+            "name": "as_of_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HallmarkingCentre"
+                  },
+                  "title": "Response Hallmarking Centres Api V1 Hallmarking Centres Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hallmarking/guidance": {
+      "get": {
+        "summary": "Hallmarking Guidance",
+        "operationId": "hallmarking_guidance_api_v1_hallmarking_guidance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HallmarkingGuidance"
+                  },
+                  "type": "array",
+                  "title": "Response Hallmarking Guidance Api V1 Hallmarking Guidance Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/standards": {
       "get": {
         "summary": "List Standards",
@@ -992,6 +1147,35 @@
             "type": "array",
             "title": "Explanation",
             "default": []
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/CoverageSummary"
+          },
+          "regulatory_regime": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegulatoryRegime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hallmarking_centres": {
+            "items": {
+              "$ref": "#/components/schemas/HallmarkingCentre"
+            },
+            "type": "array",
+            "title": "Hallmarking Centres",
+            "default": []
+          },
+          "consumer_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Consumer Actions",
+            "default": []
           }
         },
         "type": "object",
@@ -1010,7 +1194,8 @@
           "confidence",
           "warnings",
           "as_of_date",
-          "data_mode"
+          "data_mode",
+          "coverage"
         ],
         "title": "ComplianceProfile"
       },
@@ -1160,6 +1345,142 @@
           "answer"
         ],
         "title": "ConversationResponse"
+      },
+      "CoverageStats": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "verified": {
+            "type": "integer",
+            "title": "Verified"
+          },
+          "partial": {
+            "type": "integer",
+            "title": "Partial"
+          },
+          "metadata_only": {
+            "type": "integer",
+            "title": "Metadata Only"
+          },
+          "unsupported": {
+            "type": "integer",
+            "title": "Unsupported"
+          },
+          "authoritative_sources": {
+            "type": "integer",
+            "title": "Authoritative Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "verified",
+          "partial",
+          "metadata_only",
+          "unsupported",
+          "authoritative_sources"
+        ],
+        "title": "CoverageStats"
+      },
+      "CoverageStatus": {
+        "type": "string",
+        "enum": [
+          "VERIFIED",
+          "PARTIAL",
+          "METADATA_ONLY",
+          "UNSUPPORTED"
+        ],
+        "title": "CoverageStatus"
+      },
+      "CoverageSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "category_slug": {
+            "type": "string",
+            "title": "Category Slug"
+          },
+          "category_name": {
+            "type": "string",
+            "title": "Category Name"
+          },
+          "primary_standard": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Standard"
+          },
+          "coverage_status": {
+            "$ref": "#/components/schemas/CoverageStatus"
+          },
+          "coverage_reason": {
+            "type": "string",
+            "title": "Coverage Reason"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "authoritative_sources_count": {
+            "type": "integer",
+            "title": "Authoritative Sources Count",
+            "default": 0
+          },
+          "known_limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Known Limitations",
+            "default": []
+          },
+          "standard_metadata_available": {
+            "type": "boolean",
+            "title": "Standard Metadata Available",
+            "default": false
+          },
+          "compliance_verified": {
+            "type": "boolean",
+            "title": "Compliance Verified",
+            "default": false
+          },
+          "regulatory_regime": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegulatoryRegime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "category_slug",
+          "category_name",
+          "coverage_status",
+          "coverage_reason"
+        ],
+        "title": "CoverageSummary"
       },
       "Document": {
         "properties": {
@@ -1333,6 +1654,174 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HallmarkingCentre": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "centre_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Centre Identifier"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid Until"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Retrieved At"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          },
+          "warning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warning"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "source_url",
+          "retrieved_at",
+          "source_kind"
+        ],
+        "title": "HallmarkingCentre"
+      },
+      "HallmarkingGuidance": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "guidance": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Guidance"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "source_kind": {
+            "$ref": "#/components/schemas/SourceKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "topic",
+          "title",
+          "guidance",
+          "source_url",
+          "source_kind"
+        ],
+        "title": "HallmarkingGuidance"
       },
       "Intent": {
         "type": "string",
@@ -1580,6 +2069,39 @@
               }
             ],
             "title": "Warning"
+          },
+          "grade_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade Type"
+          },
+          "testing_charge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Testing Charge"
+          },
+          "remark": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remark"
           }
         },
         "type": "object",
@@ -1831,6 +2353,47 @@
           "warnings"
         ],
         "title": "QueryResponse"
+      },
+      "RegulatoryRegime": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "regime_type": {
+            "$ref": "#/components/schemas/RegulatoryRegimeType"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "regime_type",
+          "description"
+        ],
+        "title": "RegulatoryRegime"
+      },
+      "RegulatoryRegimeType": {
+        "type": "string",
+        "enum": [
+          "PRODUCT_CERTIFICATION",
+          "HALLMARKING",
+          "UNKNOWN"
+        ],
+        "title": "RegulatoryRegimeType"
       },
       "RegulatoryStatus": {
         "type": "string",

@@ -93,4 +93,39 @@ CASES = [
     EvaluationCase("qa-08", "standards_qa", "Does IS 88888 replace the kettle standard?", "STANDARD_QA", should_refuse=True),
 ]
 
-assert 50 <= len(CASES) <= 100
+_PHASE_2E_WORDINGS = {
+    "helmet": [
+        "I manufacture motorcycle helmets for two-wheeler riders in India.", "Protective helmet for motorbike riders", "We import motorcycle rider helmets into India",
+        "Two-wheeler safety helmet manufacturer", "Bike rider helmet under BIS", "Motorcycle helmet with visor", "Helmet for a motorbike passenger",
+        "दोपहिया सवार के लिए हेलमेट बनाता हूँ", "मोटरसाइकिल हेलमेट के लिए BIS चाहिए?", "motorbike rider head protection helmet",
+        "We sell protective helmets for motorcycle riders", "Need certification for a two wheeler helmet", "Motorcycle rider helmet, full face type",
+        "Open-face motorbike rider helmet", "Helmet intended specifically for motorcycle use",
+    ],
+    "cement": [
+        "We manufacture OPC 53 ordinary Portland cement.", "Ordinary Portland Cement grade 43", "OPC 33 cement producer in India",
+        "Need BIS certification for Portland cement 53S", "We make OPC 43S", "Importing ordinary Portland cement grade 53",
+        "OPC cement without a fixed grade yet", "ओपीसी 53 सीमेंट बनाते हैं", "साधारण पोर्टलैंड सीमेंट ग्रेड 43",
+        "Ordinary Portland cement for structural concrete", "Cement labelled OPC 33", "Manufacturer of IS 269 Portland cement",
+        "OPC 53S production plant", "Portland cement OPC 43 grade", "Indian ordinary Portland cement manufacturer",
+    ],
+    "pressure-cooker": [
+        "I manufacture a 5 litre domestic pressure cooker.", "Domestic pressure cooker with inner lid", "Stainless steel pressure cooker for homes",
+        "3 litre aluminium pressure cooker", "Induction-base domestic pressure cooker", "We import household pressure cookers",
+        "Outer-lid pressure cooker manufacturer", "घरेलू प्रेशर कुकर बनाते हैं", "5 लीटर कुकर के लिए BIS चाहिए",
+        "Domestic cooker with pressure relief device", "Household pressure cooker, material not decided", "Cooker with composite induction base",
+        "Screw-clamp domestic pressure cooker", "Pressure cooker for a home kitchen", "Manufacturer of domestic cookers in India",
+    ],
+    "hallmarking": [
+        "I sell 22K916 gold jewellery with HUID.", "How do I verify HUID on 18K750 gold jewellery?", "Gold ornament hallmarked 14K585",
+        "Registered jeweller selling 20K833 articles", "Gold jewellery with a six digit HUID", "Need hallmarking guidance for 23K958 gold",
+        "24KS995 gold artefact", "22 कैरेट 916 सोने के आभूषण", "सोने के गहने का HUID कैसे जांचें",
+        "BIS hallmark on gold jewellery", "Consumer wants to test a hallmarked gold ring", "Gold artefact first point of sale",
+        "How can a jeweller send gold to an AHC?", "Gold jewellery purity and HUID marks", "Verify a gold ornament hallmark",
+    ],
+}
+
+for category, queries in _PHASE_2E_WORDINGS.items():
+    product_type = {"helmet": "motorcycle_helmet", "cement": "ordinary_portland_cement", "pressure-cooker": "domestic_pressure_cooker", "hallmarking": "gold_jewellery"}[category]
+    CASES.extend(EvaluationCase(f"2e-{category}-{index:02d}", f"phase_2e_{category}", query, "PRODUCT_COMPLIANCE", expected_product_type=product_type) for index, query in enumerate(queries, 1))
+
+assert len(CASES) >= 120

@@ -109,3 +109,47 @@ class BISLIMSAdapter(BISSourceAdapter):
             if record["source_record"].get("source_type") != "BIS_LIMS_SCOPE":
                 errors.append(f"{record.get('id')}: source is not a LIMS scope")
         return errors
+
+
+class BISVerticalAdapter(BISSourceAdapter):
+    """Validates the shared captured-fixture contract for any product vertical."""
+    name = "product-vertical"
+
+    def parse(self, raw: Any) -> Any:
+        return deepcopy(raw)
+
+    def normalize(self, parsed: dict[str, Any]) -> list[dict[str, Any]]:
+        return [parsed]
+
+    def validate(self, records: list[dict[str, Any]]) -> list[str]:
+        errors: list[str] = []
+        for record in records:
+            for field in ("key", "category", "standard", "standard_source", "coverage"):
+                if not record.get(field):
+                    errors.append(f"{record.get('key', 'vertical')}: missing {field}")
+            urls = [record.get("standard_source"), record.get("lims_url"), (record.get("manual") or {}).get("url"), (record.get("qco") or {}).get("url")]
+            for url in filter(None, urls):
+                if not (url.startswith("https://www.bis.gov.in/") or url.startswith("https://bis.gov.in/") or url.startswith("https://lims.bis.gov.in/")):
+                    errors.append(f"{record.get('key')}: non-authoritative source URL")
+        return errors
+
+
+class BISHallmarkingAdapter(BISSourceAdapter):
+    name = "hallmarking"
+
+    def parse(self, raw: Any) -> Any:
+        return deepcopy(raw["hallmarking"])
+
+    def normalize(self, parsed: dict[str, Any]) -> list[dict[str, Any]]:
+        return [parsed]
+
+    def validate(self, records: list[dict[str, Any]]) -> list[str]:
+        if not records:
+            return ["hallmarking fixture is empty"]
+        record = records[0]
+        errors = []
+        if record.get("standard", {}).get("number") != "IS 1417":
+            errors.append("hallmarking fineness standard is missing")
+        if not all(item in record.get("fineness", []) for item in ("14K585", "18K750", "22K916")):
+            errors.append("recognised fineness grades are incomplete")
+        return errors

@@ -5,7 +5,7 @@
 - `APP_ENV=staging`, `DEMO_MODE=false`
 - managed `DATABASE_URL`; no public database allow-list
 - exact Vercel production origin in Render `CORS_ORIGINS`
-- `EXPECTED_SCHEMA_REVISION=b48f761da923`
+- `EXPECTED_SCHEMA_REVISION=d7e2c9a4f610`
 - one provider/model/key combination from the allow-list
 - bounded request, AI input/output, daily request and anonymous rate limits
 
@@ -13,7 +13,7 @@ The UI must show the staging banner and regulatory disclaimer. Records stay labe
 
 ## Release smoke checklist
 
-1. `/health` returns 200 without querying the database; `/ready` returns revision `b48f761da923`.
+1. `/health` returns 200 without querying the database; `/ready` returns revision `d7e2c9a4f610` and five coverage records.
 2. Submit “I manufacture a 1500 W 230 V electric kettle for household use in India.” Confirm classification, IS 302 (Part 2/Sec 15):2009, QCO S.O. 1739(E), date-aware status, Scheme I, manual, current lab scope and evidence links.
 3. Omit voltage; confirm a clarification. Reply `230V`; confirm the same conversation completes without invention.
 4. Exercise English, Hindi, Hinglish, historical/future dates, a fake standard, prompt injection and an unanswerable question.

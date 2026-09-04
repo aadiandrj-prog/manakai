@@ -101,6 +101,10 @@ class SourceChangeEvent(IdMixin, Base):
     new_hash: Mapped[str] = mapped_column(String(64))
     ingestion_run_id: Mapped[str | None] = mapped_column(String(64), index=True)
     status: Mapped[str] = mapped_column(String(32), default="REVIEW_REQUIRED", index=True)
+    change_classification: Mapped[str] = mapped_column(String(32), default="UNKNOWN", index=True)
+    review_status: Mapped[str] = mapped_column(String(32), default="PENDING", index=True)
+    changed_fields: Mapped[list] = mapped_column(JSON, default=list)
+    material_summary: Mapped[str | None] = mapped_column(Text)
 
 
 class Standard(IdMixin, Base):
@@ -146,6 +150,7 @@ class SourceRecord(IdMixin, Base):
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
     ingestion_run_id: Mapped[str | None] = mapped_column(ForeignKey("ingestion_runs.id"), index=True)
     verification_status: Mapped[str] = mapped_column(String(32), index=True)
+    review_status: Mapped[str] = mapped_column(String(32), default="VERIFIED", index=True)
     page: Mapped[int | None] = mapped_column(Integer)
     clause: Mapped[str | None] = mapped_column(String(64))
     section: Mapped[str | None] = mapped_column(Text)
@@ -174,6 +179,36 @@ class ProductCategory(IdMixin, Base):
     name: Mapped[str] = mapped_column(String(240))
     parent_id: Mapped[str | None] = mapped_column(ForeignKey("product_categories.id"))
     source_kind: Mapped[str] = mapped_column(String(24), default="DEMO", index=True)
+
+
+class RegulatoryRegime(IdMixin, Base):
+    __tablename__ = "regulatory_regimes"
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(240))
+    regime_type: Mapped[str] = mapped_column(String(48), index=True)
+    description: Mapped[str] = mapped_column(Text)
+    source_kind: Mapped[str] = mapped_column(String(24), default="AUTHORITATIVE", index=True)
+    source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
+    journey_template: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class CoverageRecord(IdMixin, Base):
+    __tablename__ = "coverage_records"
+    __table_args__ = (UniqueConstraint("product_category_id", "primary_standard_id", name="uq_coverage_category_standard"),)
+    product_category_id: Mapped[str] = mapped_column(ForeignKey("product_categories.id", ondelete="CASCADE"), index=True)
+    primary_standard_id: Mapped[str | None] = mapped_column(ForeignKey("standards.id"), index=True)
+    regime_id: Mapped[str | None] = mapped_column(ForeignKey("regulatory_regimes.id"), index=True)
+    coverage_status: Mapped[str] = mapped_column(String(32), index=True)
+    coverage_reason: Mapped[str] = mapped_column(Text)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    authoritative_sources_count: Mapped[int] = mapped_column(Integer, default=0)
+    known_limitations: Mapped[list] = mapped_column(JSON, default=list)
+    standard_metadata_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    compliance_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    product_category: Mapped["ProductCategory"] = relationship()
+    primary_standard: Mapped["Standard | None"] = relationship()
+    regime: Mapped["RegulatoryRegime | None"] = relationship()
 
 
 class ProductStandardMapping(IdMixin, Base):
@@ -286,6 +321,16 @@ class Test(IdMixin, Base):
     source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
 
 
+class TestStandardRelationship(IdMixin, Base):
+    __tablename__ = "test_standard_relationships"
+    __table_args__ = (UniqueConstraint("test_id", "referenced_standard_id", name="uq_test_referenced_standard"),)
+    test_id: Mapped[str] = mapped_column(ForeignKey("tests.id", ondelete="CASCADE"), index=True)
+    referenced_standard_id: Mapped[str] = mapped_column(ForeignKey("standards.id"), index=True)
+    relationship_type: Mapped[str] = mapped_column(String(48), default="TEST_METHOD_FROM")
+    rationale: Mapped[str | None] = mapped_column(Text)
+    source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
+
+
 class Laboratory(IdMixin, Base):
     __tablename__ = "laboratories"
     name: Mapped[str] = mapped_column(String(300), index=True)
@@ -312,6 +357,10 @@ class LaboratoryRecognition(IdMixin, Base):
     retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     verification_status: Mapped[str] = mapped_column(String(32), default="UNVERIFIED", index=True)
     source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
+    grade_type: Mapped[str | None] = mapped_column(Text)
+    testing_charge: Mapped[str | None] = mapped_column(String(120))
+    remark: Mapped[str | None] = mapped_column(Text)
+    completeness_warning: Mapped[str | None] = mapped_column(Text)
     laboratory: Mapped["Laboratory"] = relationship()
     standard: Mapped["Standard"] = relationship()
 
@@ -323,6 +372,36 @@ class ProductManual(IdMixin, Base):
     source_kind: Mapped[str] = mapped_column(String(24), default="DEMO")
     manual_identifier: Mapped[str | None] = mapped_column(String(240), index=True)
     status: Mapped[str] = mapped_column(String(32), default="UNKNOWN")
+    source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
+    supersedes_id: Mapped[str | None] = mapped_column(ForeignKey("product_manuals.id"))
+    superseded_by_id: Mapped[str | None] = mapped_column(ForeignKey("product_manuals.id"))
+
+
+class HallmarkingCentre(IdMixin, Base):
+    __tablename__ = "hallmarking_centres"
+    name: Mapped[str] = mapped_column(String(300), index=True)
+    centre_identifier: Mapped[str | None] = mapped_column(String(120), unique=True, index=True)
+    address: Mapped[str | None] = mapped_column(Text)
+    city: Mapped[str | None] = mapped_column(String(120), index=True)
+    state: Mapped[str | None] = mapped_column(String(120), index=True)
+    status: Mapped[str] = mapped_column(String(32), default="UNKNOWN", index=True)
+    valid_from: Mapped[date | None] = mapped_column(Date)
+    valid_until: Mapped[date | None] = mapped_column(Date)
+    scope: Mapped[str | None] = mapped_column(Text)
+    source_url: Mapped[str] = mapped_column(Text)
+    retrieved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    source_kind: Mapped[str] = mapped_column(String(24), default="AUTHORITATIVE", index=True)
+    source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
+    warning: Mapped[str | None] = mapped_column(Text)
+
+
+class HallmarkingGuidance(IdMixin, Base):
+    __tablename__ = "hallmarking_guidance"
+    topic: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(240))
+    guidance: Mapped[list] = mapped_column(JSON, default=list)
+    source_url: Mapped[str] = mapped_column(Text)
+    source_kind: Mapped[str] = mapped_column(String(24), default="AUTHORITATIVE")
     source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"))
 
 
@@ -349,9 +428,13 @@ class ComplianceProfile(IdMixin, Base):
     as_of_date: Mapped[date | None] = mapped_column(Date, index=True)
     data_mode: Mapped[str] = mapped_column(String(24), default="DEMO", index=True)
     explanation_tree: Mapped[dict] = mapped_column(JSON, default=dict)
+    coverage_id: Mapped[str | None] = mapped_column(ForeignKey("coverage_records.id"), index=True)
+    regime_id: Mapped[str | None] = mapped_column(ForeignKey("regulatory_regimes.id"), index=True)
     product_profile: Mapped["ProductProfile"] = relationship()
     qco: Mapped["QCO | None"] = relationship()
     certification_scheme: Mapped["CertificationScheme | None"] = relationship()
+    coverage: Mapped["CoverageRecord | None"] = relationship()
+    regime: Mapped["RegulatoryRegime | None"] = relationship()
 
 
 class ComplianceJourney(IdMixin, Base):

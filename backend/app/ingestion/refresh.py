@@ -39,10 +39,14 @@ async def refresh_authoritative_sources(session: Session, fetcher=None) -> dict:
                     m.SourceChangeEvent.new_hash == fetched.content_hash,
                 ))
                 if not exists:
+                    material_types = {"GOVERNMENT_QCO", "GOVERNMENT_HALLMARKING_ORDER", "BIS_PRODUCT_MANUAL", "BIS_STANDARD_METADATA", "BIS_LIMS_SCOPE"}
+                    classification = "MATERIAL" if source.source_type in material_types else "EDITORIAL"
                     session.add(m.SourceChangeEvent(
                         id=f"source-change-{uuid4().hex}", source_url=source.source_url, source_type=source.source_type,
                         previous_hash=previous_raw, new_hash=fetched.content_hash, ingestion_run_id=run.id,
                         status="REVIEW_REQUIRED",
+                        change_classification=classification, review_status="PENDING", changed_fields=["raw_content"],
+                        material_summary=f"{source.source_type} content changed; canonical records were retained pending review.",
                     ))
                     changes += 1
         except Exception as exc:

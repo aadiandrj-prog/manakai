@@ -7,6 +7,7 @@ from ..schemas import (
     ClarificationDecision, ConversationInterpretation, Intent, IntentClassification, ProductExtraction, SupportedLanguage,
 )
 from .intent import classify_intent
+from .product_catalog import classify_authoritative
 
 MONTHS = {name.lower(): index for index, name in enumerate(("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), 1)}
 
@@ -33,7 +34,15 @@ def extract_product(text: str, previous: dict | None = None) -> ProductExtractio
     previous = previous or {}
     kettle = any(term in lower for term in ("kettle", "electric jug", "water boiler", "केतली")) or previous.get("product_type") == "electric_kettle"
     if not kettle:
-        return ProductExtraction.model_validate(previous) if previous.get("product_type") else None
+        classified = classify_authoritative(text)
+        if classified.get("unsupported"):
+            return ProductExtraction.model_validate(previous) if previous.get("product_type") else None
+        structured = classified["structured"]
+        return ProductExtraction(
+            product_type=structured.get("product_type"), category=structured.get("category"), actor=previous.get("actor"),
+            country=structured.get("country"), additional_attributes={k: v for k, v in structured.items() if k not in {"product_type", "category", "country", "candidate_categories"}},
+            missing_required_fields=classified["missing"], candidate_categories=structured.get("candidate_categories", []), confidence=classified["confidence"],
+        )
     power_kw = re.search(r"(?P<kw>\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", normalized)
     power_w = re.search(r"(?<![\d.])(\d{2,5})\s*(?:w(?:att)?s?|वाट)\b", normalized)
     voltage_range = re.search(r"(?<!\d)(\d{2,4})\s*[-–]\s*(\d{2,4})\s*(?:v|volt|volts)\b", normalized)

@@ -1,6 +1,6 @@
 # Controlled-provider evaluation
 
-The Phase 2C benchmark remains in `backend/tests/fixtures/phase2c_benchmark.json`. Phase 2D adds a 70-case set in `backend/app/evaluation/cases.py`, covering wording/numeric formats, missing information, English/Hindi/Hinglish, adversarial instructions, explicit dates and standards Q&A. CI uses deterministic providers and never calls a paid provider.
+The Phase 2C benchmark remains in `backend/tests/fixtures/phase2c_benchmark.json`. Phase 2E expands the executable set in `backend/app/evaluation/cases.py` to 130 cases covering wording/numeric formats, missing information, English/Hindi/Hinglish, adversarial instructions, explicit dates, standards Q&A, helmets, cement, pressure cookers and hallmarking. CI uses deterministic providers and never calls a paid provider.
 
 | Case | Required check |
 | --- | --- |
@@ -13,6 +13,9 @@ The Phase 2C benchmark remains in `backend/tests/fixtures/phase2c_benchmark.json
 | Technical Q&A | validated `E1…En` evidence only |
 | Unanswerable | explicit inability to verify |
 | Provider failure / contradiction | deterministic fallback |
+| Bare “helmet” | clarification/candidates; never automatic IS 4151 |
+| Unsupported product | explicit coverage boundary and no standard |
+| Hallmarking/HUID | deterministic regime; HUID routed to BIS Care, never claimed verified |
 
 Tracked release metrics are intent accuracy, attribute extraction accuracy, missing-field detection, regulatory hallucination count, citation validity, QCO-status correctness, language equivalence, injection resistance and unanswerable refusal rate. Any regulatory hallucination, invalid citation, incorrect QCO status or injection-induced decision change is a release-blocking failure.
 

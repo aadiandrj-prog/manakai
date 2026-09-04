@@ -1,8 +1,23 @@
-# Authoritative kettle data
+# Authoritative BIS coverage
+
+## Phase 2E coverage registry
+
+The original kettle evidence remains unchanged. Phase 2E adds captured official BIS/government metadata for four more domains:
+
+| Product/regime | Primary standard | Coverage | Integrated official evidence |
+| --- | --- | --- | --- |
+| Motorcycle helmets | IS 4151:2015 | VERIFIED | BIS standard page, Scheme I/QCO listing, PM/IS 4151/3/Dec 2024, two dated LIMS scopes |
+| Ordinary Portland Cement | IS 269:2015 | VERIFIED | BIS standard page, Cement QCO/Scheme I listing, PM/IS 269/3/Oct 2023, grade-specific LIMS scopes |
+| Domestic pressure cookers | IS 2347:2023 | PARTIAL | 2020 QCO, current and historical product manuals, current LIMS scope; Scheme I page revision mismatch and missing lab validity are warnings |
+| Gold jewellery/hallmarking | IS 1417:2016 | PARTIAL | 2020/2021/2023/2026 order history, BIS hallmark/HUID/consumer guidance; live HUID verification and complete AHC directory are not ingested |
+
+The captured multi-vertical fixture is `backend/tests/fixtures/official/multi_vertical.json`. It stores metadata and short operational summaries, not full Indian Standards. `AUTHORITATIVE` describes provenance from the linked official source, not a legal approval by ManakAI.
+
+The HUID boundary is strict: ManakAI can explain the three hallmark elements and the official process, but a HUID is verified only through the BIS Care app. AHCs have a dedicated data model and are not mislabeled as ordinary BIS testing laboratories.
 
 ## Scope and capture
 
-This integration covers only household electric kettles as appliances for heating liquids. The committed sanitised source fixture was captured on 2 September 2026. `AUTHORITATIVE` means the stored fact came directly from the linked BIS/government source; it does not mean ManakAI has performed legal certification or that the snapshot stays current forever.
+This section documents the original household-electric-kettle capture as appliances for heating liquids. The committed sanitised source fixture was captured on 2 September 2026. `AUTHORITATIVE` means the stored fact came directly from the linked BIS/government source; it does not mean ManakAI has performed legal certification or that the snapshot stays current forever.
 
 ## Official sources integrated
 
@@ -28,11 +43,16 @@ python -m app.ingestion standards --dry-run
 python -m app.ingestion qco --dry-run
 python -m app.ingestion labs --dry-run
 python -m app.ingestion electric-kettle
+python -m app.ingestion helmets
+python -m app.ingestion cement
+python -m app.ingestion pressure-cookers
+python -m app.ingestion hallmarking
+python -m app.ingestion all-authoritative
 python -m app.ingestion embeddings --allow-model-download
 python -m app.ingestion refresh
 ```
 
-The three sub-target commands currently validate and ingest the same atomic kettle graph so they cannot expose a partially connected regulatory state.
+Each Phase 2E target stages and commits its own graph. `all-authoritative` reports per-vertical success/error results so a failed source does not erase or block unrelated known-good verticals.
 
 ## Metadata versus text
 
@@ -46,6 +66,7 @@ Public availability is not treated as permission for unrestricted redistribution
 
 - The snapshot is not a substitute for checking current Gazette/BIS/LIMS records.
 - The exact voltage was absent from the example, so the QCO’s voltage scope is unresolved.
-- Only `GENERAL`, `SMALL` and `MICRO` implementation categories are modeled; exemptions and stock-transition facts are retained in evidence but not automated as eligibility decisions.
+- Kettle implementation categories model `GENERAL`, `SMALL` and `MICRO`; other captured QCOs currently use the general applicability row. Exemptions, district coverage, turnover thresholds and stock-transition facts are not fully automated eligibility decisions.
 - Lab addresses/scope are stored only where the official page exposed them; missing data is not inferred.
-- The staging Blueprint schedules byte-level source checks, but maker/checker approval, notifications and semantic diff review remain manual.
+- The staging workflow schedules byte-level source checks and material-change classification, but maker/checker approval, notifications and semantic diff review remain manual.
+- Complete AHC coverage, live HUID verification, full laboratory pagination and source-specific redistribution rights remain unresolved.

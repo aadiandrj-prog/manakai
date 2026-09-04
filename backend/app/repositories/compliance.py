@@ -17,6 +17,8 @@ class ComplianceRepository:
                 joinedload(ComplianceProfile.product_profile).joinedload(ProductProfile.product),
                 joinedload(ComplianceProfile.qco),
                 joinedload(ComplianceProfile.certification_scheme),
+                joinedload(ComplianceProfile.coverage),
+                joinedload(ComplianceProfile.regime),
             )
             .where(ComplianceProfile.id == profile_id)
         )
@@ -32,7 +34,7 @@ class ComplianceRepository:
         self,
         *,
         product_profile_id: str,
-        standard_id: str,
+        standard_id: str | None,
         additional_standard_ids: list[str] | None = None,
         confidence: float,
         mandatory_status: str,
@@ -45,6 +47,8 @@ class ComplianceRepository:
         as_of_date=None,
         data_mode: str = "DEMO",
         explanation_tree: dict | None = None,
+        coverage_id: str | None = None,
+        regime_id: str | None = None,
     ) -> ComplianceProfile:
         profile_id = f"compliance-{uuid4().hex}"
         profile = ComplianceProfile(
@@ -60,10 +64,12 @@ class ComplianceRepository:
             as_of_date=as_of_date,
             data_mode=data_mode,
             explanation_tree=explanation_tree or {},
+            coverage_id=coverage_id,
+            regime_id=regime_id,
         )
         self.session.add(profile)
         self.session.flush()
-        links = [ComplianceProfileStandard(id=f"profile-standard-{uuid4().hex}", compliance_profile_id=profile_id, standard_id=item) for item in [standard_id, *(additional_standard_ids or [])]]
+        links = [ComplianceProfileStandard(id=f"profile-standard-{uuid4().hex}", compliance_profile_id=profile_id, standard_id=item) for item in [standard_id, *(additional_standard_ids or [])] if item]
         self.session.add_all([*links, ComplianceJourney(id=f"journey-{uuid4().hex}", compliance_profile_id=profile_id, steps=journey_steps)])
         self.session.flush()
         return profile

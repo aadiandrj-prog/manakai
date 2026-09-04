@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -19,17 +19,18 @@ import { api, errorMessage } from '@/lib/api-client';
 
 const scenarios = [
   'I manufacture a 1500 W electric kettle for household use in India.',
-  'portable rechargeable LED emergency lamp',
-  'motorcycle helmet',
+  'I manufacture motorcycle helmets for two-wheeler riders in India.',
+  'We produce OPC 53 ordinary Portland cement in India.',
+  'I manufacture a 5 litre domestic pressure cooker in India.',
+  'I sell 22K916 gold jewellery with HUID.',
 ];
 
 export default function ProductPage() {
   const [description, setDescription] = useState(scenarios[0]);
   const [role, setRole] = useState('Manufacturer');
   const [enterpriseCategory, setEnterpriseCategory] = useState('GENERAL');
-  const seededProfile = useQuery({ queryKey: ['compliance', 'demo-emergency-lamp'], queryFn: () => api.compliance('demo-emergency-lamp') });
   const analysis = useMutation({ mutationFn: api.analyse });
-  const profile = analysis.data ?? seededProfile.data;
+  const profile = analysis.data;
   const matched = profile?.applicable_standards[0];
   function analyse() {
     analysis.mutate({ description: description.trim(), role: role.toLowerCase(), language: 'en', enterprise_category: enterpriseCategory });
@@ -114,7 +115,7 @@ export default function ProductPage() {
               </div>
             </div>
             <div>
-              {analysis.isError ? <ErrorState message={errorMessage(analysis.error)} /> : seededProfile.isError && !analysis.data ? <ErrorState message={errorMessage(seededProfile.error)} /> : !profile || analysis.isPending ? <LoadingState label="Building structured product profile…" /> : (
+              {analysis.isError ? <ErrorState message={errorMessage(analysis.error)} /> : !profile || analysis.isPending ? <LoadingState label={analysis.isPending ? 'Building structured product profile…' : 'Choose an example or describe a product to check published coverage.'} /> : (
                 <div className="panel overflow-hidden">
                   <div className="panel-header">
                     <div>
@@ -125,7 +126,7 @@ export default function ProductPage() {
                       </p>
                     </div>
                     <Badge className="bg-emerald-400/10 text-emerald-300">
-                      {Math.round(profile.confidence * 100)}% confidence
+                      {profile.coverage.coverage_status} · {Math.round(profile.confidence * 100)}%
                     </Badge>
                   </div>
                   <div className="grid gap-px bg-border sm:grid-cols-3">
@@ -136,8 +137,8 @@ export default function ProductPage() {
                     </div>
                     <div className="metric">
                       <span>Candidate</span>
-                      <strong className="text-base">{matched?.number}</strong>
-                      <small>{matched?.version}</small>
+                      <strong className="text-base">{matched?.number ?? 'No verified mapping'}</strong>
+                      <small>{matched?.version ?? profile.coverage.coverage_status}</small>
                     </div>
                     <div className="metric">
                       <span>Status</span>
@@ -151,7 +152,7 @@ export default function ProductPage() {
                     <div className="flex gap-3 rounded-md border border-amber-300/20 bg-amber-300/5 p-3">
                       <CircleAlert className="mt-0.5 size-4 shrink-0 text-amber-300" />
                       <p className="text-xs leading-5 text-amber-100/75">
-                        {profile.data_mode === 'AUTHORITATIVE' ? `This result uses stored BIS/government evidence as of ${profile.as_of_date}. Resolve the listed missing attributes before treating scope as conclusive.` : 'The candidate is calculated by the backend in deterministic demo mode. Current mandatory status, amendments and official scope must be checked before a regulatory decision.'}
+                        {profile.coverage.coverage_reason} {profile.data_mode === 'AUTHORITATIVE' ? `Evidence evaluated as of ${profile.as_of_date}.` : 'Demo data remains separate from authoritative records.'}
                       </p>
                     </div>
                     <div className="mt-5">
@@ -161,7 +162,7 @@ export default function ProductPage() {
                       </p>
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2">
-                      <Button
+                      {matched && <Button
                         nativeButton={false}
                         render={
                           <Link
@@ -172,7 +173,7 @@ export default function ProductPage() {
                         className="rounded-md"
                       >
                         Open compliance profile <ArrowRight />
-                      </Button>
+                      </Button>}
                       <Button
                         nativeButton={false}
                         render={

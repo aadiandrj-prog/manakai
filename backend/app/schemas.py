@@ -25,6 +25,19 @@ class RegulatoryStatus(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class CoverageStatus(str, Enum):
+    VERIFIED = "VERIFIED"
+    PARTIAL = "PARTIAL"
+    METADATA_ONLY = "METADATA_ONLY"
+    UNSUPPORTED = "UNSUPPORTED"
+
+
+class RegulatoryRegimeType(str, Enum):
+    PRODUCT_CERTIFICATION = "PRODUCT_CERTIFICATION"
+    HALLMARKING = "HALLMARKING"
+    UNKNOWN = "UNKNOWN"
+
+
 class Intent(str, Enum):
     PRODUCT_COMPLIANCE = "PRODUCT_COMPLIANCE"
     STANDARD_QA = "STANDARD_QA"
@@ -102,6 +115,9 @@ class Laboratory(APIModel):
     source_url: str | None = None
     retrieved_at: datetime | None = None
     warning: str | None = None
+    grade_type: str | None = None
+    testing_charge: str | None = None
+    remark: str | None = None
 
 
 class Document(APIModel):
@@ -143,6 +159,7 @@ class ProductExtraction(APIModel):
     enterprise_category: str | None = None
     additional_attributes: dict[str, str | int | float | bool | None] = {}
     missing_required_fields: list[str] = []
+    candidate_categories: list[str] = []
     confidence: float = Field(default=0, ge=0, le=1)
 
 
@@ -194,6 +211,64 @@ class JourneyStep(APIModel):
     next_action: str | None = None
 
 
+class RegulatoryRegime(APIModel):
+    id: str
+    slug: str
+    name: str
+    regime_type: RegulatoryRegimeType
+    description: str
+
+
+class CoverageSummary(APIModel):
+    id: str
+    category_slug: str
+    category_name: str
+    primary_standard: str | None = None
+    coverage_status: CoverageStatus
+    coverage_reason: str
+    verified_at: datetime | None = None
+    authoritative_sources_count: int = 0
+    known_limitations: list[str] = []
+    standard_metadata_available: bool = False
+    compliance_verified: bool = False
+    regulatory_regime: RegulatoryRegime | None = None
+
+
+class CoverageStats(APIModel):
+    total: int
+    verified: int
+    partial: int
+    metadata_only: int
+    unsupported: int
+    authoritative_sources: int
+
+
+class HallmarkingCentre(APIModel):
+    id: str
+    name: str
+    centre_identifier: str | None = None
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    status: str
+    valid_from: date | None = None
+    valid_until: date | None = None
+    scope: str | None = None
+    source_url: str
+    retrieved_at: datetime
+    source_kind: SourceKind
+    warning: str | None = None
+
+
+class HallmarkingGuidance(APIModel):
+    id: str
+    topic: str
+    title: str
+    guidance: list[str]
+    source_url: str
+    source_kind: SourceKind
+
+
 class ComplianceProfile(APIModel):
     id: str
     product: ProductProfile
@@ -211,6 +286,10 @@ class ComplianceProfile(APIModel):
     as_of_date: date
     data_mode: SourceKind
     explanation: list[ExplanationNode] = []
+    coverage: CoverageSummary
+    regulatory_regime: RegulatoryRegime | None = None
+    hallmarking_centres: list[HallmarkingCentre] = []
+    consumer_actions: list[str] = []
 
 
 class QueryRequest(APIModel):

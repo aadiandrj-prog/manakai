@@ -1,4 +1,5 @@
 from .compliance import ComplianceRepository
+from .coverage import CoverageRepository
 from .conversations import ConversationRepository
 from .documents import DocumentRepository
 from .laboratories import LaboratoryRepository
@@ -8,6 +9,7 @@ from .standards import StandardRepository
 
 __all__ = [
     "ComplianceRepository",
+    "CoverageRepository",
     "ConversationRepository",
     "DocumentRepository",
     "LaboratoryRepository",

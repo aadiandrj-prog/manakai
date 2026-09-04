@@ -1,12 +1,20 @@
 # Project status and roadmap
 
+## Phase 2E status (4 September 2026)
+
+Phase 2E generalises the authoritative decision path beyond the original kettle vertical. The coverage registry now publishes five records: electric kettles, motorcycle helmets (`IS 4151:2015`) and Ordinary Portland Cement (`IS 269:2015`) are `VERIFIED`; domestic pressure cookers (`IS 2347:2023`) and gold jewellery/hallmarking (`IS 1417:2016`) are `PARTIAL` with their unresolved evidence boundaries displayed. A bare “helmet” and unsupported products return `UNSUPPORTED` without a guessed standard.
+
+The common graph now resolves category, current/historical standard, QCO/order version, regulatory regime, product manual, tests, laboratories and citations by query date. Hallmarking is a separate regime, not a fake laboratory/certification variant; ManakAI explicitly refuses to claim HUID verification and sends users to official BIS Care guidance. The Phase 2E migration adds coverage, regimes, hallmarking centres/guidance, explicit test-standard relationships and material-change review metadata. Startup and scheduled refresh now reconcile every vertical independently.
+
+The deterministic benchmark contains 130 English/Hindi/Hinglish, temporal, adversarial and product-wording cases. The backend suite, frontend contract tests, lint and production build pass. Public deployment still requires applying migration `d7e2c9a4f610` and redeploying Render/Vercel; this repository change does not itself modify the live services.
+
 ## Phase 2D status (3 September 2026)
 
 The repository is staging-ready but public staging is not yet complete. The free profile uses a native Next.js frontend on Vercel, one Render Free Docker API and an external Neon Free PostgreSQL/pgvector database. Render startup performs additive Alembic migration plus idempotent authoritative ingestion; GitHub Actions performs the daily non-destructive source monitor. The API adds anonymous rate/body limits, strict model allow-lists, a 40-call daily provider cap, secure headers, request IDs and AI/source telemetry. The UI retains its staging banner, footer disclaimer and responsive mobile navigation without redesigning the Cinematic Precision system.
 
 A 70-case provider evaluation runner, report comparator, Playwright critical-flow tests, axe accessibility checks, CI, backup/restore safeguards and deployment/privacy/operations runbooks are included. The release mock-provider regression passes 70/70, the backend suite passes 54 tests, and desktop/mobile Playwright passes 8/8. Eleven npm advisories were remediated; the repeat audit is clean and the production build passes.
 
-The remaining steps are external and account-owned: create Neon, deploy the Render free API, configure/publish Vercel against it, add the Neon GitHub Actions secret, enter one model-provider secret, then run the real-provider comparison and public smoke checklist. No real-provider result has been claimed without those credentials.
+The Phase 2D external services were subsequently configured by the project owner. Phase 2E still requires a redeploy and public smoke/evaluation pass before its new coverage should be announced as live.
 
 ## Phase 2C outcome
 
@@ -67,7 +75,7 @@ The attached implementation brief was treated as the requested specification. Im
 
 ### Authoritative data and rights
 
-The kettle vertical uses captured official BIS/DPIIT/Gazette/LIMS evidence with source URLs, hashes and retrieval time. It is not yet continuously refreshed or maker/checker approved. Rights for complete standards content remain outside the implementation; full standards text is neither stored nor exposed. HUID and unrelated verticals remain demo-only.
+Five coverage records use captured official BIS/Gazette/LIMS evidence with source URLs, hashes and retrieval time. They are not yet maker/checker approved, and two remain explicitly `PARTIAL`. Rights for complete standards content remain outside the implementation; full standards text is neither stored nor exposed. HUID verification and a complete live AHC directory remain external official-service boundaries.
 
 ### Retrieval quality
 
@@ -113,8 +121,8 @@ The 3 September dependency audit is clean after moving the frontend from the Sit
 4. Enter one tightly limited provider secret and run the 70-case real-provider evaluation.
 5. Add maker/checker review, centralized alerts and a tested source-revision approval workflow.
 6. Obtain legal/rights and regulatory-domain review, then perform a managed backup restore drill.
-7. Pilot only the kettle vertical with a small manufacturer cohort; do not widen product families first.
+7. Pilot the five published coverage records with a small expert-reviewed cohort; do not widen product families until the partial pressure-cooker and hallmarking evidence gaps are resolved.
 
 ## Definition of the next milestone
 
-The next milestone is an operationally governed kettle vertical: automated refresh, human approval, alerting, deployed full stack, dependency remediation and expert acceptance, while retaining deterministic decisions and the voltage/enterprise clarification boundary.
+The next milestone is operational governance across the five coverage records: semantic refresh review, maker/checker approval, alerts, public Phase 2E redeployment and expert acceptance, while retaining deterministic decisions and product-specific clarification boundaries.

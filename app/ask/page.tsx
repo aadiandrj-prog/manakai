@@ -12,8 +12,10 @@ import { api, errorMessage, type ConversationResponse } from '@/lib/api-client';
 
 const starters = [
   'I manufacture a 1500W 230V electric kettle for household use.',
-  'I manufacture a household electric kettle.',
-  '230V ka ghar wala electric kettle manufacture kar raha hu, BIS ka kya requirement hai?',
+  'I manufacture motorcycle helmets for two-wheeler riders in India.',
+  'We produce OPC 53 ordinary Portland cement in India.',
+  'I manufacture a 5 litre domestic pressure cooker in India.',
+  'How should a consumer verify the HUID on 22K916 gold jewellery?',
 ];
 
 export default function AskPage() {
@@ -34,7 +36,7 @@ export default function AskPage() {
     <AppShell current="/ask">
       <section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-[1100px]">
-          <PageHeader eyebrow="Controlled intelligence" title="Ask ManakAI" description="Describe an electric-kettle compliance question naturally. AI may interpret and explain; PostgreSQL evidence and deterministic rules remain the regulatory authority." />
+          <PageHeader eyebrow="Controlled intelligence" title="Ask ManakAI" description="Describe a covered product naturally. AI may interpret and explain; the coverage registry, PostgreSQL evidence and deterministic rules remain the regulatory authority." />
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-5">
               {conversation?.messages.length ? (
@@ -50,7 +52,7 @@ export default function AskPage() {
                 </div>
               ) : (
                 <div className="panel p-5">
-                  <div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck className="size-4 text-cyan-300" /> Start with a supported kettle workflow</div>
+                  <div className="flex items-center gap-2 text-sm font-medium"><ShieldCheck className="size-4 text-cyan-300" /> Start with a published coverage vertical</div>
                   <div className="mt-4 grid gap-2">{starters.map((item) => <button key={item} onClick={() => setQuestion(item)} className="rounded-md border border-border bg-[#0c0d0e] p-3 text-left text-xs leading-5 text-muted-foreground transition hover:border-primary/40 hover:text-foreground">{item}</button>)}</div>
                 </div>
               )}
@@ -59,7 +61,7 @@ export default function AskPage() {
                   <label htmlFor="question" className="flex items-center gap-2 text-sm font-medium"><MessageSquareText className="size-4 text-primary" /> {conversation ? 'Continue this compliance analysis' : 'Describe the product or ask about evidence'}</label>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground"><Languages className="size-3.5" /><NativeSelect aria-label="Response language" size="sm" value={language} onChange={(event) => setLanguage(event.target.value)}><NativeSelectOption value="auto">Detect language</NativeSelectOption><NativeSelectOption value="en">English</NativeSelectOption><NativeSelectOption value="hi">Hindi</NativeSelectOption><NativeSelectOption value="hinglish">Hinglish</NativeSelectOption></NativeSelect></div>
                 </div>
-                <textarea id="question" value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder={conversation?.clarification_required ? 'Answer the clarification, for example: 230V' : 'Ask about an electric kettle, a standard clause, testing or certification…'} className="mt-4 min-h-24 w-full resize-none rounded-md border border-input bg-[#0b0c0d] p-3 text-sm leading-6 outline-none focus:border-primary" />
+                <textarea id="question" value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder={conversation?.clarification_required ? 'Answer the requested product detail' : 'Ask about a covered product, standard, testing, certification or hallmarking…'} className="mt-4 min-h-24 w-full resize-none rounded-md border border-input bg-[#0b0c0d] p-3 text-sm leading-6 outline-none focus:border-primary" />
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="text-[11px] text-muted-foreground">No hidden reasoning is stored · Evidence IDs control citations</p>
                   <div className="flex gap-2">{conversation && <Button variant="outline" size="sm" onClick={() => { setConversation(null); setQuestion(starters[0]); }}><RotateCcw /> New analysis</Button>}<Button onClick={send} disabled={mutation.isPending || !question.trim()} className="rounded-md">{mutation.isPending ? <><LoaderCircle className="animate-spin" /> Analysing</> : <>Send <ArrowRight /></>}</Button></div>
@@ -84,7 +86,7 @@ export default function AskPage() {
 function ComplianceCards({ response }: { response: ConversationResponse }) {
   const profile = response.compliance_profile!;
   return <div className="mt-5 grid gap-4 md:grid-cols-3">
-    <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><BookOpenText className="size-4 text-primary" /> Standards</div><div className="mt-3 space-y-2">{profile.applicable_standards.map((standard) => <div key={standard.id}><p className="text-sm font-medium">{standard.number}:{standard.version}</p><p className="text-xs text-muted-foreground">{standard.title}</p></div>)}</div></div>
+    <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><BookOpenText className="size-4 text-primary" /> Coverage & standards</div><div className="mt-3 flex gap-2"><Badge className={profile.coverage.coverage_status === 'VERIFIED' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-300/10 text-amber-300'}>{profile.coverage.coverage_status}</Badge>{profile.regulatory_regime && <Badge variant="outline">{profile.regulatory_regime.name}</Badge>}</div><div className="mt-3 space-y-2">{profile.applicable_standards.map((standard) => <div key={standard.id}><p className="text-sm font-medium">{standard.number}:{standard.version}</p><p className="text-xs text-muted-foreground">{standard.title}</p></div>)}{!profile.applicable_standards.length && <p className="text-xs leading-5 text-muted-foreground">{profile.coverage.coverage_reason}</p>}</div></div>
     <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><ShieldCheck className="size-4 text-cyan-300" /> Regulatory status</div><p className="mt-3 text-xl font-semibold">{profile.qco?.status ?? profile.mandatory_status}</p><p className="mt-1 text-xs text-muted-foreground">{profile.qco?.notification_number} · {profile.qco?.effective_from ?? 'date unavailable'}</p><p className="mt-3 text-xs">{profile.certification_scheme}</p></div>
     <div className="panel p-4"><div className="flex items-center gap-2 text-xs uppercase tracking-[.14em] text-muted-foreground"><FlaskConical className="size-4 text-amber-300" /> Recognised labs</div><p className="mt-3 text-xl font-semibold">{profile.laboratories.length}</p><div className="mt-2 space-y-1 text-xs text-muted-foreground">{profile.laboratories.slice(0, 3).map((lab) => <p key={lab.id}>{lab.name}</p>)}</div></div>
   </div>;

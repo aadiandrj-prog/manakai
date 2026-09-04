@@ -28,3 +28,15 @@ Documents add authority, verification, identifier, hash and temporal status. Chu
 
 - `ai_usage_events`: provider/model, operation, status, latency, available token counts, correlation identifiers and answer-validation result. Prompt and answer bodies are deliberately excluded.
 - `source_change_events`: source URL/type, previous/new hash, ingestion run and `REVIEW_REQUIRED` status. A change event never replaces or deletes canonical data automatically.
+
+## Phase 2E coverage and regimes
+
+- `regulatory_regimes`: distinguishes Scheme I product certification from BIS Hallmarking and stores a deterministic journey template.
+- `coverage_records`: category, primary standard, regime, `VERIFIED/PARTIAL/METADATA_ONLY/UNSUPPORTED` state, reason, verified timestamp, source count, limitations and machine-readable metadata.
+- `hallmarking_centres`: a distinct AHC entity with validity/status/source fields; an incomplete live directory is never presented as complete.
+- `hallmarking_guidance`: sourced consumer actions such as hallmark identification, AHC testing and BIS Care HUID verification.
+- `test_standard_relationships`: explicit linkage when a product test method comes from another Indian Standard.
+- Product manuals gain supersession links; lab recognition gains grade/type, quoted charge, remarks and completeness warnings.
+- Source/change records gain review status, material classification, changed fields and a human-readable review summary.
+
+Pressure-cooker standards/manuals and hallmarking orders retain prior versions rather than overwriting history. Compliance profiles snapshot the selected coverage record and regulatory regime.
