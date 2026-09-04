@@ -105,6 +105,10 @@ class SourceChangeEvent(IdMixin, Base):
     review_status: Mapped[str] = mapped_column(String(32), default="PENDING", index=True)
     changed_fields: Mapped[list] = mapped_column(JSON, default=list)
     material_summary: Mapped[str | None] = mapped_column(Text)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_by: Mapped[str | None] = mapped_column(String(160))
+    review_note: Mapped[str | None] = mapped_column(Text)
+    canonical_source_record_id: Mapped[str | None] = mapped_column(ForeignKey("source_records.id"), index=True)
 
 
 class Standard(IdMixin, Base):

@@ -61,5 +61,5 @@ Key boundaries:
 - Provider failure or contradiction cannot make compliance unavailable; deterministic templates are mandatory fallbacks.
 - `render.yaml` declares one free FastAPI Docker service. Its startup applies additive migrations and idempotently loads all captured authoritative graphs into an external Neon PostgreSQL/pgvector database.
 - Vercel builds the native Next.js frontend only after `NEXT_PUBLIC_API_URL` is set to the public API origin.
-- GitHub Actions runs the daily non-destructive official-source check against Neon; detected changes are recorded as `REVIEW_REQUIRED` and fail the workflow for human attention.
+- GitHub Actions runs the daily non-destructive official-source check against Neon; detected changes are recorded as `REVIEW_REQUIRED`, captured known-good data is reconciled, and the workflow fails at the final review gate for human attention. A separate manual workflow resolves one exact hash-locked event with reviewer attribution.
 - `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and all five authoritative coverage records.

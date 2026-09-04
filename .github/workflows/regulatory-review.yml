@@ -1,0 +1,82 @@
+name: Resolve authoritative source review
+
+on:
+  workflow_dispatch:
+    inputs:
+      event_id:
+        description: Exact pending source_change_events id
+        required: true
+        type: string
+      decision:
+        description: Reviewed disposition
+        required: true
+        type: choice
+        options:
+          - ACCEPTED_EDITORIAL
+          - ACCEPTED_MATERIAL
+          - REJECTED
+      expected_new_hash:
+        description: Exact new hash printed by the review report
+        required: true
+        type: string
+      reviewed_by:
+        description: Reviewer name or GitHub handle
+        required: true
+        type: string
+      review_note:
+        description: Evidence-based reason for the decision
+        required: true
+        type: string
+      canonical_content_hash:
+        description: Required only for ACCEPTED_MATERIAL after reviewed data is re-ingested
+        required: false
+        type: string
+
+concurrency:
+  group: authoritative-regulatory-review
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      APP_ENV: staging
+      DEMO_MODE: 'false'
+      DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      EVENT_ID: ${{ inputs.event_id }}
+      REVIEW_DECISION: ${{ inputs.decision }}
+      EXPECTED_NEW_HASH: ${{ inputs.expected_new_hash }}
+      REVIEWED_BY: ${{ inputs.reviewed_by }}
+      REVIEW_NOTE: ${{ inputs.review_note }}
+      CANONICAL_CONTENT_HASH: ${{ inputs.canonical_content_hash }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Require the Neon connection secret
+        run: test -n "$DATABASE_URL"
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Apply additive migrations
+        working-directory: backend
+        run: alembic -c alembic.ini upgrade head
+      - name: Resolve exactly one reviewed event
+        working-directory: backend
+        run: >-
+          python -m app.ingestion review-resolve
+          --event-id "$EVENT_ID"
+          --decision "$REVIEW_DECISION"
+          --expected-new-hash "$EXPECTED_NEW_HASH"
+          --reviewed-by "$REVIEWED_BY"
+          --review-note "$REVIEW_NOTE"
+          --canonical-content-hash "$CANONICAL_CONTENT_HASH"
+      - name: Print remaining review queue
+        working-directory: backend
+        run: python -m app.ingestion review-report

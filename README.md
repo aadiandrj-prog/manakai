@@ -93,6 +93,14 @@ docker compose exec backend python -m app.ingestion all-authoritative
 
 The sanitised fixtures are captured official-source snapshots. Re-running ingestion is hash-aware and idempotent; `--dry-run` validates without committing the regulatory graph. Individual targets are `electric-kettle`, `helmets`, `cement`, `pressure-cookers` and `hallmarking`.
 
+To inspect unresolved source drift without changing canonical facts:
+
+```bash
+python -m app.ingestion review-report --fail-on-pending
+```
+
+Production resolution uses the manual `Resolve authoritative source review` GitHub workflow. Each decision is bound to the exact detected hash and records reviewer attribution; material acceptance is blocked until newer reviewed canonical data has been ingested.
+
 Optional local embeddings are explicitly provisioned and never downloaded at application startup:
 
 ```bash
@@ -123,13 +131,13 @@ The free staging topology is Vercel (frontend), Render Free (FastAPI) and Neon F
 
 SQLAlchemy tables are defined in `backend/app/db_models.py`. Migration `4b2f2a8d1c71` adds provenance, ingestion, temporal applicability, category mappings, clause structure, citation validation and PostgreSQL GIN/HNSW indexes; follow-up `7a91d3e5f620` lets demo and authoritative editions coexist without silently merging them. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
 
-Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923` adds staging telemetry, and `d7e2c9a4f610` adds Phase 2E coverage/regime/hallmarking structures. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend schemas.
+Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923` adds staging telemetry, `d7e2c9a4f610` adds Phase 2E coverage/regime/hallmarking structures, and `f3c8a1d2e740` adds auditable regulatory-source review resolution. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend schemas.
 
 ## Limitations
 
-- The authoritative corpus is intentionally limited to one product vertical and a 2 September 2026 capture; scheduled checks flag source change but still require human regulatory review.
+- The authoritative corpus is intentionally limited to five bounded Phase 2E verticals and captured official-source snapshots; scheduled checks flag source change and still require human regulatory review.
 - Full standards text is not stored or redistributed. Only official metadata and limited product-manual/QCO/LIMS excerpts needed for technical retrieval are retained.
-- Two official LIMS scopes are integrated. Users must re-check the linked live scope, exclusions and validity before arranging testing.
+- Laboratory coverage remains selective. Users must re-check each linked live scope, exclusions and validity before arranging testing.
 - Authentication, submission, payments and native apps are out of scope.
 - Regulatory decisions remain `UNVERIFIED` unless an authoritative source is connected.
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.

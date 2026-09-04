@@ -1,12 +1,16 @@
 # Project status and roadmap
 
+## Regulatory review hardening (5 September 2026)
+
+Public Phase 2E is live on Vercel, Render and Neon. The source monitor found pending official-page drift without replacing verified facts. This hardening adds an additive audit migration, exact pending-event/error reports, hash-locked reviewer attribution and a manual single-event resolution workflow. Scheduled refresh now always reconciles captured known-good verticals before failing at the final unresolved-review gate. Semantic comparison and the regulatory judgment remain human responsibilities.
+
 ## Phase 2E status (4 September 2026)
 
 Phase 2E generalises the authoritative decision path beyond the original kettle vertical. The coverage registry now publishes five records: electric kettles, motorcycle helmets (`IS 4151:2015`) and Ordinary Portland Cement (`IS 269:2015`) are `VERIFIED`; domestic pressure cookers (`IS 2347:2023`) and gold jewellery/hallmarking (`IS 1417:2016`) are `PARTIAL` with their unresolved evidence boundaries displayed. A bare “helmet” and unsupported products return `UNSUPPORTED` without a guessed standard.
 
 The common graph now resolves category, current/historical standard, QCO/order version, regulatory regime, product manual, tests, laboratories and citations by query date. Hallmarking is a separate regime, not a fake laboratory/certification variant; ManakAI explicitly refuses to claim HUID verification and sends users to official BIS Care guidance. The Phase 2E migration adds coverage, regimes, hallmarking centres/guidance, explicit test-standard relationships and material-change review metadata. Startup and scheduled refresh now reconcile every vertical independently.
 
-The deterministic benchmark contains 130 English/Hindi/Hinglish, temporal, adversarial and product-wording cases. The backend suite, frontend contract tests, lint and production build pass. Public deployment still requires applying migration `d7e2c9a4f610` and redeploying Render/Vercel; this repository change does not itself modify the live services.
+The deterministic benchmark contains 130 English/Hindi/Hinglish, temporal, adversarial and product-wording cases. The backend suite, frontend contract tests, lint, production build and public Phase 2E smoke checks pass. Production reports schema `d7e2c9a4f610`, 27 authoritative source records and five coverage records; the review-hardening migration advances the next deployment to `f3c8a1d2e740`.
 
 ## Phase 2D status (3 September 2026)
 
@@ -119,10 +123,10 @@ The 3 September dependency audit is clean after moving the frontend from the Sit
 2. Configure Vercel with the Render API origin, set exact CORS and complete the public smoke checklist.
 3. Configure the GitHub Actions Neon secret and verify one scheduled-source-check dispatch.
 4. Enter one tightly limited provider secret and run the 70-case real-provider evaluation.
-5. Add maker/checker review, centralized alerts and a tested source-revision approval workflow.
+5. Extend the new hash-locked source-review workflow into two-person maker/checker approval and centralized alerts.
 6. Obtain legal/rights and regulatory-domain review, then perform a managed backup restore drill.
 7. Pilot the five published coverage records with a small expert-reviewed cohort; do not widen product families until the partial pressure-cooker and hallmarking evidence gaps are resolved.
 
 ## Definition of the next milestone
 
-The next milestone is operational governance across the five coverage records: semantic refresh review, maker/checker approval, alerts, public Phase 2E redeployment and expert acceptance, while retaining deterministic decisions and product-specific clarification boundaries.
+The next milestone is two-person operational governance across the five coverage records: semantic diff assistance, maker/checker approval, alerts and expert acceptance, while retaining deterministic decisions and product-specific clarification boundaries.

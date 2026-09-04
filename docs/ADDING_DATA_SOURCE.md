@@ -25,4 +25,5 @@ python -m app.ingestion cement --dry-run
 python -m app.ingestion pressure-cookers --dry-run
 python -m app.ingestion hallmarking --dry-run
 python -m app.ingestion all-authoritative
+python -m app.ingestion review-report --fail-on-pending
 ```
