@@ -7,7 +7,7 @@ from sqlalchemy import select, text
 from app.config import settings, sqlalchemy_database_url
 from app.db_models import SourceChangeEvent, SourceRecord
 from app.evaluation.cases import CASES
-from app.ingestion.base import FetchedSource
+from app.ingestion.base import FetchedSource, SOURCE_FINGERPRINT_VERSION, source_fingerprint
 from app.ingestion.refresh import refresh_authoritative_sources
 from app.middleware import StagingSafetyMiddleware
 from app.services.ai_provider import AIProviderError, GeminiProvider, OpenAIProvider
@@ -79,3 +79,45 @@ def test_source_refresh_baselines_then_flags_change_without_overwriting(db_sessi
     assert second["changes_review_required"] > 0
     assert db_session.get(SourceRecord, source.id).content_hash == original_hash
     assert db_session.scalar(select(SourceChangeEvent).where(SourceChangeEvent.status == "REVIEW_REQUIRED")) is not None
+
+
+def test_html_fingerprint_ignores_scripts_attributes_and_formatting():
+    first = FetchedSource(
+        "https://www.bis.gov.in/example",
+        b'<html><body><input value="csrf-one"><h1>IS 269</h1><script>nonce = "one"</script></body></html>',
+        "text/html; charset=UTF-8",
+    )
+    second = FetchedSource(
+        "https://www.bis.gov.in/example",
+        b'<html>\n<body><input value="csrf-two"> <h1> IS 269 </h1><script>nonce = "two"</script></body></html>',
+        "text/html",
+    )
+    changed = FetchedSource(
+        "https://www.bis.gov.in/example",
+        b"<html><body><h1>IS 269 withdrawn</h1></body></html>",
+        "text/html",
+    )
+
+    assert source_fingerprint(first) == source_fingerprint(second)
+    assert source_fingerprint(first) != source_fingerprint(changed)
+
+
+def test_refresh_migrates_legacy_raw_hash_to_versioned_fingerprint(db_session):
+    source = db_session.scalar(select(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE"))
+    if source is None:
+        from app.ingestion.pipeline import ingest_electric_kettle
+        ingest_electric_kettle(db_session)
+        source = db_session.scalar(select(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE"))
+    source.metadata_json = {"raw_content_hash": "legacy-raw-hash"}
+    db_session.commit()
+
+    async def stable_html(url):
+        return FetchedSource(url, b'<html><input value="changing-token"><p>Stable BIS record</p></html>', "text/html")
+
+    first = asyncio.run(refresh_authoritative_sources(db_session, stable_html))
+    second = asyncio.run(refresh_authoritative_sources(db_session, stable_html))
+
+    assert first["baselined"] > 0
+    assert second["changes_review_required"] == 0
+    assert source.metadata_json["monitor_fingerprint_version"] == SOURCE_FINGERPRINT_VERSION
+    assert source.metadata_json["monitor_stable_observations"] >= 2

@@ -53,9 +53,9 @@ These values are public by design and must never contain database or model crede
 
 In GitHub, add the Actions secret `NEON_DATABASE_URL` using the same Neon connection string. `.github/workflows/regulatory-refresh.yml` runs daily at 02:30 UTC and can also be dispatched manually.
 
-The workflow fetches allow-listed official pages, records changed hashes as `REVIEW_REQUIRED`, preserves the last verified regulatory graph, reconciles captured known-good verticals, prints exact pending URLs/hashes and exits visibly when review is needed. It never auto-publishes changed regulatory facts.
+The workflow fetches allow-listed official pages, retries transient BIS transport failures, and fingerprints normalized visible HTML text rather than volatile scripts, form tokens or formatting bytes. PDFs retain byte-level hashing. Changed source-relevant fingerprints are recorded as `REVIEW_REQUIRED`; the last verified regulatory graph is preserved and exact pending URLs/hashes are printed. The workflow never auto-publishes changed regulatory facts.
 
-Use the separately manual `Resolve authoritative source review` workflow only after inspecting the official source. `ACCEPTED_EDITORIAL` advances the raw-byte baseline without changing canonical facts; `REJECTED` retains the canonical record and old baseline; `ACCEPTED_MATERIAL` is rejected unless a newer canonical source has already been ingested and its exact content hash is supplied. Every resolution records reviewer, timestamp, note and canonical source record.
+Use the separately manual `Resolve authoritative source review` workflow only after inspecting the official source. `ACCEPTED_EDITORIAL` advances the versioned source fingerprint without changing canonical facts; `REJECTED` retains the canonical record and old baseline; `ACCEPTED_MATERIAL` is rejected unless a newer canonical source has already been ingested and its exact content hash is supplied. Every resolution records reviewer, timestamp, note and canonical source record. Legacy raw-byte alerts may be rejected as obsolete only after the current official page has been inspected and the semantic fingerprint has remained stable across repeated checks.
 
 ## 5. Tightly limited provider
 

@@ -96,13 +96,18 @@ def resolve_review(
         if source.retrieved_at <= event.created_at:
             raise ValueError("Material changes must be re-ingested after the review event before acceptance")
 
-    # Editorial acceptance records a new raw-byte baseline without altering any
-    # normalised regulatory fact. Material acceptance is allowed only after a
-    # newer canonical ingest. Rejection deliberately retains the old baseline.
+    # Editorial acceptance advances the relevant monitoring baseline without
+    # altering canonical facts. Material acceptance is allowed only after a newer
+    # canonical ingest. Rejection deliberately retains the old baseline.
     if decision in {"ACCEPTED_EDITORIAL", "ACCEPTED_MATERIAL"}:
         metadata = dict(source.metadata_json or {})
-        metadata["raw_content_hash"] = event.new_hash
-        metadata["raw_content_hash_reviewed_at"] = datetime.now(timezone.utc).isoformat()
+        if "source_fingerprint" in (event.changed_fields or []):
+            metadata["monitor_content_hash"] = event.new_hash
+            metadata["monitor_fingerprint_reviewed_at"] = datetime.now(timezone.utc).isoformat()
+            metadata["monitor_stable_observations"] = 1
+        else:
+            metadata["raw_content_hash"] = event.new_hash
+            metadata["raw_content_hash_reviewed_at"] = datetime.now(timezone.utc).isoformat()
         source.metadata_json = metadata
 
     event.status = "RESOLVED"

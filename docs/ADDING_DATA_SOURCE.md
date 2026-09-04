@@ -1,7 +1,7 @@
 # Adding an authoritative data source
 
 1. Implement `BISSourceAdapter` with separate `fetch`, `parse`, `normalize`, `validate` and `provenance` stages. Do not build a multi-source scraper.
-2. Preserve the source URL, publication/effective dates, retrieved timestamp, document version and checksum.
+2. Preserve the source URL, publication/effective dates, retrieved timestamp, document version and checksum. For scheduled monitoring, define a stable semantic fingerprint when the source contains dynamic markup.
 3. Store raw artefacts separately from normalised records.
 4. Map standards and QCOs using stable source identifiers; never title text alone.
 5. Validate status and supersession relationships before activating records.

@@ -8,10 +8,11 @@ from sqlalchemy.orm import Session
 
 from .. import db_models as m
 from .adapters import BISStandardAdapter
+from .base import SOURCE_FINGERPRINT_VERSION, source_fingerprint
 
 
 async def refresh_authoritative_sources(session: Session, fetcher=None) -> dict:
-    """Check live source bytes and flag changes; never rewrites canonical facts."""
+    """Check stable live-source fingerprints; never rewrite canonical facts."""
     run = m.IngestionRun(id=str(uuid4()), adapter="authoritative-source-refresh", status="RUNNING", started_at=datetime.now(timezone.utc))
     session.add(run)
     session.commit()
@@ -27,28 +28,41 @@ async def refresh_authoritative_sources(session: Session, fetcher=None) -> dict:
         try:
             fetched = await fetcher(source.source_url)
             metadata = dict(source.metadata_json or {})
-            previous_raw = metadata.get("raw_content_hash")
-            if not previous_raw:
-                metadata["raw_content_hash"] = fetched.content_hash
+            current_fingerprint = source_fingerprint(fetched)
+            previous_fingerprint = metadata.get("monitor_content_hash")
+            fingerprint_version = metadata.get("monitor_fingerprint_version")
+            metadata["last_raw_content_hash"] = fetched.content_hash
+            metadata["last_source_check_at"] = datetime.now(timezone.utc).isoformat()
+            if fingerprint_version != SOURCE_FINGERPRINT_VERSION or not previous_fingerprint:
+                metadata["monitor_fingerprint_version"] = SOURCE_FINGERPRINT_VERSION
+                metadata["monitor_content_hash"] = current_fingerprint
+                metadata["monitor_stable_observations"] = 1
                 source.metadata_json = metadata
                 baselined += 1
-            elif previous_raw != fetched.content_hash:
+            elif previous_fingerprint != current_fingerprint:
                 exists = session.scalar(select(m.SourceChangeEvent).where(
                     m.SourceChangeEvent.source_url == source.source_url,
-                    m.SourceChangeEvent.previous_hash == previous_raw,
-                    m.SourceChangeEvent.new_hash == fetched.content_hash,
+                    m.SourceChangeEvent.previous_hash == previous_fingerprint,
+                    m.SourceChangeEvent.new_hash == current_fingerprint,
                 ))
                 if not exists:
                     material_types = {"GOVERNMENT_QCO", "GOVERNMENT_HALLMARKING_ORDER", "BIS_PRODUCT_MANUAL", "BIS_STANDARD_METADATA", "BIS_LIMS_SCOPE"}
                     classification = "MATERIAL" if source.source_type in material_types else "EDITORIAL"
                     session.add(m.SourceChangeEvent(
                         id=f"source-change-{uuid4().hex}", source_url=source.source_url, source_type=source.source_type,
-                        previous_hash=previous_raw, new_hash=fetched.content_hash, ingestion_run_id=run.id,
+                        previous_hash=previous_fingerprint, new_hash=current_fingerprint, ingestion_run_id=run.id,
                         status="REVIEW_REQUIRED",
-                        change_classification=classification, review_status="PENDING", changed_fields=["raw_content"],
-                        material_summary=f"{source.source_type} content changed; canonical records were retained pending review.",
+                        change_classification=classification, review_status="PENDING", changed_fields=["source_fingerprint"],
+                        material_summary=f"{source.source_type} visible content changed; canonical records were retained pending review.",
                     ))
                     changes += 1
+                source.metadata_json = metadata
+            else:
+                metadata["monitor_stable_observations"] = min(
+                    int(metadata.get("monitor_stable_observations", 1)) + 1,
+                    1_000_000,
+                )
+                source.metadata_json = metadata
         except Exception as exc:
             errors.append({"source_url": source.source_url, "error": type(exc).__name__})
     run.records_fetched = len(latest_by_url)

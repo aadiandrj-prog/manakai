@@ -60,7 +60,7 @@ def test_editorial_resolution_is_audited_and_advances_only_raw_baseline(db_sessi
 
     assert result["review_status"] == "ACCEPTED_EDITORIAL"
     assert source.content_hash == canonical_hash
-    assert source.metadata_json["raw_content_hash"] == event.new_hash
+    assert source.metadata_json["monitor_content_hash"] == event.new_hash
     assert event.status == "RESOLVED"
     assert event.reviewed_at is not None
     assert event.reviewed_by == "reviewer@example.test"

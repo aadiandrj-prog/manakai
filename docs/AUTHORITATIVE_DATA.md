@@ -34,7 +34,7 @@ The ingested testing list is a conservative subset of headings visible in offici
 
 ## Refresh and failure behaviour
 
-Each adapter normalizes independently but the vertical commits atomically. An ingestion run records counts/errors. Source content receives a stable SHA-256 hash; unchanged records are reused, changed content creates a new source record, and prior regulatory history remains. Parse/validation failures roll back staged changes. An absent listing is treated as potential staleness/review, never automatic deletion.
+Each adapter normalizes independently but the vertical commits atomically. An ingestion run records counts/errors. Canonical records retain SHA-256 content hashes. Scheduled HTML monitoring separately hashes normalized visible text and excludes scripts, hidden form attributes and formatting churn; PDFs remain byte-hashed. Transient transport and 429/5xx failures are retried. A changed monitoring fingerprint creates a review event without replacing the verified graph. Parse/validation failures roll back staged changes, and an absent listing is treated as potential staleness/review rather than automatic deletion.
 
 Development commands:
 
@@ -69,5 +69,5 @@ Public availability is not treated as permission for unrestricted redistribution
 - The exact voltage was absent from the example, so the QCO’s voltage scope is unresolved.
 - Kettle implementation categories model `GENERAL`, `SMALL` and `MICRO`; other captured QCOs currently use the general applicability row. Exemptions, district coverage, turnover thresholds and stock-transition facts are not fully automated eligibility decisions.
 - Lab addresses/scope are stored only where the official page exposed them; missing data is not inferred.
-- The staging workflow schedules byte-level source checks and material-change classification. Hash-locked, attributed resolution is available through a manual GitHub workflow, while semantic comparison and maker/checker judgment remain human responsibilities.
+- The staging workflow uses versioned visible-text fingerprints for HTML and byte-level fingerprints for PDFs. Hash-locked, attributed resolution is available through a manual GitHub workflow; source-specific parsing and maker/checker regulatory judgment remain human responsibilities.
 - Complete AHC coverage, live HUID verification, full laboratory pagination and source-specific redistribution rights remain unresolved.
