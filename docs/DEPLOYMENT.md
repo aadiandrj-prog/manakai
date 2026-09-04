@@ -16,7 +16,7 @@ Free services can sleep, throttle or change their allowances. This topology is s
 1. Create a free PostgreSQL project in a region near the Render service. The current staging project and Render service use AWS US East 2 / Ohio.
 2. Copy its pooled connection string and retain `sslmode=require`.
 3. Keep this value secret. It becomes Render's `DATABASE_URL` and the GitHub repository secret `NEON_DATABASE_URL`.
-4. Render startup runs `alembic upgrade head` and the idempotent electric-kettle ingestion. The migration enables `vector`; `/ready` verifies revision `b48f761da923` and authoritative records.
+4. Render startup runs `alembic upgrade head` and idempotent `all-authoritative` ingestion. `/ready` verifies revision `d7e2c9a4f610`, authoritative sources and five coverage records.
 
 ## 2. Render API
 
@@ -86,6 +86,6 @@ Staging is capped at 40 provider calls per UTC day, 500 output tokens per call, 
 
 ## Migration, rollback and backup
 
-Every schema change is a new Alembic revision. Revision `b48f761da923` is additive. Do not edit deployed migration history. Redeploy an older image only when it remains compatible with the current schema; database downgrade is not the normal rollback.
+Every schema change is a new Alembic revision. Phase 2E revision `d7e2c9a4f610` is additive on `b48f761da923`. Do not edit deployed migration history. Redeploy an older image only when it remains compatible with the current schema; database downgrade is not the normal rollback.
 
 `scripts/backup_staging.sh` creates an explicit custom-format PostgreSQL dump. `scripts/restore_staging.sh` refuses to run without confirmation that the destination is an empty recovery database. Free hosting has no production recovery guarantee, so make a local encrypted backup before each authoritative-data change.

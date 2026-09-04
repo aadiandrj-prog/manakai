@@ -16,3 +16,9 @@ Rules should be versioned data with conditions, outcome, priority, source citati
 For S.O. 1739(E), the engine selects an implementation row using product category and enterprise category, then compares it with `as_of_date`. Before notification the status is `UNKNOWN`; between notification and implementation it is `UPCOMING`; on/after implementation it is `ACTIVE` and produces `MANDATORY`. Superseded/withdrawn instruments never become active.
 
 The kettle explanation graph is constructed from stored relationships. It shows classification, product-specific/general standards, QCO notification, enterprise date, query date and result. Rated voltage remains an explicit uncertainty because the QCO contains voltage limits while the example states only 1500 W.
+
+## Multi-vertical resolution
+
+Phase 2E first resolves an explicit coverage record. `UNSUPPORTED` and ambiguous products produce no standard or mandatory claim. For supported categories the same algorithm loads the primary standard, picks the latest instrument notified on or before `as_of_date`, evaluates its effective interval, selects the stored regulatory regime and builds the explanation/journey from structured relationships.
+
+Historical instruments may be stored as `SUPERSEDED` today while still having been active on an earlier query date. The engine therefore compares the successor notification date with the query date before applying superseded status. Pressure-cooker history prefers IS 2347:2023 for current queries while retaining IS 2347:2017. Hallmarking resolves the 2020/2021/2023/2026 instrument chain and never treats Scheme I as the hallmarking workflow.

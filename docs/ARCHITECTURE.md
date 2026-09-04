@@ -38,7 +38,13 @@ flowchart TB
   DB[(PostgreSQL + pgvector)] --> PRODUCT & RULES & SEARCH & LABS
 ```
 
-Both modes use the complete canonical path. `DEMO_MODE=true` filters APIs to deterministic `DEMO` rows. `DEMO_MODE=false` filters to `AUTHORITATIVE` / `VERIFIED_DERIVED` rows and currently accepts only the kettle vertical.
+Both modes use the complete canonical path. `DEMO_MODE=true` filters APIs to deterministic `DEMO` rows. `DEMO_MODE=false` filters to `AUTHORITATIVE` / `VERIFIED_DERIVED` rows and consults `coverage_records` before selecting any standard. No coverage row means an explicit unsupported result.
+
+Phase 2E introduces a reusable decision graph:
+
+`ProductCategory → CoverageRecord → Standard/QCO → RegulatoryRegime → ProductManual/Test/Lab/Evidence`
+
+`PRODUCT_CERTIFICATION` and `HALLMARKING` have different journey templates. Hallmarking centres are not stored as ordinary laboratories, and HUID verification remains an official BIS Care action. Each product adapter runs in an independent ingestion transaction so one failing source does not remove another known-good vertical.
 
 Key boundaries:
 
@@ -53,7 +59,7 @@ Key boundaries:
 - Retrieval selects evidence; the temporal rule engine remains the only source of regulatory status.
 - OpenAI and Gemini calls are isolated behind one provider boundary with Pydantic validation, timeouts, bounded retries and output limits.
 - Provider failure or contradiction cannot make compliance unavailable; deterministic templates are mandatory fallbacks.
-- `render.yaml` declares one free FastAPI Docker service. Its startup applies additive migrations and idempotently loads the captured kettle graph into an external Neon PostgreSQL/pgvector database.
+- `render.yaml` declares one free FastAPI Docker service. Its startup applies additive migrations and idempotently loads all captured authoritative graphs into an external Neon PostgreSQL/pgvector database.
 - Vercel builds the native Next.js frontend only after `NEXT_PUBLIC_API_URL` is set to the public API origin.
 - GitHub Actions runs the daily non-destructive official-source check against Neon; detected changes are recorded as `REVIEW_REQUIRED` and fail the workflow for human attention.
-- `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and the authoritative kettle corpus.
+- `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and all five authoritative coverage records.

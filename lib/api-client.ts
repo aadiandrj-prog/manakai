@@ -10,6 +10,10 @@ export type ConversationResponse = components['schemas']['ConversationResponse']
 export type Document = components['schemas']['Document'];
 export type ProductAnalyseRequest = components['schemas']['ProductAnalyseRequest'];
 export type LabSearchRequest = components['schemas']['LabSearchRequest'];
+export type CoverageSummary = components['schemas']['CoverageSummary'];
+export type CoverageStats = components['schemas']['CoverageStats'];
+export type HallmarkingCentre = components['schemas']['HallmarkingCentre'];
+export type HallmarkingGuidance = components['schemas']['HallmarkingGuidance'];
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000').replace(/\/$/, '');
 
@@ -60,6 +64,10 @@ export const api = {
   compliance: (id: string) => request<ComplianceProfile>(`/api/v1/compliance/${encodeURIComponent(id)}`),
   journey: (id: string) => request<JourneyStep[]>(`/api/v1/compliance/${encodeURIComponent(id)}/journey`),
   labs: () => request<Laboratory[]>('/api/v1/labs'),
+  coverage: () => request<CoverageSummary[]>('/api/v1/coverage'),
+  coverageStats: () => request<CoverageStats>('/api/v1/coverage/stats'),
+  hallmarkingCentres: (query = '', state = '') => request<HallmarkingCentre[]>(`/api/v1/hallmarking/centres?q=${encodeURIComponent(query)}&state=${encodeURIComponent(state)}`),
+  hallmarkingGuidance: () => request<HallmarkingGuidance[]>('/api/v1/hallmarking/guidance'),
   searchLabs: (payload: LabSearchRequest) =>
     request<Laboratory[]>('/api/v1/labs/search', { method: 'POST', body: JSON.stringify(payload) }),
   ask: (query: string) =>

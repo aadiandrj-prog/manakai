@@ -14,3 +14,15 @@ Adapters must not bypass the repository or compliance-rule layers. Browser autom
 Run `python -m app.ingestion <target> --dry-run` first. The pipeline validates, stages and commits only a consistent vertical. Failure marks the run failed and retains known-good data. Unchanged URL/hash pairs reuse source records; disappearance never deletes a regulation automatically.
 
 Captured fixtures belong under `backend/tests/fixtures/official/` with the official URL and capture time. Retain only metadata/excerpts needed for tests, not complete protected standards.
+
+For a new product family, add one `ProductCategory`, `CoverageRecord`, primary mapping, regime and sourced evidence bundle. Reuse `BISVerticalAdapter`; add a source-specific adapter only when parsing semantics genuinely differ. Do not add classifier aliases until a coverage row exists. Mark the record `PARTIAL` when QCO, current manual, lab validity or rights evidence is incomplete.
+
+Current reproducible targets:
+
+```bash
+python -m app.ingestion helmets --dry-run
+python -m app.ingestion cement --dry-run
+python -m app.ingestion pressure-cookers --dry-run
+python -m app.ingestion hallmarking --dry-run
+python -m app.ingestion all-authoritative
+```

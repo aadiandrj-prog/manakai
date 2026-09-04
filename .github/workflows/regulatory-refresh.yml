@@ -34,3 +34,6 @@ jobs:
       - name: Check official sources without overwriting verified facts
         working-directory: backend
         run: python -m app.ingestion refresh --fail-on-change
+      - name: Reconcile captured authoritative verticals independently
+        working-directory: backend
+        run: python -m app.ingestion all-authoritative
