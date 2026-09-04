@@ -14,4 +14,8 @@ def test_openapi_contains_required_integration_endpoints():
         "/api/v1/labs/search",
         "/api/v1/qa",
         "/api/v1/documents/{document_id}",
+        "/api/v1/coverage",
+        "/api/v1/coverage/stats",
+        "/api/v1/hallmarking/centres",
+        "/api/v1/hallmarking/guidance",
     }.issubset(paths)

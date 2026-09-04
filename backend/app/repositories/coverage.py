@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+from datetime import date
+
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import Session, joinedload
+
+from ..db_models import CoverageRecord, HallmarkingCentre, HallmarkingGuidance, ProductCategory, RegulatoryRegime, SourceRecord
+
+
+class CoverageRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def list(self) -> list[CoverageRecord]:
+        statement = select(CoverageRecord).options(
+            joinedload(CoverageRecord.product_category),
+            joinedload(CoverageRecord.primary_standard),
+            joinedload(CoverageRecord.regime),
+        ).order_by(ProductCategory.name).join(CoverageRecord.product_category)
+        return list(self.session.scalars(statement))
+
+    def for_category(self, slug: str) -> CoverageRecord | None:
+        statement = select(CoverageRecord).join(CoverageRecord.product_category).options(
+            joinedload(CoverageRecord.product_category), joinedload(CoverageRecord.primary_standard), joinedload(CoverageRecord.regime),
+        ).where(ProductCategory.slug == slug)
+        return self.session.scalar(statement)
+
+    def stats(self) -> dict:
+        rows = dict(self.session.execute(select(CoverageRecord.coverage_status, func.count()).group_by(CoverageRecord.coverage_status)).all())
+        sources = self.session.scalar(select(func.count()).select_from(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE")) or 0
+        return {
+            "total": sum(rows.values()), "verified": rows.get("VERIFIED", 0), "partial": rows.get("PARTIAL", 0),
+            "metadata_only": rows.get("METADATA_ONLY", 0), "unsupported": rows.get("UNSUPPORTED", 0),
+            "authoritative_sources": sources,
+        }
+
+    def hallmarking_centres(self, *, query: str = "", state: str | None = None, as_of_date: date | None = None) -> list[HallmarkingCentre]:
+        statement = select(HallmarkingCentre).where(HallmarkingCentre.source_kind == "AUTHORITATIVE")
+        if query.strip():
+            pattern = f"%{query.strip()}%"
+            statement = statement.where(or_(HallmarkingCentre.name.ilike(pattern), HallmarkingCentre.city.ilike(pattern), HallmarkingCentre.state.ilike(pattern)))
+        if state:
+            statement = statement.where(HallmarkingCentre.state.ilike(f"%{state.strip()}%"))
+        records = list(self.session.scalars(statement.order_by(HallmarkingCentre.name)))
+        if as_of_date:
+            records = [item for item in records if item.status == "RECOGNISED" and (item.valid_from is None or item.valid_from <= as_of_date) and (item.valid_until is None or item.valid_until >= as_of_date)]
+        return records
+
+    def hallmarking_guidance(self) -> list[HallmarkingGuidance]:
+        return list(self.session.scalars(select(HallmarkingGuidance).order_by(HallmarkingGuidance.topic)))

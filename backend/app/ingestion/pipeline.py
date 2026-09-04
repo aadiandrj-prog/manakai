@@ -68,6 +68,9 @@ def _source(session: Session, payload: dict, run_id: str, retrieved_at: datetime
             id=f"source-change-{uuid4().hex}", source_url=record.source_url, source_type=record.source_type,
             previous_hash=previous.content_hash, new_hash=record.content_hash, ingestion_run_id=run_id,
             status="REVIEW_REQUIRED",
+            change_classification="MATERIAL" if record.source_type in {"GOVERNMENT_QCO", "GOVERNMENT_HALLMARKING_ORDER", "BIS_PRODUCT_MANUAL", "BIS_STANDARD_METADATA", "BIS_LIMS_SCOPE"} else "UNKNOWN",
+            review_status="PENDING", changed_fields=["normalised_content"],
+            material_summary=f"{record.source_type} changed; previous verified records were retained for review.",
         )
         session.add(event)
         logger.warning(

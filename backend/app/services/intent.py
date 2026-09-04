@@ -13,7 +13,7 @@ def classify_intent(query: str) -> Intent:
         return Intent.STANDARD_QA
     if any(term in text for term in ("mandatory", "certification", "qco", "licence", "license", "requirement", "required", "bis ka kya", "बीआईएस")):
         return Intent.CERTIFICATION_QUERY
-    if any(term in text for term in ("manufacture", "import", "product", "kettle", "केतली", "बनाता", "बनाती", "lamp", "helmet")):
+    if any(term in text for term in ("manufacture", "import", "product", "kettle", "केतली", "बनाता", "बनाती", "lamp", "helmet", "cement", "opc", "pressure cooker", "कुकर", "सीमेंट", "मोटरसाइकिल")):
         return Intent.PRODUCT_COMPLIANCE
     if any(term in text for term in ("consumer", "complaint", "mark")):
         return Intent.CONSUMER_QUERY

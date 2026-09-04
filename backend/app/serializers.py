@@ -49,6 +49,9 @@ def recognitions_to_laboratories(recognitions: list[models.LaboratoryRecognition
                 source_url=recognition.source_url,
                 retrieved_at=recognition.retrieved_at,
                 warning=None if recognition.valid_until else "Recognition validity could not be confirmed from the stored source.",
+                grade_type=recognition.grade_type,
+                testing_charge=recognition.testing_charge,
+                remark=recognition.remark,
             )
         )
     return sorted(result, key=lambda lab: lab.name)

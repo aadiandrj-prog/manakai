@@ -10,7 +10,7 @@ from .config import settings
 from .db_models import SourceRecord, Standard as StandardRecord
 from .database import database_is_ready, get_db
 from .middleware import StagingSafetyMiddleware
-from .repositories import DocumentRepository, LaboratoryRepository, StandardRepository
+from .repositories import CoverageRepository, DocumentRepository, LaboratoryRepository, StandardRepository
 from .schemas import (
     ComplianceProfile,
     ConversationCreateRequest,
@@ -25,6 +25,10 @@ from .schemas import (
     QueryResponse,
     Standard,
     StandardRelationship,
+    CoverageSummary,
+    CoverageStats,
+    HallmarkingCentre,
+    HallmarkingGuidance,
 )
 from .serializers import document_to_schema, recognitions_to_laboratories, relationship_to_schema, standard_to_schema
 from .services.compliance import ComplianceService
@@ -63,12 +67,45 @@ def ready(session: Session = Depends(get_db)):
             raise RuntimeError("Database migration revision is not current")
         authoritative_records = session.scalar(select(func.count()).select_from(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE")) or 0
         kettle_standard = session.get(StandardRecord, "is-302-2-15-auth")
-        if not settings.demo_mode and (authoritative_records == 0 or kettle_standard is None):
-            raise RuntimeError("Required authoritative kettle data is unavailable")
+        coverage_records = CoverageRepository(session).stats()["total"]
+        if not settings.demo_mode and (authoritative_records == 0 or kettle_standard is None or coverage_records < 5):
+            raise RuntimeError("Required authoritative multi-vertical coverage is unavailable")
     except Exception as exc:
         logger.exception("readiness_failed")
         raise HTTPException(status_code=503, detail="Service is not ready") from exc
-    return {"status": "ready", "database": "ready", "schema_revision": revision, "authoritative_records": authoritative_records}
+    return {"status": "ready", "database": "ready", "schema_revision": revision, "authoritative_records": authoritative_records, "coverage_records": coverage_records}
+
+
+def _coverage_schema(record) -> CoverageSummary:
+    regime = record.regime
+    return CoverageSummary(
+        id=record.id, category_slug=record.product_category.slug, category_name=record.product_category.name,
+        primary_standard=f"{record.primary_standard.number}:{record.primary_standard.version}" if record.primary_standard else None,
+        coverage_status=record.coverage_status, coverage_reason=record.coverage_reason, verified_at=record.verified_at,
+        authoritative_sources_count=record.authoritative_sources_count, known_limitations=list(record.known_limitations or []),
+        standard_metadata_available=record.standard_metadata_available, compliance_verified=record.compliance_verified,
+        regulatory_regime=regime,
+    )
+
+
+@app.get("/api/v1/coverage", response_model=list[CoverageSummary])
+def list_coverage(session: Session = Depends(get_db)):
+    return [_coverage_schema(item) for item in CoverageRepository(session).list()]
+
+
+@app.get("/api/v1/coverage/stats", response_model=CoverageStats)
+def coverage_stats(session: Session = Depends(get_db)):
+    return CoverageRepository(session).stats()
+
+
+@app.get("/api/v1/hallmarking/centres", response_model=list[HallmarkingCentre])
+def hallmarking_centres(q: str = Query(default=""), state: str | None = Query(default=None), as_of_date: date | None = Query(default=None), session: Session = Depends(get_db)):
+    return CoverageRepository(session).hallmarking_centres(query=q, state=state, as_of_date=as_of_date)
+
+
+@app.get("/api/v1/hallmarking/guidance", response_model=list[HallmarkingGuidance])
+def hallmarking_guidance(session: Session = Depends(get_db)):
+    return CoverageRepository(session).hallmarking_guidance()
 
 
 @app.get("/api/v1/standards", response_model=list[Standard])

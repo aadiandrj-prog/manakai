@@ -39,7 +39,7 @@ class RetrievalService:
                 ))
             if citations:
                 return QueryResponse(intent=intent, answer="Authoritative evidence candidates were retrieved using exact metadata, PostgreSQL lexical search and configured vector ranking. Review the cited clauses/pages; no generative model made a regulatory decision.", citations=citations, confidence=min(0.95, 0.65 + 0.05 * len(citations)), warnings=[])
-            return QueryResponse(intent=intent, answer="I could not verify this requirement from the ingested authoritative BIS sources.", citations=[], confidence=0.0, warnings=["The authoritative corpus currently covers only the electric-kettle vertical."])
+            return QueryResponse(intent=intent, answer="I could not verify this requirement from the ingested authoritative BIS sources.", citations=[], confidence=0.0, warnings=["Check the coverage registry: absence of evidence is not evidence that no BIS requirement exists."])
         citations = [citation_to_schema(item) for item in self.documents.search_citations(query)]
         if citations:
             answer = "The demo database contains relevant structured evidence, but no authoritative clause text is connected. I can explain the workflow while keeping the legal claim unverified."

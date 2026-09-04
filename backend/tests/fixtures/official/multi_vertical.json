@@ -1,0 +1,82 @@
+{
+  "verticals": [
+    {
+      "key": "motorcycle-helmet",
+      "category": {"id": "category-motorcycle-helmet", "slug": "motorcycle-helmet", "name": "Protective helmets for motorcycle riders"},
+      "standard": {"id": "is-4151-2015-auth", "number": "IS 4151", "version": "2015", "title": "Protective helmets for motorcycle riders", "category": "Protective rider equipment", "scope": "Protective helmets intended for motorcycle riders", "status": "ACTIVE", "publication_date": "2015-01-01"},
+      "standard_source": "https://www.bis.gov.in/is-4151-2015/?lang=en",
+      "manual": {"id": "manual-is-4151-dec-2024", "identifier": "PM/IS 4151/3/Dec 2024", "url": "https://www.bis.gov.in/wp-content/uploads/2024/12/PM_IS_4151_-Dec-24.pdf", "published_at": "2024-12-23", "status": "ACTIVE"},
+      "historical_manuals": [
+        {"id": "manual-is-4151-jan-2019", "identifier": "PM/IS 4151/1/January 2019", "url": "https://www.bis.gov.in/wp-content/uploads/IS-4151-Product-Manual.pdf", "published_at": "2019-01-01", "status": "SUPERSEDED"},
+        {"id": "manual-is-4151-jun-2020", "identifier": "PM/IS 4151/2/June 2020", "url": "https://www.bis.gov.in/wp-content/uploads/2020/06/PM-IS-4151-JUNE-2020-REVISED.pdf", "published_at": "2020-06-01", "status": "SUPERSEDED"}
+      ],
+      "qco": {"id": "qco-helmet-2020", "title": "Helmet for Riders of Two Wheelers Motor Vehicles (Quality Control) Order, 2020", "notification_number": "S.O. 4252(E)", "notification_date": "2020-11-26", "effective_date": "2021-06-01", "url": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "status": "ACTIVE"},
+      "tests": [["5", "Sizes"], ["6.7", "Peripheral vision"], ["6.9", "Mass"], ["7.2", "Impact absorption"], ["7.3", "Rigidity"], ["7.4", "Projections and surface friction"], ["7.5", "Dynamic retention system"], ["7.6", "Audibility"], ["7.8", "Micro-slip of chin strap"], ["7.10", "Quick release mechanism"]],
+      "labs": [
+        {"id": "lab-delta", "name": "Delta Testing and Research Laboratories Pvt Ltd", "city": "New Delhi", "state": "Delhi", "scope_identifier": "OSL 9179506", "scope": "All grades, types and sizes of IS 4151", "valid_until": "2027-08-21", "testing_charge": "INR 55,000"},
+        {"id": "lab-pioneer", "name": "Pioneer Testing Laboratory Pvt Ltd", "city": "Sonipat", "state": "Haryana", "scope_identifier": "OSL 8176806", "scope": "All types of IS 4151", "valid_until": "2029-12-31", "testing_charge": "INR 37,350"}
+      ],
+      "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+      "coverage": {"status": "VERIFIED", "reason": "Official BIS standard, current Scheme I listing, product manual and time-valid LIMS scopes are captured.", "limitations": ["Confirm helmet type, visor and face-cover configuration before selecting the exact test programme."], "sources": 5},
+      "required_documents": ["Helmet type and construction declaration", "Size and retention-system details", "Critical material and component list", "Product drawings and marking artwork"]
+    },
+    {
+      "key": "ordinary-portland-cement",
+      "category": {"id": "category-opc", "slug": "ordinary-portland-cement", "name": "Ordinary Portland Cement"},
+      "standard": {"id": "is-269-2015-auth", "number": "IS 269", "version": "2015", "title": "Ordinary Portland cement — Specification", "category": "Cement and concrete", "scope": "Ordinary Portland cement grades covered by IS 269", "status": "ACTIVE", "publication_date": "2015-01-01"},
+      "related_standards": [
+        {"id": "is-4031-part-6-1988-auth", "number": "IS 4031 (Part 6)", "version": "1988", "title": "Methods of physical tests for hydraulic cement — Determination of compressive strength", "category": "Cement test methods", "scope": "Compressive-strength test method referenced by the product manual", "status": "ACTIVE"},
+        {"id": "is-4032-1985-auth", "number": "IS 4032", "version": "1985", "title": "Method of chemical analysis of hydraulic cement", "category": "Cement test methods", "scope": "Chemical-analysis method referenced by the product manual", "status": "ACTIVE"}
+      ],
+      "test_standard_links": [{"clause": "7.4", "standard_id": "is-4031-part-6-1988-auth"}, {"clause": "6.1", "standard_id": "is-4032-1985-auth"}, {"clause": "6.2", "standard_id": "is-4032-1985-auth"}],
+      "standard_source": "https://www.bis.gov.in/is-269-2015/?lang=en",
+      "manual": {"id": "manual-is-269-oct-2023", "identifier": "PM/IS 269/3/Oct 2023", "url": "https://www.bis.gov.in/wp-content/uploads/2023/10/PM_IS_269-Oct-2023.pdf", "published_at": "2023-10-01", "status": "ACTIVE"},
+      "qco": {"id": "qco-cement-2003", "title": "Cement (Quality Control) Order, 2003", "notification_number": "S.O. 191(E)", "notification_date": "2003-02-17", "effective_date": "2003-02-17", "url": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "status": "ACTIVE"},
+      "tests": [["6.1", "Insoluble residue"], ["6.2", "Loss on ignition"], ["7.1", "Fineness"], ["7.2", "Soundness"], ["7.3", "Setting time"], ["7.4", "Compressive strength"]],
+      "labs": [
+        {"id": "lab-nth-jaipur", "name": "National Test House, North West Region", "city": "Jaipur", "state": "Rajasthan", "scope_identifier": "OSL 8122904", "scope": "Chemical and physical tests for IS 269 grades", "valid_until": "2026-12-31"},
+        {"id": "lab-ghaziabad", "name": "Ghaziabad Testing Laboratories Pvt Ltd", "city": "Ghaziabad", "state": "Uttar Pradesh", "scope_identifier": "OSL 8125006", "scope": "OPC 33, 43, 43S and 53S", "valid_from": "2025-08-14", "valid_until": "2028-01-12", "testing_charge": "INR 17,100"}
+      ],
+      "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=269",
+      "coverage": {"status": "VERIFIED", "reason": "Official BIS standard, Cement QCO listing, current product manual and LIMS scopes are captured.", "limitations": ["The manufacturer must specify the OPC grade; grade-dependent scope is not inferred."], "sources": 5},
+      "required_documents": ["OPC grade declaration", "Raw-material and process-control plan", "Chemical and physical test records", "Packing and marking artwork"]
+    },
+    {
+      "key": "domestic-pressure-cooker",
+      "category": {"id": "category-pressure-cooker", "slug": "domestic-pressure-cooker", "name": "Domestic Pressure Cooker"},
+      "standard": {"id": "is-2347-2023-auth", "number": "IS 2347", "version": "2023", "title": "Domestic pressure cookers — Specification", "category": "Domestic appliances", "scope": "Domestic pressure cookers covered by IS 2347:2023", "status": "ACTIVE", "publication_date": "2023-01-01"},
+      "historical_standards": [{"id": "is-2347-2017-auth", "number": "IS 2347", "version": "2017", "title": "Domestic pressure cookers — Specification", "status": "SUPERSEDED", "publication_date": "2017-01-01"}],
+      "standard_source": "https://www.bis.gov.in/wp-content/uploads/2025/02/PM-IS-2347.pdf",
+      "manual": {"id": "manual-is-2347-feb-2025", "identifier": "PM/IS 2347/9/February 2025", "url": "https://www.bis.gov.in/wp-content/uploads/2025/02/PM-IS-2347.pdf", "published_at": "2025-02-01", "status": "ACTIVE"},
+      "historical_manuals": [
+        {"id": "manual-is-2347-feb-2019", "identifier": "PM/IS 2347/1/February 2019", "url": "https://bis.gov.in/wp-content/uploads/2019/03/PM-IS-2347.pdf", "published_at": "2019-02-01", "status": "SUPERSEDED"},
+        {"id": "manual-is-2347-jan-2023", "identifier": "PM/IS 2347/6/January 2023", "url": "https://bis.gov.in/wp-content/uploads/2023/01/Revised-PM-IS-2347.pdf", "published_at": "2023-01-01", "status": "SUPERSEDED"}
+      ],
+      "qco": {"id": "qco-pressure-cooker-2020", "title": "Domestic Pressure Cooker (Quality Control) Order, 2020", "notification_number": "S.O. 294(E)", "notification_date": "2020-01-21", "effective_date": "2020-08-01", "url": "https://www.bis.gov.in/wp-content/uploads/2020/01/Pressure_cooker_QCO.pdf", "status": "ACTIVE"},
+      "tests": [["6", "Material and construction"], ["7", "Capacity"], ["8", "Operating pressure"], ["9", "Pressure regulating device"], ["10", "Safety pressure relief device"], ["11", "Proof pressure"], ["12", "Burst pressure"]],
+      "labs": [{"id": "lab-nth-chennai", "name": "National Test House, Southern Region", "city": "Chennai", "state": "Tamil Nadu", "scope_identifier": "OSL 6122704", "scope": "IS 2347:2023", "valid_until": null, "testing_charge": "INR 56,000", "warning": "The captured BIS LIMS result did not expose a recognition-validity date; confirm current validity before engagement."}],
+      "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2347",
+      "coverage": {"status": "PARTIAL", "reason": "Current product manual and standard revision are authoritative, while the Scheme I page still displays the 2017 reference and the captured lab validity is incomplete.", "limitations": ["Confirm current laboratory recognition validity directly in BIS LIMS.", "The QCO-to-current-standard transition is resolved using the QCO latest-version clause and is flagged for review."], "sources": 5},
+      "required_documents": ["Cooker capacity and construction declaration", "Lid, base and material configuration", "Pressure-regulating and safety-device details", "Drawings, marking and instruction manual"]
+    }
+  ],
+  "hallmarking": {
+    "category": {"id": "category-gold-jewellery", "slug": "gold-jewellery", "name": "Gold Jewellery and Gold Artefacts"},
+    "standard": {"id": "is-1417-2016-auth", "number": "IS 1417", "version": "2016", "title": "Gold and gold alloys, jewellery/artefacts — Fineness and marking", "category": "Precious metals and hallmarking", "scope": "Recognised gold fineness grades and hallmarking requirements", "status": "ACTIVE", "publication_date": "2016-01-01"},
+    "standard_source": "https://www.bis.gov.in/hallmarking-overview/hallmarking-faqs/hallmarking-faq/?lang=en",
+    "order_history": [
+      {"id": "qco-gold-hallmarking-2020", "title": "Hallmarking of Gold Jewellery and Gold Artefacts Order, 2020", "notification_number": "S.O. 205(E)", "notification_date": "2020-01-15", "effective_date": "2021-06-16", "url": "https://www.bis.gov.in/wp-content/uploads/2021/01/Brochure-Hallmarking.pdf", "status": "SUPERSEDED"},
+      {"id": "qco-gold-hallmarking-2021", "title": "Hallmarking of Gold Jewellery and Gold Artefacts (Amendment) Order, 2021", "notification_number": "S.O. 2102(E)", "notification_date": "2021-06-01", "effective_date": "2021-06-16", "url": "https://www.bis.gov.in/wp-content/uploads/2021/06/227306.pdf", "status": "SUPERSEDED"},
+      {"id": "qco-gold-hallmarking-2023", "title": "Hallmarking of Gold Jewellery and Gold Artefacts (Amendment) Order, 2023", "notification_number": "S.O. 1047(E)", "notification_date": "2023-03-06", "effective_date": "2023-04-01", "url": "https://www.bis.gov.in/wp-content/uploads/2023/03/GAZETTE.pdf", "status": "SUPERSEDED"}
+    ],
+    "order": {"id": "qco-gold-hallmarking-2026", "title": "Gold Jewellery and Gold Artefacts (Third Amendment) Order, 2026", "notification_number": "S.O. 4345(E)", "notification_date": "2026-08-03", "effective_date": "2026-08-03", "url": "https://www.bis.gov.in/wp-content/uploads/2026/08/Notification-related-to-mandatory-Hallmarking-2.pdf", "status": "ACTIVE"},
+    "coverage": {"status": "PARTIAL", "reason": "Official hallmarking rules, fineness grades and HUID guidance are captured. Live HUID verification and a complete live AHC directory are not exposed through a public API.", "limitations": ["HUID authenticity must be checked in the official BIS Care app.", "No complete cached AHC list is presented as current; use the official BIS directory."], "sources": 6},
+    "guidance": [
+      {"topic": "verify-huid", "title": "Verify a HUID", "source_url": "https://www.bis.gov.in/bis-apps/?lang=en", "steps": ["Open the official BIS Care mobile app.", "Choose Verify HUID.", "Enter the six-digit HUID shown on the article.", "Compare the returned jeweller and article details; ManakAI does not claim to verify HUIDs."]},
+      {"topic": "identify-hallmark", "title": "Identify a BIS hallmark", "source_url": "https://www.bis.gov.in/hallmarking-jewellers/?lang=en", "steps": ["Check for the BIS mark.", "Check the purity in carat and fineness.", "Check for the six-digit alphanumeric HUID."]},
+      {"topic": "consumer-testing", "title": "Get jewellery independently tested", "source_url": "https://www.bis.gov.in/hallmarking-overview/consumer-protection/?lang=en", "steps": ["Use a BIS-recognised Assaying and Hallmarking Centre.", "Request an assay report for the submitted article.", "Use the official BIS consumer-protection route if declared purity is deficient."]}
+    ],
+    "fineness": ["14K585", "18K750", "20K833", "22K916", "23K958", "24KS995"],
+    "official_ahc_directory": "https://www.bis.gov.in/a-h-centre/?lang=en"
+  }
+}

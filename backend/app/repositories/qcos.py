@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from datetime import date
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from ..db_models import QCO, QCOApplicability, StandardQCO
@@ -17,7 +18,7 @@ class QCORepository:
         )
         return list(self.session.scalars(statement))
 
-    def resolve(self, *, standard_id: str, product_category: str, enterprise_category: str):
+    def resolve(self, *, standard_id: str, product_category: str, enterprise_category: str, as_of_date: date | None = None):
         statement = (
             select(QCO, QCOApplicability)
             .join(StandardQCO, StandardQCO.qco_id == QCO.id)
@@ -29,4 +30,6 @@ class QCORepository:
             )
             .order_by(QCO.notification_date.desc().nullslast())
         )
+        if as_of_date:
+            statement = statement.where(or_(QCO.notification_date.is_(None), QCO.notification_date <= as_of_date))
         return self.session.execute(statement).first()

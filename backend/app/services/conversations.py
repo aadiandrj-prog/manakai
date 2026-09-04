@@ -77,7 +77,7 @@ class ConversationService:
             return self._standard_qa(conversation, text, interpretation.language)
 
         product = interpretation.product
-        if product and product.product_type == "electric_kettle":
+        if product:
             state = dict(conversation.structured_state or {})
             state["product"] = product.model_dump(mode="json")
             conversation.structured_state = state
@@ -100,7 +100,7 @@ class ConversationService:
             logger.info("regulatory_package_created evidence_count=%s", len(evidence))
             if product.missing_required_fields:
                 logger.info("clarification_requested fields=%s", ",".join(product.missing_required_fields))
-                answer = self._clarification(interpretation.language)
+                answer = self._clarification(interpretation.language, product)
                 return self._save_response(conversation, interpretation.language, Intent.PRODUCT_COMPLIANCE, answer, clarification=True, profile=profile, evidence=evidence, warnings=profile.warnings)
             answer, provider_name, fallback = self._generate(package, self._product_fallback(package), conversation_id=conversation_id)
             return self._save_response(conversation, interpretation.language, Intent.PRODUCT_COMPLIANCE, answer, profile=profile, evidence=evidence, warnings=profile.warnings, provider=provider_name, used_fallback=fallback)
@@ -253,11 +253,22 @@ it cannot decide any regulatory fact."""
 
     @staticmethod
     def _canonical_description_dict(product: dict):
-        parts = [str(product.get("rated_power_w") or "").strip(), "W" if product.get("rated_power_w") else "", str(product.get("rated_voltage_v") or "").strip(), "V" if product.get("rated_voltage_v") else "", product.get("intended_use") or "", "electric kettle", "India" if product.get("country") == "India" else ""]
+        names = {"electric_kettle": "electric kettle", "motorcycle_helmet": "motorcycle rider helmet", "ordinary_portland_cement": "ordinary Portland cement", "domestic_pressure_cooker": "domestic pressure cooker", "gold_jewellery": "gold jewellery"}
+        extra = product.get("additional_attributes") or {}
+        parts = [str(product.get("rated_power_w") or "").strip(), "W" if product.get("rated_power_w") else "", str(product.get("rated_voltage_v") or "").strip(), "V" if product.get("rated_voltage_v") else "", product.get("intended_use") or "", str(extra.get("grade") or ""), str(extra.get("capacity_l") or ""), str(extra.get("declared_fineness") or ""), names.get(product.get("product_type"), product.get("product_type") or "product"), "India" if product.get("country") == "India" else ""]
         return " ".join(item for item in parts if item)
 
     @staticmethod
-    def _clarification(language):
+    def _clarification(language, product):
+        fields = set(product.missing_required_fields)
+        if "helmet intended use" in fields:
+            return "Is this helmet for a motorcycle/two-wheeler rider, industrial safety, or a sport? ManakAI will not select IS 4151 from the word ‘helmet’ alone."
+        if "OPC grade" in fields:
+            return "Which Ordinary Portland Cement grade is intended (33, 43, 43S, 53 or 53S)? The grade affects the declared scope and laboratory selection."
+        if "material and construction type" in fields:
+            return "What are the pressure cooker's material, lid type and base construction? The standard is identified, but these details are needed for the exact test programme."
+        if "declared carat/fineness" in fields:
+            return "What carat/fineness is declared for the gold article (for example 22K916)? HUID verification itself must be completed in the official BIS Care app."
         if language == SupportedLanguage.HINDI: return "केतली का रेटेड वोल्टेज क्या है? वोल्टेज के बिना ManakAI QCO के वोल्टेज दायरे पर अंतिम निष्कर्ष नहीं देगा।"
         if language == SupportedLanguage.HINGLISH: return "Kettle ka rated voltage kya hai? Voltage ke bina ManakAI QCO voltage scope par final conclusion nahi dega."
         return "What is the rated voltage of the kettle? Without it, ManakAI cannot conclude whether the product falls within the QCO voltage scope."
@@ -265,9 +276,13 @@ it cannot decide any regulatory fact."""
     @staticmethod
     def _product_fallback(package):
         p = package.compliance_result
+        if not p.applicable_standards:
+            return p.coverage.coverage_reason
         standard = p.applicable_standards[0].number
         qco = p.qco
         ids = " ".join(f"[{item.evidence_id}]" for item in package.evidence[:3])
+        if p.regulatory_regime and p.regulatory_regime.regime_type.value == "HALLMARKING":
+            return f"ManakAI identifies {standard} as the recorded fineness and marking standard. The hallmarking order is {qco.status.value if qco else 'UNKNOWN'} for the selected date. Verify the six-digit HUID only in the official BIS Care app; ManakAI does not perform HUID verification. {ids}"
         if package.language == SupportedLanguage.HINDI:
             return f"ManakAI के सत्यापित रिकॉर्ड के अनुसार {standard} लागू मानक है। {qco.notification_number} की स्थिति {qco.status.value} है और सामान्य कार्यान्वयन तिथि {qco.effective_from.isoformat()} है। प्रमाणन योजना {p.certification_scheme} है। {ids}"
         if package.language == SupportedLanguage.HINGLISH:
@@ -289,7 +304,7 @@ it cannot decide any regulatory fact."""
 
     @staticmethod
     def _unsupported(language):
-        return ConversationService._cannot_verify(language) + " ManakAI currently has authoritative product coverage only for household electric kettles."
+        return ConversationService._cannot_verify(language) + " ManakAI currently publishes an explicit coverage registry for electric kettles, motorcycle helmets, Ordinary Portland Cement, domestic pressure cookers and gold hallmarking."
 
     @staticmethod
     def _unknown(language):
