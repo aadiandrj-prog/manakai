@@ -32,6 +32,7 @@ ManakAI is a hackathon-ready regulatory navigation and compliance automation pro
 - Explicit `VERIFIED`, `PARTIAL`, `METADATA_ONLY` and `UNSUPPORTED` coverage states; ambiguous “helmet” input never auto-selects IS 4151
 - Separate BIS Hallmarking regime, official HUID-to-BIS-Care boundary and structured consumer guidance
 - Current and historical pressure-cooker standards/product manuals plus versioned hallmarking orders
+- Phase 3A decision-first UX with safe supported/partial/unsupported states, dynamic compliance journeys, visible AI/fallback labels and free-tier cold-start recovery
 
 ## Architecture
 
@@ -143,6 +144,6 @@ Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.
 - The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
-See [Deployment](docs/DEPLOYMENT.md), [Staging](docs/STAGING.md), [Operations](docs/OPERATIONS.md), [Privacy](docs/PRIVACY.md), [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+See [Deployment](docs/DEPLOYMENT.md), [Staging](docs/STAGING.md), [Operations](docs/OPERATIONS.md), [Privacy](docs/PRIVACY.md), [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [UX audit](docs/UX_AUDIT.md), [user testing](docs/USER_TESTING.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 
 For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).

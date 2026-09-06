@@ -11,6 +11,7 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
+import { ErrorState, LoadingState } from '@/components/manakai/data-state';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
 
@@ -19,16 +20,19 @@ const help = [
     icon: ScanLine,
     title: 'Understand HUID',
     copy: 'Learn what the Hallmark Unique Identification code represents and what details to compare.',
+    href: '#verify-huid',
   },
   {
     icon: ShieldCheck,
     title: 'Check a certification mark',
     copy: 'Identify the mark and use the appropriate official verification route.',
+    href: '#identify-hallmark',
   },
   {
     icon: TriangleAlert,
     title: 'Report a concern',
     copy: 'Collect invoice, product, mark and seller details before filing through an official channel.',
+    href: '#consumer-testing',
   },
 ];
 
@@ -47,8 +51,8 @@ export default function ConsumerPage() {
             description="A separate, plain-language path for consumers. ManakAI explains what to check and routes you to official services without pretending to perform a live verification."
           />
           <div className="grid gap-4 md:grid-cols-3">
-            {help.map(({ icon: Icon, title, copy }) => (
-              <article key={title} className="workflow-card">
+            {help.map(({ icon: Icon, title, copy, href }) => (
+              <a key={title} href={href} className="workflow-card group min-h-44">
                 <div className="icon-box cyan">
                   <Icon />
                 </div>
@@ -58,7 +62,8 @@ export default function ConsumerPage() {
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
                   {copy}
                 </p>
-              </article>
+                <span className="mt-4 inline-block text-xs text-primary">View guidance ↓</span>
+              </a>
             ))}
           </div>
           <div className="mt-5 grid gap-5 lg:grid-cols-[.85fr_1.15fr]">
@@ -104,7 +109,7 @@ export default function ConsumerPage() {
               <span className="eyebrow">Safe verification sequence</span>
               <ol className="mt-5 space-y-4">
                 {[
-                  'Locate the BIS hallmark and six-character HUID on the item.',
+                  'Locate the BIS hallmark and six-character alphanumeric HUID on the item.',
                   'Use the current official BIS consumer verification service.',
                   'Compare jeweller, article type, purity and hallmarking-centre details.',
                   'Keep the invoice. If details conflict, contact the seller and use the official complaint route.',
@@ -125,7 +130,9 @@ export default function ConsumerPage() {
               </p>
             </div>
           </div>
-          {guidance.data && <section className="mt-5 panel p-5"><span className="eyebrow">Authoritative consumer guidance</span><div className="mt-4 grid gap-3 md:grid-cols-3">{guidance.data.map((item) => <article key={item.id} className="rounded-md border border-border bg-[#0c0d0e] p-4"><h2 className="text-sm font-medium">{item.title}</h2><ol className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">{item.guidance.map((step) => <li key={step}>{step}</li>)}</ol><a className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline" href={item.source_url} target="_blank" rel="noreferrer">Official BIS source <ExternalLink className="size-3" /></a></article>)}</div></section>}
+          {guidance.isPending && <div className="mt-5"><LoadingState label="Loading official consumer guidance…" /></div>}
+          {guidance.isError && <div className="mt-5"><ErrorState message="We couldn’t load the official consumer-guidance links. Try again shortly; do not rely on an unverified HUID result." onRetry={() => { void guidance.refetch(); }} /></div>}
+          {guidance.data && <section className="mt-5 panel p-5"><span className="eyebrow">Official consumer guidance</span><div className="mt-4 grid gap-3 md:grid-cols-3">{guidance.data.map((item) => <article id={item.topic} key={item.id} className="scroll-mt-24 rounded-md border border-border bg-[#0c0d0e] p-4"><h2 className="text-sm font-medium">{item.title}</h2><ol className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground">{item.guidance.map((step, index) => <li key={step}>{index + 1}. {step}</li>)}</ol><a className="mt-3 inline-flex min-h-10 items-center gap-1 text-xs text-primary hover:underline" href={item.source_url} target="_blank" rel="noreferrer">Open official BIS guidance <ExternalLink className="size-3" /></a></article>)}</div></section>}
         </div>
       </section>
     </AppShell>

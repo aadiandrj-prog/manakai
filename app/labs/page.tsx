@@ -25,7 +25,7 @@ export default function LabsPage() {
           <PageHeader
             eyebrow="Act"
             title="Testing laboratory finder"
-            description="Match a standard and testing need against source-labelled recognition records, filtered to the selected date where validity is known."
+            description="Choose a standard and date to find available laboratory scope records. Always confirm the exact tests, exclusions, and current recognition with BIS LIMS before booking."
             action={
               <Badge
                 variant="outline"
@@ -42,7 +42,7 @@ export default function LabsPage() {
             </p>
           </div>
           <div className="panel mb-5 grid gap-3 p-4 md:grid-cols-3">
-            <label className="relative">
+            <label className="relative" aria-label="Search laboratories">
               <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
               <input
                 value={query}
@@ -51,7 +51,7 @@ export default function LabsPage() {
                 className="h-10 w-full rounded-md border border-input bg-[#0b0c0d] pl-9 pr-3 text-sm outline-none focus:border-primary"
               />
             </label>
-            <select
+            <select aria-label="Filter laboratories by standard"
               value={standard}
               onChange={(e) => setStandard(e.target.value)}
               className="h-10 rounded-md border border-input bg-[#0b0c0d] px-3 text-sm"
@@ -65,7 +65,7 @@ export default function LabsPage() {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {labsQuery.isPending && <div className="col-span-full"><LoadingState label="Searching laboratory records…" /></div>}
-            {labsQuery.isError && <div className="col-span-full"><ErrorState message={errorMessage(labsQuery.error)} /></div>}
+            {labsQuery.isError && <div className="col-span-full"><ErrorState message={errorMessage(labsQuery.error)} onRetry={() => { void labsQuery.refetch(); }} /></div>}
             {filtered.map((lab) => (
               <article key={lab.id} className="panel p-5">
                 <div className="flex items-start justify-between gap-3">

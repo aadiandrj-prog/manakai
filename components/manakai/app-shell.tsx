@@ -11,13 +11,12 @@ import {
   Workflow,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 const nav = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
   { href: '/product', label: 'Product analyser', icon: Sparkles },
   {
-    href: '/compliance/demo-emergency-lamp',
+    href: '/compliance',
     label: 'Compliance journey',
     icon: Workflow,
   },
@@ -72,12 +71,9 @@ export function AppShell({
               <span className="size-1.5 rounded-full bg-cyan-300" /> Source-aware
               dataset
             </Badge>
-            <Button
-              variant="outline"
-              className="h-9 rounded-md border-border bg-card px-3"
-            >
-              EN / हिं
-            </Button>
+            <Badge variant="outline" className="h-9 rounded-md border-border bg-card px-3 text-muted-foreground">
+              EN · हिं · Hinglish
+            </Badge>
           </div>
         </div>
       </header>
