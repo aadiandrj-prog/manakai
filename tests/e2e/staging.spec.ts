@@ -99,7 +99,7 @@ test('unsupported and partial products explain their evidence boundary', async (
   await page.getByRole('button', { name: 'Check requirements' }).click();
   await expect(page.getByRole('heading', { name: /can’t verify an end-to-end BIS result/i })).toBeVisible();
 
-  const partial: ComplianceProfile = { ...profile, id: 'profile-partial', coverage: { ...profile.coverage, id: 'coverage-partial', coverage_status: 'PARTIAL', known_limitations: ['Laboratory validity must be confirmed.'], compliance_verified: false }, warnings: ['Current certification route needs confirmation.'] };
+  const partial: ComplianceProfile = { ...profile, id: 'profile-partial', coverage: { ...profile.coverage, id: 'coverage-partial', coverage_status: 'PARTIAL', known_limitations: ['Laboratory validity must be confirmed.'], compliance_verified: false }, warnings: ['Laboratory validity must be confirmed.', 'Current certification route needs confirmation.'] };
   await page.unroute('http://localhost:8000/api/v1/products/analyse');
   await mockComplianceApi(page, partial);
   await page.getByLabel('What do you make, import, sell, or use?').fill('domestic pressure cooker');
@@ -107,6 +107,7 @@ test('unsupported and partial products explain their evidence boundary', async (
   await expect(page.getByText('Partial coverage', { exact: true })).toBeVisible();
   await expect(page.getByText('What we could verify')).toBeVisible();
   await expect(page.getByText('Still needs confirmation')).toBeVisible();
+  await expect(page.getByText('• Laboratory validity must be confirmed.', { exact: true })).toHaveCount(1);
 });
 
 test('authoritative kettle conversation, clarification, evidence and labs', async ({ page }) => {
