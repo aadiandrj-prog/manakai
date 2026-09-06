@@ -60,6 +60,17 @@ This audit covers every public route in the ManakAI staging interface. It combin
 - All primary actions tested on desktop and Pixel 7 viewports have real link or button semantics.
 - Automated accessibility scans cover the dashboard, supported result and chat result with no serious/critical violations in the controlled test fixtures.
 
+## Public performance baseline
+
+Measured from the staging release on 6 September 2026. These are transport timings from one connection in India, not a substitute for multi-region Core Web Vitals or load testing.
+
+| Surface | Samples | Observed TTFB | Observed total response time | Notes |
+| --- | --- | --- | --- | --- |
+| Vercel `/`, `/product`, `/compliance`, `/ask` | 10 document requests | 0.092–0.597 s | 0.094–0.599 s | All returned HTTP 200. Cache-busted overview/product samples were 0.101–0.116 s TTFB. |
+| Render `/ready` | 3 sequential requests | 0.299–1.057 s | 0.300–1.058 s | Service was reachable and database-ready; later warm requests were faster. |
+
+The measured frontend delivery is not the primary perceived bottleneck. A Render Free service can sleep independently and its first API request can take substantially longer than the warm samples above. Phase 3A therefore keeps the architecture unchanged and explains a possible cold start after 3.5 seconds instead of adding infrastructure. Product analysis and Ask ManakAI both completed successfully during the final public browser smoke test.
+
 ## Remaining validation boundary
 
 This audit improves usability; it does not certify regulatory correctness. The authoritative corpus remains deliberately bounded, source changes require human review, laboratory scopes remain selective, and official linked services can change independently. The next usability milestone is moderated testing with people unfamiliar with the implementation, using `USER_TESTING.md`, followed by evidence-based changes rather than adding more dashboard features.
