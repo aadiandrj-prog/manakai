@@ -82,5 +82,11 @@ export const api = {
 };
 
 export function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'An unexpected error occurred.';
+  if (error instanceof ApiError) {
+    if (error.status === 404) return 'This saved result could not be found. Analyse the product again to create a fresh compliance profile.';
+    if (error.status === 429) return 'Too many requests were sent from this connection. Wait a moment and try again.';
+    if (error.kind === 'network' || error.status >= 500) return 'We couldn’t reach the regulatory service. Try again shortly. Previously verified records have not been changed.';
+    return error.message;
+  }
+  return error instanceof Error ? error.message : 'Something unexpected happened. Try again shortly.';
 }

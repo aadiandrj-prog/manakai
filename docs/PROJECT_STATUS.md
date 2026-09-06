@@ -1,5 +1,15 @@
 # Project status and roadmap
 
+## Phase 3A outcome (6 September 2026)
+
+Phase 3A hardens the existing product experience without widening regulatory scope or changing the deterministic decision architecture. The dashboard now has one primary product-check path plus three clear supporting intents. Product results and compliance profiles lead with What applies, Status, When and What to do next; detailed reasoning, regulatory basis, testing and source evidence remain available through progressive disclosure.
+
+The broken authoritative-mode compliance shortcut was replaced by a genuine landing state and browser-local recent-result link. Dashboard queries now survive navigation. Supported, partial, ambiguous and unsupported analyses have distinct, safe outcomes. The journey uses backend-returned step counts and next actions, standards copy is source-aware, consumer cards are functional, HUID remains an explicit official-service boundary, and slow/free-tier API loading and error recovery are explained in plain language.
+
+Ask ManakAI now labels final output as either an AI explanation or rules-based fallback. This resolves the false impression that every successful API response necessarily came from Gemini; interpretation-stage fallback telemetry remains a documented follow-up. Phase 3A also adds a lightweight GitHub feedback path, a full route audit, and a moderated user-testing script. No behavioural tracking was added before a privacy/consent design exists.
+
+Verification covers route contract tests, desktop and Pixel 7 Playwright flows, critical accessibility checks, lint, production compilation and the unchanged backend suite. See [UX audit](UX_AUDIT.md) and [user-testing guide](USER_TESTING.md).
+
 ## Regulatory review hardening (5 September 2026)
 
 Public Phase 2E is live on Vercel, Render and Neon. The source monitor found pending official-page drift without replacing verified facts. This hardening adds an additive audit migration, exact pending-event/error reports, hash-locked reviewer attribution and a manual single-event resolution workflow. Scheduled refresh now always reconciles captured known-good verticals before failing at the final unresolved-review gate. Semantic comparison and the regulatory judgment remain human responsibilities.

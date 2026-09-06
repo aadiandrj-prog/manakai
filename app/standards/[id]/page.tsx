@@ -2,7 +2,6 @@
 
 import { use } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
 import {
   ArrowRight,
   BookOpenText,
@@ -12,8 +11,8 @@ import {
   ShieldQuestion,
 } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
+import { ActionLink } from '@/components/manakai/action-link';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState } from '@/components/manakai/data-state';
 import { api, errorMessage } from '@/lib/api-client';
 
@@ -27,7 +26,7 @@ export default function StandardDetail({
   const relationshipsQuery = useQuery({ queryKey: ['relationships', id], queryFn: () => api.relationships(id) });
   const labsQuery = useQuery({ queryKey: ['labs'], queryFn: api.labs });
   if (standardQuery.isPending || relationshipsQuery.isPending || labsQuery.isPending) return <AppShell current="/standards"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><LoadingState label="Loading standard record…" /></div></section></AppShell>;
-  if (standardQuery.isError || relationshipsQuery.isError || labsQuery.isError) return <AppShell current="/standards"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><ErrorState message={errorMessage(standardQuery.error ?? relationshipsQuery.error ?? labsQuery.error)} /></div></section></AppShell>;
+  if (standardQuery.isError || relationshipsQuery.isError || labsQuery.isError) return <AppShell current="/standards"><section className="px-4 py-8 sm:px-6 lg:px-10 lg:py-10"><div className="mx-auto max-w-[1180px]"><ErrorState message={errorMessage(standardQuery.error ?? relationshipsQuery.error ?? labsQuery.error)} onRetry={() => { void standardQuery.refetch(); void relationshipsQuery.refetch(); void labsQuery.refetch(); }} actionHref="/standards" actionLabel="Back to standards" /></div></section></AppShell>;
   const standard = standardQuery.data;
   const relationships = relationshipsQuery.data;
   const labs = labsQuery.data.filter((lab) => lab.standards.includes(standard.number));
@@ -65,9 +64,7 @@ export default function StandardDetail({
                 <div className="mt-5 flex gap-3 rounded-md border border-cyan-300/20 bg-cyan-300/5 p-3">
                   <FileText className="mt-0.5 size-4 shrink-0 text-cyan-300" />
                   <p className="text-xs leading-5 text-cyan-50/70">
-                    This page holds structured demo metadata only. It does not
-                    reproduce protected standard text and does not claim live
-                    catalogue status.
+                    This page contains {standard.source_kind === 'AUTHORITATIVE' ? 'source-linked official metadata' : standard.source_kind === 'DEMO' ? 'clearly labelled demonstration metadata' : 'limited structured metadata'}. It does not reproduce the complete Indian Standard. Confirm the latest official publication before acting.
                   </p>
                 </div>
               </div>
@@ -79,27 +76,15 @@ export default function StandardDetail({
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {relationships.map((relationship) => <Relation key={relationship.id} label={relationship.relationship_type} value={`${relationship.target_standard.number}: ${relationship.target_standard.title}`} />)}
                   <Relation
-                    label="REGULATED_BY"
-                    value="QCO source not connected"
+                    label="CHECK PRODUCT STATUS"
+                    value="Analyse a specific product to evaluate the applicable QCO and date"
                   />
                   <Relation label="TESTED_USING" value={`${labs.length} matching lab records`} />
                 </div>
               </div>
               <div className="panel p-5">
                 <span className="eyebrow">Ask about this standard</span>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    className="h-10 flex-1 rounded-md border border-input bg-[#0b0c0d] px-3 text-sm"
-                    defaultValue={`Explain the scope of ${standard.number} in simple terms`}
-                  />
-                  <Button
-                    nativeButton={false}
-                    render={<Link href="/ask" />}
-                    className="rounded-md"
-                  >
-                    Ask with evidence <ArrowRight />
-                  </Button>
-                </div>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs leading-5 text-muted-foreground">Open Ask ManakAI with this standard already included in the question.</p><ActionLink href={`/ask?q=${encodeURIComponent(`Explain the scope of ${standard.number} in simple terms`)}`}>Ask with evidence <ArrowRight /></ActionLink></div>
               </div>
             </div>
             <aside className="space-y-5">
@@ -110,9 +95,9 @@ export default function StandardDetail({
                 </div>
                 <dl className="mt-4 space-y-3 text-xs">
                   <Meta label="Version" value={standard.version} />
-                  <Meta label="Fixture status" value={standard.status} />
-                  <Meta label="Publication date" value={standard.publication_date ?? 'Not verified in demo'} />
-                  <Meta label="Effective date" value={standard.effective_date ?? 'Not verified in demo'} />
+                  <Meta label="Record status" value={standard.status} />
+                  <Meta label="Publication date" value={standard.publication_date ?? 'Not available'} />
+                  <Meta label="Effective date" value={standard.effective_date ?? 'Not available'} />
                   <Meta label="Last retrieved" value={standard.retrieved_at ? new Date(standard.retrieved_at).toLocaleDateString('en-IN') : 'Not recorded'} />
                 </dl>
               </div>
@@ -125,14 +110,7 @@ export default function StandardDetail({
                   No mandatory or voluntary status is asserted until a current
                   QCO and certification-scheme record supports it.
                 </p>
-                <Button
-                  nativeButton={false}
-                  render={<Link href="/product" />}
-                  variant="outline"
-                  className="mt-4 w-full rounded-md"
-                >
-                  Analyse a product
-                </Button>
+                <ActionLink href="/product" variant="outline" className="mt-4 w-full">Analyse a product</ActionLink>
               </div>
             </aside>
           </div>

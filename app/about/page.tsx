@@ -32,7 +32,7 @@ const layers = [
   {
     icon: Braces,
     title: 'Provider abstraction',
-    copy: 'Demo mode is the default; optional model providers remain behind environment configuration.',
+    copy: 'Optional AI providers explain evidence after the rules run. If a provider fails, the regulatory result remains unchanged.',
   },
 ];
 
@@ -43,8 +43,8 @@ export default function AboutPage() {
         <div className="mx-auto max-w-[1100px]">
           <PageHeader
             eyebrow="System design"
-            title="AI is the reasoning layer, not the product"
-            description="ManakAI is designed as a regulatory navigation and compliance automation platform. Conversation augments structured workflows; it does not replace them."
+            title="Rules and evidence form the regulatory core"
+            description="ManakAI is a regulatory navigation and compliance-planning platform. Conversation makes verified results easier to understand; it does not decide the applicable law."
             action={
               <Badge
                 variant="outline"
