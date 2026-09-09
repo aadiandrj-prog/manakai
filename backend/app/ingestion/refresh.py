@@ -47,12 +47,29 @@ async def refresh_authoritative_sources(session: Session, fetcher=None, *, famil
                 source.metadata_json = metadata
                 baselined += 1
             elif previous_fingerprint != current_fingerprint:
+                pending = session.scalar(select(m.SourceChangeEvent).where(
+                    m.SourceChangeEvent.source_url == source.source_url,
+                    m.SourceChangeEvent.status == "REVIEW_REQUIRED",
+                    m.SourceChangeEvent.review_status == "PENDING",
+                ).order_by(m.SourceChangeEvent.created_at.desc()))
                 exists = session.scalar(select(m.SourceChangeEvent).where(
                     m.SourceChangeEvent.source_url == source.source_url,
                     m.SourceChangeEvent.previous_hash == previous_fingerprint,
                     m.SourceChangeEvent.new_hash == current_fingerprint,
                 ))
-                if not exists:
+                if pending:
+                    # Keep one actionable review item per source. If a volatile
+                    # page changes again before review, point the existing item
+                    # at the newest observed fingerprint instead of flooding the
+                    # queue with obsolete intermediate snapshots.
+                    if pending.new_hash != current_fingerprint:
+                        pending.new_hash = current_fingerprint
+                        pending.ingestion_run_id = run.id
+                        pending.material_summary = (
+                            f"{source.source_type} visible content changed again; "
+                            "canonical records were retained pending review of the latest observation."
+                        )
+                elif not exists:
                     material_types = {"GOVERNMENT_QCO", "GOVERNMENT_HALLMARKING_ORDER", "BIS_PRODUCT_MANUAL", "BIS_STANDARD_METADATA", "BIS_LIMS_SCOPE"}
                     classification = "MATERIAL" if source.source_type in material_types else "EDITORIAL"
                     session.add(m.SourceChangeEvent(

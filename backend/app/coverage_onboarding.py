@@ -111,6 +111,7 @@ def _ingest_one(session: Session, config: dict, run_id: str, *, publish_reviewed
         if coverage:
             score = coverage_score(config); coverage.lifecycle_status = lifecycle; coverage.completeness_json = score; coverage.lab_completeness = "COMPLETE" if config["slug"] == "appliances-for-heating-liquids" else "SOURCE_SCOPED"; coverage.reviewed_by = family.reviewed_by; coverage.reviewed_at = family.reviewed_at; coverage.published_at = family.published_at; coverage.last_refreshed_at = now
             coverage.metadata_json = {**(coverage.metadata_json or {}), "product_group": config["group"], "aliases": config.get("aliases", [])}
+            _link_existing_impacts(session, family, coverage)
         return made_count, changed_count
 
     standard = config["standard"]
@@ -165,3 +166,57 @@ def _ingest_one(session: Session, config: dict, run_id: str, *, publish_reviewed
 def _impact(session: Session, source_id: str, family_id: str, impact_type: str, note: str) -> None:
     digest = hashlib.sha256(f"{source_id}|{family_id}|{impact_type}".encode()).hexdigest()[:20]
     _upsert(session, m.SourceFamilyImpact, f"impact-{digest}", {"source_record_id": source_id, "product_family_id": family_id, "impact_type": impact_type, "relationship_note": note})
+
+
+def _link_existing_impacts(session: Session, family: m.ProductFamily, coverage: m.CoverageRecord) -> None:
+    """Attach the five pre-3B verticals to the same source-impact graph."""
+    mappings = session.scalars(
+        select(m.ProductStandardMapping).where(
+            m.ProductStandardMapping.product_category_id == coverage.product_category_id
+        )
+    )
+    for mapping in mappings:
+        if mapping.source_record_id:
+            _impact(session, mapping.source_record_id, family.id, "STANDARD_MAPPING", mapping.rationale)
+
+    if coverage.regime and coverage.regime.source_record_id:
+        _impact(
+            session,
+            coverage.regime.source_record_id,
+            family.id,
+            "REGULATORY_REQUIREMENT",
+            coverage.regime.description,
+        )
+    if not coverage.primary_standard_id:
+        return
+
+    qcos = session.scalars(
+        select(m.QCO)
+        .join(m.StandardQCO, m.StandardQCO.qco_id == m.QCO.id)
+        .where(m.StandardQCO.standard_id == coverage.primary_standard_id)
+    )
+    for qco in qcos:
+        if qco.source_record_id:
+            _impact(session, qco.source_record_id, family.id, "REGULATORY_REQUIREMENT", qco.title)
+
+    manuals = session.scalars(
+        select(m.ProductManual).where(m.ProductManual.standard_id == coverage.primary_standard_id)
+    )
+    for manual in manuals:
+        if manual.source_record_id:
+            _impact(session, manual.source_record_id, family.id, "PRODUCT_MANUAL", manual.manual_identifier)
+
+    recognitions = session.scalars(
+        select(m.LaboratoryRecognition).where(
+            m.LaboratoryRecognition.standard_id == coverage.primary_standard_id
+        )
+    )
+    for recognition in recognitions:
+        if recognition.source_record_id:
+            _impact(
+                session,
+                recognition.source_record_id,
+                family.id,
+                "LABORATORY_SCOPE",
+                recognition.scope_identifier or "BIS LIMS scope",
+            )

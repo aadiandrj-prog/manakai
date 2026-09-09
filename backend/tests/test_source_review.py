@@ -39,6 +39,67 @@ def test_review_report_includes_pending_events_and_latest_fetch_errors(db_sessio
     assert report["latest_refresh"]["status"] == "SUCCESS"
 
 
+def test_repeated_unreviewed_source_changes_keep_one_actionable_item(db_session):
+    event = _pending_change(db_session)
+    pending_before = list(
+        db_session.scalars(
+            select(SourceChangeEvent).where(
+                SourceChangeEvent.source_url == event.source_url,
+                SourceChangeEvent.review_status == "PENDING",
+            )
+        )
+    )
+    first_new_hash = event.new_hash
+
+    async def changed_again(url):
+        return FetchedSource(url, b"review-changed-again", "text/html")
+
+    asyncio.run(refresh_authoritative_sources(db_session, changed_again))
+    pending_after = list(
+        db_session.scalars(
+            select(SourceChangeEvent).where(
+                SourceChangeEvent.source_url == event.source_url,
+                SourceChangeEvent.review_status == "PENDING",
+            )
+        )
+    )
+    assert len(pending_after) == len(pending_before) == 1
+    assert pending_after[0].new_hash != first_new_hash
+
+
+def test_review_report_collapses_legacy_duplicates_and_resolution_supersedes_them(db_session):
+    event = _pending_change(db_session)
+    duplicate = SourceChangeEvent(
+        id="source-change-legacy-duplicate",
+        source_url=event.source_url,
+        source_type=event.source_type,
+        previous_hash=event.previous_hash,
+        new_hash="c" * 64,
+        status="REVIEW_REQUIRED",
+        change_classification="MATERIAL",
+        review_status="PENDING",
+        changed_fields=["source_fingerprint"],
+    )
+    db_session.add(duplicate)
+    db_session.commit()
+
+    report = review_report(db_session)
+    item = next(item for item in report["pending_events"] if item["source_url"] == event.source_url)
+    assert item["id"] == duplicate.id
+    assert item["superseded_pending_event_ids"] == [event.id]
+
+    resolve_review(
+        db_session,
+        event_id=duplicate.id,
+        decision="ACCEPTED_EDITORIAL",
+        expected_new_hash=duplicate.new_hash,
+        reviewed_by="reviewer@example.test",
+        review_note="The latest visible change is editorial.",
+    )
+    assert event.status == "RESOLVED"
+    assert event.review_status == "SUPERSEDED"
+
+
 def test_editorial_resolution_is_audited_and_advances_only_raw_baseline(db_session):
     event = _pending_change(db_session)
     pending_before = review_report(db_session)["pending_count"]
