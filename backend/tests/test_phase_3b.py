@@ -8,6 +8,7 @@ from app import db_models as m
 from app.coverage_onboarding import coverage_score, ingest_family_registry, transition_family
 from app.coverage_registry import classify_from_registry, load_family_registry
 from app.evaluation.cases import CASES
+from app.ingestion.review import review_report
 from app.ingestion.verticals import ingest_all_authoritative
 from app.repositories import CoverageRepository
 from app.schemas import ProductAnalyseRequest
@@ -109,6 +110,50 @@ def test_source_impacts_and_refresh_groups_are_attributable(phase3b):
     assert impacts
     ceiling = phase3b.scalar(select(m.ProductFamily).where(m.ProductFamily.slug == "electric-ceiling-fan"))
     assert {item.impact_type for item in impacts if item.product_family_id == ceiling.id} >= {"STANDARD_MAPPING", "REGULATORY_REQUIREMENT", "PRODUCT_MANUAL", "LABORATORY_SCOPE"}
+
+    affected_existing = {
+        slug
+        for (slug,) in phase3b.execute(
+            select(m.ProductFamily.slug)
+            .join(m.SourceFamilyImpact, m.SourceFamilyImpact.product_family_id == m.ProductFamily.id)
+            .join(m.SourceRecord, m.SourceRecord.id == m.SourceFamilyImpact.source_record_id)
+            .where(
+                m.SourceRecord.source_url.in_(
+                    [
+                        "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2347",
+                        "https://lims.bis.gov.in/home/search_is_number/?is_number_doc_no=18112&lab_lab_nameicontains=&page=1&page=2&page=472&page=473",
+                    ]
+                )
+            )
+        )
+    }
+    assert affected_existing >= {"domestic-pressure-cooker", "appliances-for-heating-liquids"}
+
+
+def test_existing_vertical_change_report_names_affected_family(phase3b):
+    source_url = "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2347"
+    phase3b.add(
+        m.SourceChangeEvent(
+            id="source-change-pressure-cooker-test",
+            source_url=source_url,
+            source_type="BIS_LIMS_SCOPE",
+            previous_hash="a" * 64,
+            new_hash="b" * 64,
+            status="REVIEW_REQUIRED",
+            change_classification="MATERIAL",
+            review_status="PENDING",
+            changed_fields=["source_fingerprint"],
+        )
+    )
+    phase3b.commit()
+    event = next(item for item in review_report(phase3b)["pending_events"] if item["id"] == "source-change-pressure-cooker-test")
+    assert event["affected_families"] == [
+        {
+            "slug": "domestic-pressure-cooker",
+            "name": "Domestic pressure cookers",
+            "impact_type": "LABORATORY_SCOPE",
+        }
+    ]
 
 
 def test_evaluation_corpus_exceeds_300_cases():

@@ -22,6 +22,11 @@ def review_report(session: Session) -> dict:
             .order_by(m.SourceChangeEvent.created_at.asc())
         )
     )
+    grouped_pending: dict[str, list[m.SourceChangeEvent]] = {}
+    for event in pending:
+        grouped_pending.setdefault(event.source_url, []).append(event)
+    actionable = [events[-1] for events in grouped_pending.values()]
+
     latest_run = session.scalar(
         select(m.IngestionRun)
         .where(m.IngestionRun.adapter == "authoritative-source-refresh")
@@ -29,7 +34,7 @@ def review_report(session: Session) -> dict:
         .limit(1)
     )
     return {
-        "pending_count": len(pending),
+        "pending_count": len(actionable),
         "pending_events": [
             {
                 "id": event.id,
@@ -43,8 +48,11 @@ def review_report(session: Session) -> dict:
                 "new_hash": event.new_hash,
                 "ingestion_run_id": event.ingestion_run_id,
                 "affected_families": _affected_families(session, event.source_url),
+                "superseded_pending_event_ids": [
+                    item.id for item in grouped_pending[event.source_url] if item.id != event.id
+                ],
             }
-            for event in pending
+            for event in actionable
         ],
         "latest_refresh": None
         if latest_run is None
@@ -129,6 +137,21 @@ def resolve_review(
     event.reviewed_by = reviewed_by.strip()
     event.review_note = review_note.strip()
     event.canonical_source_record_id = source.id
+    sibling_events = session.scalars(
+        select(m.SourceChangeEvent).where(
+            m.SourceChangeEvent.source_url == event.source_url,
+            m.SourceChangeEvent.id != event.id,
+            m.SourceChangeEvent.status == "REVIEW_REQUIRED",
+            m.SourceChangeEvent.review_status == "PENDING",
+        )
+    )
+    for sibling in sibling_events:
+        sibling.status = "RESOLVED"
+        sibling.review_status = "SUPERSEDED"
+        sibling.reviewed_at = event.reviewed_at
+        sibling.reviewed_by = event.reviewed_by
+        sibling.review_note = f"Superseded by review {event.id}. {event.review_note}"
+        sibling.canonical_source_record_id = source.id
     session.commit()
     return {
         "event_id": event.id,
