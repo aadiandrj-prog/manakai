@@ -15,7 +15,7 @@ Run `python -m app.ingestion <target> --dry-run` first. The pipeline validates, 
 
 Captured fixtures belong under `backend/tests/fixtures/official/` with the official URL and capture time. Retain only metadata/excerpts needed for tests, not complete protected standards.
 
-For a new product family, add one `ProductCategory`, `CoverageRecord`, primary mapping, regime and sourced evidence bundle. Reuse `BISVerticalAdapter`; add a source-specific adapter only when parsing semantics genuinely differ. Do not add classifier aliases until a coverage row exists. Mark the record `PARTIAL` when QCO, current manual, lab validity or rights evidence is incomplete.
+For a new product family, follow [Adding a product family](ADDING_PRODUCT_FAMILY.md) and register the authority in [Source registry](SOURCE_REGISTRY.md). Do not add product-specific branches to the classifier, API or frontend. Reuse the adapter pipeline and declarative registry; add a source-specific adapter only when parsing semantics genuinely differ. Mark the record `PARTIAL` when QCO, current manual, lab validity or rights evidence is incomplete.
 
 Current reproducible targets:
 

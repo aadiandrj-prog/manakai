@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/coverage/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Coverage Suggestions */
+        get: operations["coverage_suggestions_api_v1_coverage_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/hallmarking/centres": {
         parameters: {
             query?: never;
@@ -493,6 +510,11 @@ export interface components {
              * @default []
              */
             consumer_actions: string[];
+            /**
+             * Related Standard Metadata
+             * @default []
+             */
+            related_standard_metadata: components["schemas"]["RelatedStandardMetadata"][];
         };
         /** ConversationCreateRequest */
         ConversationCreateRequest: {
@@ -572,6 +594,11 @@ export interface components {
              */
             messages: components["schemas"]["ConversationMessage"][];
         };
+        /**
+         * CoverageLifecycle
+         * @enum {string}
+         */
+        CoverageLifecycle: "DISCOVERED" | "INGESTED" | "AUTO_VALIDATED" | "NEEDS_REVIEW" | "APPROVED" | "PUBLISHED" | "REJECTED";
         /** CoverageStats */
         CoverageStats: {
             /** Total */
@@ -586,12 +613,36 @@ export interface components {
             unsupported: number;
             /** Authoritative Sources */
             authoritative_sources: number;
+            /**
+             * Current Standards
+             * @default 0
+             */
+            current_standards: number;
+            /**
+             * Current Laboratory Scopes
+             * @default 0
+             */
+            current_laboratory_scopes: number;
+            /** Last Refreshed At */
+            last_refreshed_at?: string | null;
         };
         /**
          * CoverageStatus
          * @enum {string}
          */
         CoverageStatus: "VERIFIED" | "PARTIAL" | "METADATA_ONLY" | "UNSUPPORTED";
+        /** CoverageSuggestion */
+        CoverageSuggestion: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Product Group */
+            product_group: string;
+            /** Aliases */
+            aliases: string[];
+            coverage_status: components["schemas"]["CoverageStatus"];
+        };
         /** CoverageSummary */
         CoverageSummary: {
             /** Id */
@@ -627,6 +678,29 @@ export interface components {
              * @default false
              */
             compliance_verified: boolean;
+            /** @default PUBLISHED */
+            lifecycle_status: components["schemas"]["CoverageLifecycle"];
+            /** Product Group */
+            product_group?: string | null;
+            /**
+             * Aliases
+             * @default []
+             */
+            aliases: string[];
+            /**
+             * Completeness
+             * @default {}
+             */
+            completeness: {
+                [key: string]: unknown;
+            };
+            /**
+             * Lab Completeness
+             * @default UNKNOWN
+             */
+            lab_completeness: string;
+            /** Last Refreshed At */
+            last_refreshed_at?: string | null;
             regulatory_regime?: components["schemas"]["RegulatoryRegime"] | null;
         };
         /** Document */
@@ -910,6 +984,22 @@ export interface components {
          * @enum {string}
          */
         RegulatoryStatus: "DRAFT" | "NOTIFIED" | "ACTIVE" | "SUPERSEDED" | "UPCOMING" | "WITHDRAWN" | "AMENDED" | "UNKNOWN";
+        /** RelatedStandardMetadata */
+        RelatedStandardMetadata: {
+            /** Id */
+            id: string;
+            /** Number */
+            number: string;
+            /** Version */
+            version: string;
+            /** Title */
+            title: string;
+            /**
+             * Relationship
+             * @default RELATED_METADATA_NOT_APPLICABILITY
+             */
+            relationship: string;
+        };
         /**
          * SourceKind
          * @enum {string}
@@ -1048,6 +1138,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CoverageStats"];
+                };
+            };
+        };
+    };
+    coverage_suggestions_api_v1_coverage_suggestions_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageSuggestion"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

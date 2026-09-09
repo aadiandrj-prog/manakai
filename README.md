@@ -4,7 +4,7 @@
 
 ManakAI is a hackathon-ready regulatory navigation and compliance automation prototype. It turns a product description into a structured product profile, candidate standards, an explicit verification boundary, testing/document tasks, laboratory matches and an auditable compliance journey. Conversational AI is one interaction layer—not the product itself.
 
-> Two isolated modes are supported. `DEMO_MODE=true` uses labelled synthetic fixtures. `DEMO_MODE=false` uses only ingested BIS/government evidence and an explicit coverage registry. Verified/partial coverage now includes electric kettles, motorcycle helmets, Ordinary Portland Cement, domestic pressure cookers and gold hallmarking. Missing attributes remain visible warnings rather than invented facts.
+> Two isolated modes are supported. `DEMO_MODE=true` uses labelled synthetic fixtures. `DEMO_MODE=false` uses only ingested BIS/government evidence and published coverage records. Phase 3B exposes 20 reviewed product families (13 verified, 7 partial); missing attributes and source conflicts remain visible instead of becoming invented facts.
 
 ## What works
 
@@ -28,7 +28,9 @@ ManakAI is a hackathon-ready regulatory navigation and compliance automation pro
 - Controlled OpenAI/Gemini provider boundary with Pydantic outputs and deterministic failure fallback
 - PostgreSQL-backed conversations with clarification/follow-up merging and English/Hindi/Hinglish support
 - Evidence-ID answer packages, regulatory-fact validation and prompt-injection resistance
-- Generic product-category → standard → instrument → regime → evidence decision graph across five authoritative coverage records
+- Declarative product-family → standard → instrument → regime → evidence decision graph across 20 published coverage records
+- Review-gated onboarding lifecycle, ten-dimension completeness scoring, source-impact attribution and product-group refresh budgets
+- Coverage catalogue/search UI and multilingual, ambiguity-aware product aliases without per-family route code
 - Explicit `VERIFIED`, `PARTIAL`, `METADATA_ONLY` and `UNSUPPORTED` coverage states; ambiguous “helmet” input never auto-selects IS 4151
 - Separate BIS Hallmarking regime, official HUID-to-BIS-Care boundary and structured consumer guidance
 - Current and historical pressure-cooker standards/product manuals plus versioned hallmarking orders
@@ -92,7 +94,7 @@ DEMO_MODE=false docker compose up -d --build
 docker compose exec backend python -m app.ingestion all-authoritative
 ```
 
-The sanitised fixtures are captured official-source snapshots. Re-running ingestion is hash-aware and idempotent; `--dry-run` validates without committing the regulatory graph. Individual targets are `electric-kettle`, `helmets`, `cement`, `pressure-cookers` and `hallmarking`.
+The sanitised fixtures are captured official-source snapshots. Re-running ingestion is hash-aware and idempotent; `--dry-run` validates without committing the regulatory graph. Phase 3B also supports isolated declarative onboarding with `coverage-registry --family <slug>` and explicit `family-approve` / `family-publish` actions.
 
 To inspect unresolved source drift without changing canonical facts:
 
@@ -132,11 +134,11 @@ The free staging topology is Vercel (frontend), Render Free (FastAPI) and Neon F
 
 SQLAlchemy tables are defined in `backend/app/db_models.py`. Migration `4b2f2a8d1c71` adds provenance, ingestion, temporal applicability, category mappings, clause structure, citation validation and PostgreSQL GIN/HNSW indexes; follow-up `7a91d3e5f620` lets demo and authoritative editions coexist without silently merging them. `python -m app.seed` is idempotent. `python -m app.seed --reset` is deliberately restricted to `DEMO_MODE=true`.
 
-Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923` adds staging telemetry, `d7e2c9a4f610` adds Phase 2E coverage/regime/hallmarking structures, and `f3c8a1d2e740` adds auditable regulatory-source review resolution. The frontend contract is generated from FastAPI's OpenAPI document with `npm run generate:api`. Regenerate it after changing backend schemas.
+Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923` adds staging telemetry, `d7e2c9a4f610` adds Phase 2E coverage/regime/hallmarking structures, `f3c8a1d2e740` adds auditable source review, and `a62e91f743b0` adds the Phase 3B family lifecycle, completeness and source-impact model. The frontend contract is generated with `npm run generate:api`.
 
 ## Limitations
 
-- The authoritative corpus is intentionally limited to five bounded Phase 2E verticals and captured official-source snapshots; scheduled checks flag source change and still require human regulatory review.
+- The authoritative corpus is intentionally limited to 20 reviewed Phase 3B families and captured official-source snapshots; only 13 are end-to-end verified and scheduled checks still require human regulatory review.
 - Full standards text is not stored or redistributed. Only official metadata and limited product-manual/QCO/LIMS excerpts needed for technical retrieval are retained.
 - Laboratory coverage remains selective. Users must re-check each linked live scope, exclusions and validity before arranging testing.
 - Authentication, submission, payments and native apps are out of scope.
@@ -144,6 +146,6 @@ Migration `91c3d7e2a4b8` adds structured conversation persistence, `b48f761da923
 - This is publishable as an engineering/demo prototype, not as a regulatory decision product.
 - The frontend requires a separately reachable FastAPI deployment through `NEXT_PUBLIC_API_URL`; a frontend-only host is insufficient.
 
-See [Deployment](docs/DEPLOYMENT.md), [Staging](docs/STAGING.md), [Operations](docs/OPERATIONS.md), [Privacy](docs/PRIVACY.md), [AI layer](docs/AI_LAYER.md), [AI safety](docs/AI_SAFETY.md), [Evaluation](docs/EVALUATION.md), [Authoritative data](docs/AUTHORITATIVE_DATA.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), [Retrieval](docs/RETRIEVAL.md), [Compliance engine](docs/COMPLIANCE_ENGINE.md), [UX audit](docs/UX_AUDIT.md), [user testing](docs/USER_TESTING.md), [Demo guide](docs/DEMO.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
+See [Coverage](docs/COVERAGE.md), [coverage pipeline](docs/COVERAGE_PIPELINE.md), [adding a product family](docs/ADDING_PRODUCT_FAMILY.md), [source registry](docs/SOURCE_REGISTRY.md), [Deployment](docs/DEPLOYMENT.md), [Operations](docs/OPERATIONS.md), [AI safety](docs/AI_SAFETY.md), [Architecture](docs/ARCHITECTURE.md), [Data model](docs/DATA_MODEL.md), and [Adding a source](docs/ADDING_DATA_SOURCE.md).
 
 For a prompt-to-implementation trace, production-readiness gaps and the recommended development sequence, see [Project status and roadmap](docs/PROJECT_STATUS.md).

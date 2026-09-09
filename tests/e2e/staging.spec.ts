@@ -22,9 +22,9 @@ const profile: ComplianceProfile = {
     { title: 'Product classified', status: 'complete', explanation: 'The product category is supported.', next_action: null },
     { title: 'Confirm testing scope', status: 'attention', explanation: 'Review the applicable tests with a recognised laboratory.', next_action: 'Contact a laboratory and confirm its current scope.' },
   ], evidence: [citation], confidence: 0.94, warnings: [], as_of_date: '2026-09-02', data_mode: 'AUTHORITATIVE', explanation: [],
-  coverage: { id: 'coverage-kettle', category_slug: 'appliances-for-heating-liquids', category_name: 'Appliances for Heating Liquids', primary_standard: 'IS 302 (Part 2/Sec 15):2009', coverage_status: 'VERIFIED', coverage_reason: 'Official BIS evidence captured.', authoritative_sources_count: 5, known_limitations: [], standard_metadata_available: true, compliance_verified: true },
+  coverage: { id: 'coverage-kettle', category_slug: 'appliances-for-heating-liquids', category_name: 'Appliances for Heating Liquids', primary_standard: 'IS 302 (Part 2/Sec 15):2009', coverage_status: 'VERIFIED', coverage_reason: 'Official BIS evidence captured.', authoritative_sources_count: 5, known_limitations: [], standard_metadata_available: true, compliance_verified: true, lifecycle_status: 'PUBLISHED', aliases: ['electric kettle'], completeness: {}, lab_completeness: 'COMPLETE' },
   regulatory_regime: { id: 'regime-scheme-i', slug: 'scheme-i-product-certification', name: 'Scheme I Product Certification', regime_type: 'PRODUCT_CERTIFICATION', description: 'BIS Standard Mark licensing.' },
-  hallmarking_centres: [], consumer_actions: [],
+  hallmarking_centres: [], consumer_actions: [], related_standard_metadata: [],
 };
 
 function response(message: string, clarification = false) {
@@ -57,6 +57,11 @@ async function mockComplianceApi(page: Page, result: ComplianceProfile = profile
   await page.route(`http://localhost:8000/api/v1/compliance/${result.id}/journey`, route => route.fulfill({ json: result.next_steps }));
 }
 
+async function mockCoverageApi(page: Page) {
+  await page.route('http://localhost:8000/api/v1/coverage', route => route.fulfill({ json: [profile.coverage, { ...profile.coverage, id: 'coverage-plywood', category_slug: 'plywood-general-purposes', category_name: 'Plywood for general purposes', product_group: 'Wood products', primary_standard: 'IS 303:2024', coverage_status: 'PARTIAL', coverage_reason: 'Current manual and QCO references conflict.', known_limitations: ['QCO revision transition requires review.'], lab_completeness: 'CONFLICT_REVIEW' }] }));
+  await page.route('http://localhost:8000/api/v1/coverage/stats', route => route.fulfill({ json: { total: 20, verified: 13, partial: 7, metadata_only: 0, unsupported: 0, authoritative_sources: 45, current_standards: 20, current_laboratory_scopes: 6 } }));
+}
+
 test('dashboard and responsive navigation render', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Check what applies to your product' })).toBeVisible();
@@ -77,6 +82,16 @@ test('dashboard product text is preserved in the analyser', async ({ page }) => 
   await page.getByLabel('What product do you make, import, or sell?').fill('OPC 53 cement in India');
   await page.getByRole('link', { name: 'Check my product' }).click();
   await expect(page.getByLabel('What do you make, import, sell, or use?')).toHaveValue('OPC 53 cement in India');
+});
+
+test('coverage catalogue separates verified and partial families', async ({ page }) => {
+  await mockCoverageApi(page);
+  await page.goto('/coverage');
+  await expect(page.getByRole('heading', { name: 'What ManakAI can verify today' })).toBeVisible();
+  await expect(page.getByText('13', { exact: true })).toBeVisible();
+  await page.getByPlaceholder(/Search by product/).fill('plywood');
+  await expect(page.getByRole('heading', { name: 'Plywood for general purposes' })).toBeVisible();
+  await expect(page.getByText('PARTIAL', { exact: true })).toBeVisible();
 });
 
 test('product result prioritises status, date, action and progressive evidence', async ({ page }) => {
