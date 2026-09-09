@@ -1,5 +1,7 @@
 # Authoritative BIS coverage
 
+Phase 3B expands the reviewed registry to 20 product families (13 `VERIFIED`, 7 `PARTIAL`). See [Published coverage](COVERAGE.md) for the exact list and evidence boundaries, [Source registry](SOURCE_REGISTRY.md) for authority roles, and [Coverage pipeline](COVERAGE_PIPELINE.md) for publication governance. This remains bounded coverage, not a complete copy of BIS regulations.
+
 ## Phase 2E coverage registry
 
 The original kettle evidence remains unchanged. Phase 2E adds captured official BIS/government metadata for four more domains:

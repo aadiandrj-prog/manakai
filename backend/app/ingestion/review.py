@@ -42,6 +42,7 @@ def review_report(session: Session) -> dict:
                 "previous_hash": event.previous_hash,
                 "new_hash": event.new_hash,
                 "ingestion_run_id": event.ingestion_run_id,
+                "affected_families": _affected_families(session, event.source_url),
             }
             for event in pending
         ],
@@ -57,6 +58,18 @@ def review_report(session: Session) -> dict:
             "errors": list(latest_run.errors or []),
         },
     }
+
+
+def _affected_families(session: Session, source_url: str) -> list[dict]:
+    rows = session.execute(
+        select(m.ProductFamily.slug, m.ProductFamily.name, m.SourceFamilyImpact.impact_type)
+        .join(m.SourceFamilyImpact, m.SourceFamilyImpact.product_family_id == m.ProductFamily.id)
+        .join(m.SourceRecord, m.SourceRecord.id == m.SourceFamilyImpact.source_record_id)
+        .where(m.SourceRecord.source_url == source_url)
+        .distinct()
+        .order_by(m.ProductFamily.slug, m.SourceFamilyImpact.impact_type)
+    ).all()
+    return [{"slug": slug, "name": name, "impact_type": impact_type} for slug, name, impact_type in rows]
 
 
 def resolve_review(

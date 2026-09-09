@@ -44,6 +44,12 @@ Phase 2E introduces a reusable decision graph:
 
 `ProductCategory → CoverageRecord → Standard/QCO → RegulatoryRegime → ProductManual/Test/Lab/Evidence`
 
+Phase 3B places a review gate before that graph becomes public:
+
+`SourceRegistry → ProductFamily candidate → validation/score → human review → published CoverageRecord`
+
+`ProductFamily` owns declarative aliases and attribute requirements. `SourceFamilyImpact` connects monitored pages to affected families. Repositories expose only lifecycle state `PUBLISHED`; automated ingestion and scoring cannot bypass review. Scheduled refresh can be bounded by family or product group so one adapter/source failure is isolated.
+
 `PRODUCT_CERTIFICATION` and `HALLMARKING` have different journey templates. Hallmarking centres are not stored as ordinary laboratories, and HUID verification remains an official BIS Care action. Each product adapter runs in an independent ingestion transaction so one failing source does not remove another known-good vertical.
 
 Key boundaries:
@@ -62,4 +68,4 @@ Key boundaries:
 - `render.yaml` declares one free FastAPI Docker service. Its startup applies additive migrations and idempotently loads all captured authoritative graphs into an external Neon PostgreSQL/pgvector database.
 - Vercel builds the native Next.js frontend only after `NEXT_PUBLIC_API_URL` is set to the public API origin.
 - GitHub Actions runs the daily non-destructive official-source check against Neon; detected changes are recorded as `REVIEW_REQUIRED`, captured known-good data is reconciled, and the workflow fails at the final review gate for human attention. A separate manual workflow resolves one exact hash-locked event with reviewer attribution.
-- `/health` reports process liveness; `/ready` verifies database access, the exact Alembic revision and all five authoritative coverage records.
+- `/health` reports process liveness; `/ready` verifies database access, migration `a62e91f743b0` and all 20 published Phase 3B coverage records.

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "authorities": [
+    {"id": "bis-web", "authority": "Bureau of Indian Standards", "allowed_hosts": ["bis.gov.in", "www.bis.gov.in"], "roles": ["DISCOVERY", "VERIFICATION"], "source_types": ["BIS_STANDARD_METADATA", "BIS_PRODUCT_MANUAL", "GOVERNMENT_QCO"], "adapter": "BISStandardAdapter", "refresh_cadence": "daily", "content_boundary": "Metadata and limited retrieval excerpts; no bulk standards redistribution."},
+    {"id": "bis-lims", "authority": "Bureau of Indian Standards", "allowed_hosts": ["lims.bis.gov.in"], "roles": ["DISCOVERY", "VERIFICATION"], "source_types": ["BIS_LIMS_SCOPE"], "adapter": "BISLIMSAdapter", "refresh_cadence": "daily", "content_boundary": "Recognition and scope metadata only."}
+  ],
+  "source_classes": [
+    {"id": "scheme-i-index", "role": "DISCOVERY", "purpose": "Discover products, standard references and linked QCOs; a listing alone does not establish a complete compliance result."},
+    {"id": "gazetted-qco", "role": "VERIFICATION", "purpose": "Verify notification identity, schedule, scheme and enterprise-specific dates."},
+    {"id": "product-manual", "role": "VERIFICATION", "purpose": "Verify product-standard mapping and product-manual metadata."},
+    {"id": "lims-scope", "role": "VERIFICATION", "purpose": "Verify laboratory recognition scope and validity when exposed."}
+  ]
+}

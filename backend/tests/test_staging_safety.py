@@ -14,7 +14,7 @@ from app.services.ai_provider import AIProviderError, GeminiProvider, OpenAIProv
 
 
 def test_evaluation_dataset_is_bounded_and_covers_required_categories():
-    assert 120 <= len(CASES) <= 180
+    assert 300 <= len(CASES) <= 450
     categories = {case.category for case in CASES}
     assert {"product_wording", "formats", "missing_information", "hinglish", "hindi", "adversarial", "temporal", "standards_qa"} <= categories
     assert {"phase_2e_helmet", "phase_2e_cement", "phase_2e_pressure-cooker", "phase_2e_hallmarking"} <= categories

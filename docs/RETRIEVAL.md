@@ -19,3 +19,5 @@ Embeddings are disabled by default. `sentence-transformers/all-MiniLM-L6-v2` is 
 No standard corpus is translated and stored. Hindi/Hinglish requests should become canonical retrieval queries; the answer may be translated only after evidence selection.
 
 Phase 2E applies the same hybrid retrieval pipeline to all covered verticals. Metadata filtering includes the coverage category and current document status. Exact identifiers (`IS 4151`, `IS 269`, `IS 2347`, `IS 1417`) continue to outrank embeddings. Superseded product manuals remain queryable for history but are rejected when a current citation is required. Hallmarking guidance is retrieved from its own authoritative document type; the retriever cannot turn a HUID string into a verification result.
+
+Phase 3B adds metadata for further families without treating metadata-only links as clause evidence. Product-family aliases select a structured coverage graph; they do not alter retrieval ranking. Related standards shown for unsupported inputs are explicitly labelled as metadata candidates, never applicability.

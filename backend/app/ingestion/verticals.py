@@ -72,7 +72,7 @@ def ensure_kettle_coverage(session: Session) -> None:
         "verified_at": datetime.now(timezone.utc), "authoritative_sources_count": 5,
         "known_limitations": ["Rated voltage is required to conclusively evaluate the QCO voltage scope."],
         "standard_metadata_available": True, "compliance_verified": True,
-        "metadata_json": {"required_documents": ["Model/type, rating and capacity declaration", "Construction and protection-class details", "Instruction manual and photographs"]},
+        "metadata_json": {"required_documents": ["Model/type, rating and capacity declaration", "Construction and protection-class details", "Instruction manual and photographs"], "evidence": [["doc-bis-kettle-guide", "chunk-bis-kettle-guide", "BIS identifies electric kettles as appliances for heating liquids"], ["doc-qco-household-appliances-2026", "chunk-qco-household-appliances-2026", "QCO lists appliances for heating liquids and implementation dates"], ["doc-pm-is-302-2-15-2024", "chunk-kettle-manual-1", "IS 302-2-15:2009 appliances for heating liquids"]]},
     })
 
 
@@ -179,7 +179,7 @@ def ingest_hallmarking(session: Session, *, dry_run: bool = False, fixture_path:
                 _, made = _upsert(session, m.StandardQCO, f"sqco-{order['id']}", {"standard_id": standard["id"], "qco_id": order["id"]}); created += made; updated += not made
                 prior_order_id = order["id"]
             regime = _regime(session, "HALLMARKING", order_src.id); coverage = raw["coverage"]
-            _, made = _upsert(session, m.CoverageRecord, "coverage-gold-jewellery", {"product_category_id": category["id"], "primary_standard_id": standard["id"], "regime_id": regime.id, "coverage_status": coverage["status"], "coverage_reason": coverage["reason"], "verified_at": retrieved_at, "authoritative_sources_count": coverage["sources"], "known_limitations": coverage["limitations"], "standard_metadata_available": True, "compliance_verified": False, "metadata_json": {"fineness": raw["fineness"], "official_ahc_directory": raw["official_ahc_directory"], "required_documents": ["Registered jeweller details", "Article description and declared fineness", "HUID and hallmark elements"]}}); created += made; updated += not made
+            _, made = _upsert(session, m.CoverageRecord, "coverage-gold-jewellery", {"product_category_id": category["id"], "primary_standard_id": standard["id"], "regime_id": regime.id, "coverage_status": coverage["status"], "coverage_reason": coverage["reason"], "verified_at": retrieved_at, "authoritative_sources_count": coverage["sources"], "known_limitations": coverage["limitations"], "standard_metadata_available": True, "compliance_verified": False, "metadata_json": {"fineness": raw["fineness"], "official_ahc_directory": raw["official_ahc_directory"], "required_documents": ["Registered jeweller details", "Article description and declared fineness", "HUID and hallmark elements"], "evidence": [["doc-hallmarking-verify-huid", "chunk-hallmarking-verify-huid", "HUID verification is performed through the official BIS Care app"], ["doc-hallmarking-identify-hallmark", "chunk-hallmarking-identify-hallmark", "BIS hallmark elements"]]}}); created += made; updated += not made
             for guide in raw["guidance"]:
                 guide_src = _captured_source(session, _source_payload(guide["source_url"], "BIS_HALLMARKING_GUIDANCE", guide["title"], standard=standard), run.id, retrieved_at)
                 _, made = _upsert(session, m.HallmarkingGuidance, f"guidance-{guide['topic']}", {"topic": guide["topic"], "title": guide["title"], "guidance": guide["steps"], "source_url": guide["source_url"], "source_kind": "AUTHORITATIVE", "source_record_id": guide_src.id}); created += made; updated += not made
@@ -210,4 +210,9 @@ def ingest_all_authoritative(session: Session, *, dry_run: bool = False) -> dict
         except Exception as exc: errors.append({"adapter": key, "error": str(exc)})
     try: results.append(ingest_hallmarking(session, dry_run=dry_run))
     except Exception as exc: errors.append({"adapter": "hallmarking", "error": str(exc)})
+    try:
+        from ..coverage_onboarding import ingest_family_registry
+        results.append({"adapter": "product-family-registry", **ingest_family_registry(session, publish_reviewed=True, dry_run=dry_run)})
+    except Exception as exc:
+        errors.append({"adapter": "product-family-registry", "error": str(exc)})
     return {"status": "SUCCESS" if not errors else "PARTIAL", "verticals": results, "errors": errors, "changes_review_required": 0}

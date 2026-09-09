@@ -23,6 +23,7 @@ from .ai_provider import AIProvider, AIProviderError, provider_from_config
 from .answer_validation import GeneratedAnswer, GeneratedAnswerValidator
 from .compliance import ComplianceService
 from .retrieval import RetrievalService
+from ..coverage_registry import load_family_registry
 
 logger = logging.getLogger("manakai")
 
@@ -253,25 +254,19 @@ it cannot decide any regulatory fact."""
 
     @staticmethod
     def _canonical_description_dict(product: dict):
-        names = {"electric_kettle": "electric kettle", "motorcycle_helmet": "motorcycle rider helmet", "ordinary_portland_cement": "ordinary Portland cement", "domestic_pressure_cooker": "domestic pressure cooker", "gold_jewellery": "gold jewellery"}
+        names = {item["product_type"]: item["aliases"][0] for item in load_family_registry()}
         extra = product.get("additional_attributes") or {}
-        parts = [str(product.get("rated_power_w") or "").strip(), "W" if product.get("rated_power_w") else "", str(product.get("rated_voltage_v") or "").strip(), "V" if product.get("rated_voltage_v") else "", product.get("intended_use") or "", str(extra.get("grade") or ""), str(extra.get("capacity_l") or ""), str(extra.get("declared_fineness") or ""), names.get(product.get("product_type"), product.get("product_type") or "product"), "India" if product.get("country") == "India" else ""]
+        parts = [str(product.get("rated_power_w") or "").strip(), "W" if product.get("rated_power_w") else "", str(product.get("rated_voltage_v") or "").strip(), "V" if product.get("rated_voltage_v") else "", product.get("intended_use") or "", *[str(value) for value in extra.values() if value not in (None, "", False)], names.get(product.get("product_type"), product.get("product_type") or "product"), "India" if product.get("country") == "India" else ""]
         return " ".join(item for item in parts if item)
 
     @staticmethod
     def _clarification(language, product):
         fields = set(product.missing_required_fields)
-        if "helmet intended use" in fields:
-            return "Is this helmet for a motorcycle/two-wheeler rider, industrial safety, or a sport? ManakAI will not select IS 4151 from the word ‘helmet’ alone."
-        if "OPC grade" in fields:
-            return "Which Ordinary Portland Cement grade is intended (33, 43, 43S, 53 or 53S)? The grade affects the declared scope and laboratory selection."
-        if "material and construction type" in fields:
-            return "What are the pressure cooker's material, lid type and base construction? The standard is identified, but these details are needed for the exact test programme."
-        if "declared carat/fineness" in fields:
-            return "What carat/fineness is declared for the gold article (for example 22K916)? HUID verification itself must be completed in the official BIS Care app."
-        if language == SupportedLanguage.HINDI: return "केतली का रेटेड वोल्टेज क्या है? वोल्टेज के बिना ManakAI QCO के वोल्टेज दायरे पर अंतिम निष्कर्ष नहीं देगा।"
-        if language == SupportedLanguage.HINGLISH: return "Kettle ka rated voltage kya hai? Voltage ke bina ManakAI QCO voltage scope par final conclusion nahi dega."
-        return "What is the rated voltage of the kettle? Without it, ManakAI cannot conclude whether the product falls within the QCO voltage scope."
+        labels = {"rated_voltage_v": "rated voltage", "rated_power_w": "rated power", "intended_use": "intended use", "fan_type": "fan type", "appliance_type": "appliance type", "fuel_type": "fuel type", "grade_type": "grade/type", "glass_part": "glass use/part", "rated_current_a": "rated current"}
+        names = ", ".join(labels.get(item, item.replace("_", " ")) for item in sorted(fields))
+        if language == SupportedLanguage.HINDI: return f"सटीक जाँच के लिए यह जानकारी दें: {names}। इनके बिना ManakAI अंतिम अनुपालन निष्कर्ष नहीं देगा।"
+        if language == SupportedLanguage.HINGLISH: return f"Exact check ke liye yeh details dein: {names}. Inke bina ManakAI final compliance conclusion nahi dega."
+        return f"Please provide: {names}. Without these details, ManakAI will not present a conclusive applicability result."
 
     @staticmethod
     def _product_fallback(package):
@@ -284,10 +279,12 @@ it cannot decide any regulatory fact."""
         if p.regulatory_regime and p.regulatory_regime.regime_type.value == "HALLMARKING":
             return f"ManakAI identifies {standard} as the recorded fineness and marking standard. The hallmarking order is {qco.status.value if qco else 'UNKNOWN'} for the selected date. Verify the six-digit HUID only in the official BIS Care app; ManakAI does not perform HUID verification. {ids}"
         if package.language == SupportedLanguage.HINDI:
-            return f"ManakAI के सत्यापित रिकॉर्ड के अनुसार {standard} लागू मानक है। {qco.notification_number} की स्थिति {qco.status.value} है और सामान्य कार्यान्वयन तिथि {qco.effective_from.isoformat()} है। प्रमाणन योजना {p.certification_scheme} है। {ids}"
+            return f"ManakAI के प्रकाशित रिकॉर्ड में {standard} संबंधित मानक है। नियामक स्थिति {qco.status.value if qco else 'पूरी तरह सत्यापित नहीं'} है और कवरेज {p.coverage.coverage_status.value} है। {ids}"
         if package.language == SupportedLanguage.HINGLISH:
-            return f"ManakAI ke verified records ke mutabik applicable standard {standard} hai. {qco.notification_number} ka status {qco.status.value} hai aur general implementation date {qco.effective_from.isoformat()} hai. Certification scheme {p.certification_scheme} hai. {ids}"
-        return f"ManakAI’s verified records identify {standard} as the product-specific standard. {qco.notification_number} is {qco.status.value} for the selected date, with the general implementation date {qco.effective_from.isoformat()}. The recorded certification route is {p.certification_scheme}. {ids}"
+            return f"ManakAI ke published records mein {standard} related standard hai. Regulatory status {qco.status.value if qco else 'verify nahi hua'} hai. Coverage label {p.coverage.coverage_status.value} hai. {ids}"
+        if not qco:
+            return f"ManakAI’s published metadata identifies {standard}. A complete current QCO and certification conclusion is not verified for this family, so treat this as {p.coverage.coverage_status.value.lower()} coverage. {ids}"
+        return f"ManakAI’s published records identify {standard} as the product-specific standard. {qco.notification_number} is {qco.status.value} for the selected date, with the implementation date {qco.effective_from.isoformat() if qco.effective_from else 'not resolved'}. The recorded certification route is {p.certification_scheme or 'not fully verified'}. {ids}"
 
     @staticmethod
     def _qa_fallback(language, evidence):
@@ -304,7 +301,7 @@ it cannot decide any regulatory fact."""
 
     @staticmethod
     def _unsupported(language):
-        return ConversationService._cannot_verify(language) + " ManakAI currently publishes an explicit coverage registry for electric kettles, motorcycle helmets, Ordinary Portland Cement, domestic pressure cookers and gold hallmarking."
+        return ConversationService._cannot_verify(language) + " Browse the published Coverage page for the product families ManakAI can currently evaluate."
 
     @staticmethod
     def _unknown(language):

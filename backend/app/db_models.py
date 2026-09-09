@@ -209,10 +209,48 @@ class CoverageRecord(IdMixin, Base):
     known_limitations: Mapped[list] = mapped_column(JSON, default=list)
     standard_metadata_available: Mapped[bool] = mapped_column(Boolean, default=False)
     compliance_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    lifecycle_status: Mapped[str] = mapped_column(String(32), default="PUBLISHED", index=True)
+    completeness_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    lab_completeness: Mapped[str] = mapped_column(String(32), default="UNKNOWN", index=True)
+    reviewed_by: Mapped[str | None] = mapped_column(String(160))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_refreshed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
     product_category: Mapped["ProductCategory"] = relationship()
     primary_standard: Mapped["Standard | None"] = relationship()
     regime: Mapped["RegulatoryRegime | None"] = relationship()
+
+
+class ProductFamily(IdMixin, Base):
+    """Declarative onboarding record; publication is independent of raw ingestion."""
+
+    __tablename__ = "product_families"
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(240), index=True)
+    product_group: Mapped[str] = mapped_column(String(120), index=True)
+    product_category_id: Mapped[str | None] = mapped_column(ForeignKey("product_categories.id"), index=True)
+    aliases: Mapped[list] = mapped_column(JSON, default=list)
+    required_attributes: Mapped[list] = mapped_column(JSON, default=list)
+    optional_attributes: Mapped[list] = mapped_column(JSON, default=list)
+    ambiguity_terms: Mapped[list] = mapped_column(JSON, default=list)
+    lifecycle_status: Mapped[str] = mapped_column(String(32), default="DISCOVERED", index=True)
+    config_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    reviewed_by: Mapped[str | None] = mapped_column(String(160))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    product_category: Mapped["ProductCategory | None"] = relationship()
+
+
+class SourceFamilyImpact(IdMixin, Base):
+    __tablename__ = "source_family_impacts"
+    __table_args__ = (UniqueConstraint("source_record_id", "product_family_id", "impact_type", name="uq_source_family_impact"),)
+    source_record_id: Mapped[str] = mapped_column(ForeignKey("source_records.id", ondelete="CASCADE"), index=True)
+    product_family_id: Mapped[str] = mapped_column(ForeignKey("product_families.id", ondelete="CASCADE"), index=True)
+    impact_type: Mapped[str] = mapped_column(String(48), index=True)
+    relationship_note: Mapped[str | None] = mapped_column(Text)
+    source_record: Mapped["SourceRecord"] = relationship()
+    product_family: Mapped["ProductFamily"] = relationship()
 
 
 class ProductStandardMapping(IdMixin, Base):

@@ -7,6 +7,7 @@ const routes = [
   'app/product/page.tsx',
   'app/compliance/page.tsx',
   'app/compliance/[id]/page.tsx',
+  'app/coverage/page.tsx',
   'app/standards/page.tsx',
   'app/standards/[id]/page.tsx',
   'app/labs/page.tsx',
@@ -49,7 +50,7 @@ test('Phase 3A exposes progressive evidence and useful unsupported states', () =
 
 test('regulatory screens use the typed API and no frontend fixture module remains', () => {
   assert.equal(existsSync('lib/demo-data.ts'), false);
-  for (const route of routes.slice(0, 7)) {
+  for (const route of routes) {
     const source = readFileSync(route, 'utf8');
     assert.doesNotMatch(source, /@\/lib\/demo-data/);
   }

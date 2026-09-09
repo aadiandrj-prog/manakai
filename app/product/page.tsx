@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowRight, BookOpenText, CheckCircle2, CircleAlert, HelpCircle, LoaderCircle, Search, ShieldAlert, Sparkles } from 'lucide-react';
 import { AppShell, PageHeader } from '@/components/manakai/app-shell';
 import { ActionLink } from '@/components/manakai/action-link';
@@ -30,7 +30,9 @@ function ProductPageContent() {
   const [role, setRole] = useState('Manufacturer');
   const [enterpriseCategory, setEnterpriseCategory] = useState('GENERAL');
   const analysis = useMutation({ mutationFn: api.analyse });
+  const coverage = useQuery({ queryKey: ['coverage'], queryFn: api.coverage });
   const profile = analysis.data;
+  const suggestions = (coverage.data ?? []).filter((item) => item.aliases?.some((alias) => alias.toLowerCase().includes(description.trim().toLowerCase()) || description.toLowerCase().includes(alias.toLowerCase()))).slice(0, 5);
 
   useEffect(() => {
     if (!profile || profile.coverage.coverage_status === 'UNSUPPORTED') return;
@@ -51,6 +53,7 @@ function ProductPageContent() {
             <div className="flex items-center gap-2 text-sm font-medium"><Sparkles className="size-4 text-primary" /> Describe your product</div>
             <label htmlFor="description" className="mt-4 block text-xs text-muted-foreground">What do you make, import, sell, or use?</label>
             <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} className="mt-2 min-h-28 w-full resize-y rounded-md border border-input bg-[#0b0c0d] p-3 text-sm leading-6 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="For example: I manufacture a 1500 W, 230 V household electric kettle in India" />
+            {suggestions.length > 0 && <div className="mt-2 flex flex-wrap items-center gap-2"><span className="text-[10px] uppercase tracking-[.1em] text-muted-foreground">Published matches</span>{suggestions.map((item) => <button key={item.id} type="button" onClick={() => setDescription(`I manufacture ${item.category_name} in India`)} className="rounded border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] text-primary">{item.category_name}</button>)}</div>}
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="text-xs text-muted-foreground">Your role<select aria-label="Your role" value={role} onChange={(event) => setRole(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-input bg-[#0b0c0d] px-3 text-sm text-foreground"><option>Manufacturer</option><option>Importer</option><option>Seller</option><option>Consumer</option></select></label>
               <label className="text-xs text-muted-foreground">Business size for implementation dates<select aria-label="Business size for implementation dates" value={enterpriseCategory} onChange={(event) => setEnterpriseCategory(event.target.value)} className="mt-2 h-11 w-full rounded-md border border-input bg-[#0b0c0d] px-3 text-sm text-foreground"><option value="GENERAL">General / not sure</option><option value="SMALL">Small enterprise</option><option value="MICRO">Micro enterprise</option></select></label>
@@ -94,7 +97,7 @@ function SupportedResult({ profile }: { profile: ComplianceProfile }) {
 }
 
 function UnsupportedResult({ profile }: { profile: ComplianceProfile }) {
-  return <section className="panel p-5 sm:p-7" aria-labelledby="unsupported-title"><div className="flex gap-3"><ShieldAlert className="mt-1 size-6 shrink-0 text-amber-300" /><div><span className="eyebrow">Coverage not available yet</span><h2 id="unsupported-title" className="mt-2 font-heading text-xl">We can’t verify an end-to-end BIS result for this product</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{profile.coverage.coverage_reason} ManakAI will not guess a standard, certification requirement, or effective date from general AI knowledge.</p></div></div><div className="mt-5 rounded-md border border-border bg-[#0c0d0e] p-4"><div className="flex items-center gap-2 text-sm font-medium"><HelpCircle className="size-4 text-primary" /> What you can do</div><ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground"><li>Search the standards metadata currently available in ManakAI.</li><li>Check the official BIS product-certification and standards search services.</li><li>Ask a qualified compliance professional to confirm the current product scope.</li></ul></div><div className="mt-5 flex flex-wrap gap-2"><ActionLink href="/standards">Search available standards</ActionLink><ActionLink variant="outline" href="/product">Try another description</ActionLink></div><div className="mt-5"><FeedbackWidget context="unsupported product" /></div></section>;
+  return <section className="panel p-5 sm:p-7" aria-labelledby="unsupported-title"><div className="flex gap-3"><ShieldAlert className="mt-1 size-6 shrink-0 text-amber-300" /><div><span className="eyebrow">Coverage not available yet</span><h2 id="unsupported-title" className="mt-2 font-heading text-xl">We can’t verify an end-to-end BIS result for this product</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{profile.coverage.coverage_reason} ManakAI will not guess a standard, certification requirement, or effective date from general AI knowledge.</p></div></div>{profile.related_standard_metadata.length > 0 && <div className="mt-5 rounded-md border border-cyan-300/20 bg-cyan-300/5 p-4"><p className="text-sm font-medium text-cyan-100">Related standards metadata — not an applicability decision</p><ul className="mt-3 space-y-2 text-xs text-cyan-50/70">{profile.related_standard_metadata.map((item) => <li key={item.id}>{item.number}:{item.version} — {item.title}</li>)}</ul></div>}<div className="mt-5 rounded-md border border-border bg-[#0c0d0e] p-4"><div className="flex items-center gap-2 text-sm font-medium"><HelpCircle className="size-4 text-primary" /> What you can do</div><ul className="mt-3 space-y-2 text-xs leading-5 text-muted-foreground"><li>Search the standards metadata currently available in ManakAI.</li><li>Check the official BIS product-certification and standards search services.</li><li>Ask a qualified compliance professional to confirm the current product scope.</li></ul></div><div className="mt-5 flex flex-wrap gap-2"><ActionLink href="/coverage">Browse published coverage</ActionLink><ActionLink variant="outline" href="/standards">Search standards metadata</ActionLink><ActionLink variant="outline" href="/product">Try another description</ActionLink></div><div className="mt-5"><FeedbackWidget context="unsupported product" /></div></section>;
 }
 
 function ResultFact({ label, value, detail, tone }: { label: string; value: string; detail: string; tone?: 'amber' | 'primary' }) {

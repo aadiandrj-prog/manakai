@@ -1,5 +1,17 @@
 # Project status and roadmap
 
+## Phase 3B outcome (9 September 2026)
+
+Phase 3B replaces one-off product expansion with a declarative coverage system. The reviewed registry contains 20 published families: 13 `VERIFIED` and 7 `PARTIAL`. Each family declares aliases (including Hindi where reviewed), required and optional attributes, ambiguity boundaries, product group, official source references, standard metadata, temporal QCO data where resolved, manual metadata, LIMS discovery and limitations. The five Phase 2E families remain regression-covered.
+
+New database records separate onboarding state from public coverage. The lifecycle is `DISCOVERED → INGESTED → AUTO_VALIDATED → NEEDS_REVIEW → APPROVED → PUBLISHED`, with rejection/re-review paths and reviewer attribution. Only `PUBLISHED` rows reach public APIs. A diagnostic completeness score cannot approve or publish data. Source changes now report affected families and impact type; scheduled checks run in bounded product-group batches and retain known-good records when one source fails.
+
+Classification now selects declarative aliases, extracts only supplied ratings/grade/capacity/fineness, and asks for clarification on broad terms such as fan, heater, helmet and glass. The new `/coverage` screen exposes product groups, status, sources, laboratory completeness and limitations. Unsupported analyses may show related standards metadata only with an explicit non-applicability label.
+
+The IS 303 regression preserves both 1989 and 2024 editions. Because the current manual listing and captured QCO schedule disagree, plywood is `PARTIAL`; the backend does not publish a QCO applicability edge or mandatory conclusion. The evaluation corpus now exceeds 300 cases and the migration head is `a62e91f743b0`.
+
+Remaining limits are material: this is not complete BIS coverage; partial families need expert resolution; most added families expose the LIMS query boundary but no cached, date-verified individual lab recommendation; complete standards text is not redistributed; and publication governance is single-reviewer tooling rather than production two-person approval. Public staging must be migrated, re-ingested and smoke-tested before Phase 3B is represented as live.
+
 ## Phase 3A outcome (6 September 2026)
 
 Phase 3A hardens the existing product experience without widening regulatory scope or changing the deterministic decision architecture. The dashboard now has one primary product-check path plus three clear supporting intents. Product results and compliance profiles lead with What applies, Status, When and What to do next; detailed reasoning, regulatory basis, testing and source evidence remain available through progressive disclosure.
@@ -139,4 +151,4 @@ The 3 September dependency audit is clean after moving the frontend from the Sit
 
 ## Definition of the next milestone
 
-The next milestone is two-person operational governance across the five coverage records: semantic diff assistance, maker/checker approval, alerts and expert acceptance, while retaining deterministic decisions and product-specific clarification boundaries.
+The next milestone is expert validation and two-person operational governance across the 20 published families: semantic source diffs, maker/checker approval, alerts, comprehensive live LIMS scope ingestion and measured classification/retrieval quality while retaining deterministic decisions.

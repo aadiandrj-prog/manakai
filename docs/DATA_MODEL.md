@@ -40,3 +40,11 @@ Documents add authority, verification, identifier, hash and temporal status. Chu
 - Source/change records gain review status, material classification, changed fields and a human-readable review summary.
 
 Pressure-cooker standards/manuals and hallmarking orders retain prior versions rather than overwriting history. Compliance profiles snapshot the selected coverage record and regulatory regime.
+
+## Phase 3B scalable coverage
+
+- `product_families`: slug/name/group, aliases, required and optional attributes, ambiguity terms, declarative config, lifecycle, reviewer and publication timestamps.
+- `coverage_records`: adds lifecycle, ten-dimension completeness JSON, lab completeness, review/publication attribution and last refresh time.
+- `source_family_impacts`: many-to-many source-to-family attribution with impact types such as `STANDARD_MAPPING`, `REGULATORY_REQUIREMENT`, `PRODUCT_MANUAL`, `LABORATORY_SCOPE` and `CONFLICT_REVIEW`.
+
+Coverage state and lifecycle are deliberately separate. `VERIFIED/PARTIAL/METADATA_ONLY/UNSUPPORTED` describes evidence completeness. `NEEDS_REVIEW/APPROVED/PUBLISHED` describes whether the record may be served. Only published records are visible through the coverage repository.

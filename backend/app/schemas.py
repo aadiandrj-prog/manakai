@@ -32,6 +32,16 @@ class CoverageStatus(str, Enum):
     UNSUPPORTED = "UNSUPPORTED"
 
 
+class CoverageLifecycle(str, Enum):
+    DISCOVERED = "DISCOVERED"
+    INGESTED = "INGESTED"
+    AUTO_VALIDATED = "AUTO_VALIDATED"
+    NEEDS_REVIEW = "NEEDS_REVIEW"
+    APPROVED = "APPROVED"
+    PUBLISHED = "PUBLISHED"
+    REJECTED = "REJECTED"
+
+
 class RegulatoryRegimeType(str, Enum):
     PRODUCT_CERTIFICATION = "PRODUCT_CERTIFICATION"
     HALLMARKING = "HALLMARKING"
@@ -231,6 +241,12 @@ class CoverageSummary(APIModel):
     known_limitations: list[str] = []
     standard_metadata_available: bool = False
     compliance_verified: bool = False
+    lifecycle_status: CoverageLifecycle = CoverageLifecycle.PUBLISHED
+    product_group: str | None = None
+    aliases: list[str] = []
+    completeness: dict = {}
+    lab_completeness: str = "UNKNOWN"
+    last_refreshed_at: datetime | None = None
     regulatory_regime: RegulatoryRegime | None = None
 
 
@@ -241,6 +257,25 @@ class CoverageStats(APIModel):
     metadata_only: int
     unsupported: int
     authoritative_sources: int
+    current_standards: int = 0
+    current_laboratory_scopes: int = 0
+    last_refreshed_at: datetime | None = None
+
+
+class CoverageSuggestion(APIModel):
+    slug: str
+    name: str
+    product_group: str
+    aliases: list[str]
+    coverage_status: CoverageStatus
+
+
+class RelatedStandardMetadata(APIModel):
+    id: str
+    number: str
+    version: str
+    title: str
+    relationship: str = "RELATED_METADATA_NOT_APPLICABILITY"
 
 
 class HallmarkingCentre(APIModel):
@@ -290,6 +325,7 @@ class ComplianceProfile(APIModel):
     regulatory_regime: RegulatoryRegime | None = None
     hallmarking_centres: list[HallmarkingCentre] = []
     consumer_actions: list[str] = []
+    related_standard_metadata: list[RelatedStandardMetadata] = []
 
 
 class QueryRequest(APIModel):

@@ -40,7 +40,8 @@ def extract_product(text: str, previous: dict | None = None) -> ProductExtractio
         structured = classified["structured"]
         return ProductExtraction(
             product_type=structured.get("product_type"), category=structured.get("category"), actor=previous.get("actor"),
-            country=structured.get("country"), additional_attributes={k: v for k, v in structured.items() if k not in {"product_type", "category", "country", "candidate_categories"}},
+            intended_use=structured.get("intended_use"), rated_power_w=structured.get("rated_power_w"), rated_voltage_v=structured.get("rated_voltage_v"),
+            country=structured.get("country"), additional_attributes={k: v for k, v in structured.items() if k not in {"product_type", "category", "country", "candidate_categories", "intended_use", "rated_power_w", "rated_voltage_v"}},
             missing_required_fields=classified["missing"], candidate_categories=structured.get("candidate_categories", []), confidence=classified["confidence"],
         )
     power_kw = re.search(r"(?P<kw>\d+(?:\.\d+)?)\s*k(?:ilo)?w\b", normalized)

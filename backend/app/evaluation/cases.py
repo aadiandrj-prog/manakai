@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ..coverage_registry import load_family_registry
+
 
 @dataclass(frozen=True)
 class EvaluationCase:
@@ -129,3 +131,18 @@ for category, queries in _PHASE_2E_WORDINGS.items():
     CASES.extend(EvaluationCase(f"2e-{category}-{index:02d}", f"phase_2e_{category}", query, "PRODUCT_COMPLIANCE", expected_product_type=product_type) for index, query in enumerate(queries, 1))
 
 assert len(CASES) >= 120
+
+_PHASE_3B_TEMPLATES = (
+    "I manufacture {alias} in India.", "We import {alias} for the Indian market.", "Need BIS guidance for {alias}.",
+    "What certification applies to {alias}?", "Our factory plans to make {alias}.", "Check the current standard for {alias}.",
+    "Is {alias} covered by a QCO?", "Indian seller of {alias} needs compliance help.", "Product classification request: {alias}.",
+    "Which BIS route applies to {alias}?", "Please analyse {alias} as a manufacturer.", "Compliance status for {alias} today.",
+)
+for family in load_family_registry():
+    alias = family["aliases"][0]
+    CASES.extend(
+        EvaluationCase(f"3b-{family['slug']}-{index:02d}", "phase_3b_coverage", template.format(alias=alias), "PRODUCT_COMPLIANCE", expected_product_type=family["product_type"])
+        for index, template in enumerate(_PHASE_3B_TEMPLATES, 1)
+    )
+
+assert len(CASES) >= 300

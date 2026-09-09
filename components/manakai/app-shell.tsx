@@ -5,6 +5,7 @@ import {
   CircleHelp,
   FlaskConical,
   LayoutDashboard,
+  LibraryBig,
   Search,
   Sparkles,
   Stamp,
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 const nav = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
   { href: '/product', label: 'Product analyser', icon: Sparkles },
+  { href: '/coverage', label: 'Coverage', icon: LibraryBig },
   {
     href: '/compliance',
     label: 'Compliance journey',
