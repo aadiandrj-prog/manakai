@@ -11,11 +11,12 @@ from .pipeline import embed_document_chunks, ingest_electric_kettle
 from .refresh import refresh_authoritative_sources
 from .review import REVIEW_DECISIONS, resolve_review, review_report
 from .verticals import ingest_all_authoritative, ingest_hallmarking, ingest_vertical
+from ..coverage_onboarding import ingest_family_registry, transition_family
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ingest captured authoritative BIS records")
-    parser.add_argument("target", choices=["standards", "qco", "labs", "electric-kettle", "helmets", "cement", "pressure-cookers", "hallmarking", "all-authoritative", "embeddings", "refresh", "review-report", "review-resolve"])
+    parser.add_argument("target", choices=["standards", "qco", "labs", "electric-kettle", "helmets", "cement", "pressure-cookers", "hallmarking", "all-authoritative", "coverage-registry", "family-approve", "family-publish", "embeddings", "refresh", "review-report", "review-resolve"])
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--fail-on-change",
@@ -30,6 +31,9 @@ def main() -> None:
     parser.add_argument("--reviewed-by")
     parser.add_argument("--review-note")
     parser.add_argument("--canonical-content-hash")
+    parser.add_argument("--family", help="Product-family slug for isolated onboarding or lifecycle actions")
+    parser.add_argument("--group", help="Product group for an isolated source-refresh batch")
+    parser.add_argument("--max-sources", type=int, help="Bound a refresh run for free-tier execution budgets")
     args = parser.parse_args()
     # Vertical sub-targets intentionally run the same atomic graph ingest so no partial
     # canonical regulatory state is exposed.
@@ -56,10 +60,18 @@ def main() -> None:
                 review_note=args.review_note,
                 canonical_content_hash=args.canonical_content_hash,
             )
+        elif args.target == "coverage-registry":
+            result = ingest_family_registry(session, publish_reviewed=False, only_slug=args.family, dry_run=args.dry_run)
+        elif args.target in {"family-approve", "family-publish"}:
+            if not args.family:
+                parser.error(f"{args.target} requires --family")
+            target = "APPROVED" if args.target == "family-approve" else "PUBLISHED"
+            family = transition_family(session, args.family, target, reviewer=args.reviewed_by)
+            result = {"family": family.slug, "lifecycle_status": family.lifecycle_status, "reviewed_by": family.reviewed_by}
         elif args.target == "embeddings":
             result = embed_document_chunks(session, provider_from_settings(settings.embedding_provider, allow_download=args.allow_model_download))
         elif args.target == "refresh":
-            result = asyncio.run(refresh_authoritative_sources(session))
+            result = asyncio.run(refresh_authoritative_sources(session, family_slug=args.family, product_group=args.group, max_sources=args.max_sources))
         elif args.target == "all-authoritative":
             result = ingest_all_authoritative(session, dry_run=args.dry_run)
         elif args.target == "helmets":

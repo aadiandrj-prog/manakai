@@ -3,7 +3,7 @@
   "info": {
     "title": "ManakAI API",
     "description": "Database-backed Indian Standards and BIS compliance intelligence prototype",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "paths": {
     "/health": {
@@ -71,6 +71,62 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CoverageStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coverage/suggestions": {
+      "get": {
+        "summary": "Coverage Suggestions",
+        "operationId": "coverage_suggestions_api_v1_coverage_suggestions_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CoverageSuggestion"
+                  },
+                  "title": "Response Coverage Suggestions Api V1 Coverage Suggestions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1176,6 +1232,14 @@
             "type": "array",
             "title": "Consumer Actions",
             "default": []
+          },
+          "related_standard_metadata": {
+            "items": {
+              "$ref": "#/components/schemas/RelatedStandardMetadata"
+            },
+            "type": "array",
+            "title": "Related Standard Metadata",
+            "default": []
           }
         },
         "type": "object",
@@ -1346,6 +1410,19 @@
         ],
         "title": "ConversationResponse"
       },
+      "CoverageLifecycle": {
+        "type": "string",
+        "enum": [
+          "DISCOVERED",
+          "INGESTED",
+          "AUTO_VALIDATED",
+          "NEEDS_REVIEW",
+          "APPROVED",
+          "PUBLISHED",
+          "REJECTED"
+        ],
+        "title": "CoverageLifecycle"
+      },
       "CoverageStats": {
         "properties": {
           "total": {
@@ -1371,6 +1448,28 @@
           "authoritative_sources": {
             "type": "integer",
             "title": "Authoritative Sources"
+          },
+          "current_standards": {
+            "type": "integer",
+            "title": "Current Standards",
+            "default": 0
+          },
+          "current_laboratory_scopes": {
+            "type": "integer",
+            "title": "Current Laboratory Scopes",
+            "default": 0
+          },
+          "last_refreshed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refreshed At"
           }
         },
         "type": "object",
@@ -1393,6 +1492,41 @@
           "UNSUPPORTED"
         ],
         "title": "CoverageStatus"
+      },
+      "CoverageSuggestion": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "product_group": {
+            "type": "string",
+            "title": "Product Group"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          },
+          "coverage_status": {
+            "$ref": "#/components/schemas/CoverageStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "product_group",
+          "aliases",
+          "coverage_status"
+        ],
+        "title": "CoverageSuggestion"
       },
       "CoverageSummary": {
         "properties": {
@@ -1460,6 +1594,52 @@
             "type": "boolean",
             "title": "Compliance Verified",
             "default": false
+          },
+          "lifecycle_status": {
+            "$ref": "#/components/schemas/CoverageLifecycle",
+            "default": "PUBLISHED"
+          },
+          "product_group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Group"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases",
+            "default": []
+          },
+          "completeness": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Completeness",
+            "default": {}
+          },
+          "lab_completeness": {
+            "type": "string",
+            "title": "Lab Completeness",
+            "default": "UNKNOWN"
+          },
+          "last_refreshed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refreshed At"
           },
           "regulatory_regime": {
             "anyOf": [
@@ -2408,6 +2588,39 @@
           "UNKNOWN"
         ],
         "title": "RegulatoryStatus"
+      },
+      "RelatedStandardMetadata": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "relationship": {
+            "type": "string",
+            "title": "Relationship",
+            "default": "RELATED_METADATA_NOT_APPLICABILITY"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "number",
+          "version",
+          "title"
+        ],
+        "title": "RelatedStandardMetadata"
       },
       "SourceKind": {
         "type": "string",

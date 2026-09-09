@@ -11,17 +11,24 @@ from .adapters import BISStandardAdapter
 from .base import SOURCE_FINGERPRINT_VERSION, source_fingerprint
 
 
-async def refresh_authoritative_sources(session: Session, fetcher=None) -> dict:
+async def refresh_authoritative_sources(session: Session, fetcher=None, *, family_slug: str | None = None, product_group: str | None = None, max_sources: int | None = None) -> dict:
     """Check stable live-source fingerprints; never rewrite canonical facts."""
     run = m.IngestionRun(id=str(uuid4()), adapter="authoritative-source-refresh", status="RUNNING", started_at=datetime.now(timezone.utc))
     session.add(run)
     session.commit()
     adapter = BISStandardAdapter()
     fetcher = fetcher or adapter.fetch
-    sources = list(session.scalars(select(m.SourceRecord).where(m.SourceRecord.verification_status == "AUTHORITATIVE").order_by(m.SourceRecord.retrieved_at.desc())))
+    statement = select(m.SourceRecord).where(m.SourceRecord.verification_status == "AUTHORITATIVE")
+    if family_slug:
+        statement = statement.join(m.SourceFamilyImpact).join(m.ProductFamily).where(m.ProductFamily.slug == family_slug)
+    elif product_group:
+        statement = statement.join(m.SourceFamilyImpact).join(m.ProductFamily).where(m.ProductFamily.product_group == product_group)
+    sources = list(session.scalars(statement.order_by(m.SourceRecord.retrieved_at.desc())))
     latest_by_url = {}
     for source in sources:
         latest_by_url.setdefault(source.source_url, source)
+    if max_sources is not None:
+        latest_by_url = dict(list(latest_by_url.items())[:max(0, max_sources)])
     errors = []
     changes = baselined = 0
     for source in latest_by_url.values():
@@ -72,4 +79,4 @@ async def refresh_authoritative_sources(session: Session, fetcher=None) -> dict:
     run.finished_at = datetime.now(timezone.utc)
     run.status = "SUCCESS" if not errors else "PARTIAL" if len(errors) < len(latest_by_url) else "FAILED"
     session.commit()
-    return {"run_id": run.id, "status": run.status, "sources_checked": len(latest_by_url), "baselined": baselined, "changes_review_required": changes, "errors": len(errors)}
+    return {"run_id": run.id, "status": run.status, "family": family_slug, "product_group": product_group, "sources_checked": len(latest_by_url), "baselined": baselined, "changes_review_required": changes, "errors": len(errors)}

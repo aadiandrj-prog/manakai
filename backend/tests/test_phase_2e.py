@@ -40,7 +40,7 @@ def test_authoritative_verticals_use_generic_graph(authoritative, description, s
 def test_ambiguous_helmet_and_unsupported_product_do_not_false_positive(authoritative):
     service = ComplianceService(authoritative)
     helmet = service.analyse(ProductAnalyseRequest(description="I manufacture a helmet"))
-    fan = service.analyse(ProductAnalyseRequest(description="I manufacture a ceiling fan"))
+    fan = service.analyse(ProductAnalyseRequest(description="I manufacture a fan"))
     assert helmet.coverage.coverage_status.value == "UNSUPPORTED"
     assert helmet.applicable_standards == []
     assert "motorcycle-helmet" in " ".join(helmet.warnings)
@@ -66,11 +66,12 @@ def test_hallmarking_temporal_resolution_and_huid_boundary(authoritative):
     assert current.hallmarking_centres == []
 
 
-def test_coverage_registry_and_120_case_benchmark(authoritative):
+def test_phase_2e_verticals_remain_in_expanded_registry(authoritative):
     records = CoverageRepository(authoritative).list()
-    assert {item.product_category.slug for item in records} == {
+    assert {
         "appliances-for-heating-liquids", "motorcycle-helmet", "ordinary-portland-cement", "domestic-pressure-cooker", "gold-jewellery",
-    }
+    }.issubset({item.product_category.slug for item in records})
+    assert len(records) == 20
     assert len(CASES) >= 120
     links = list(authoritative.scalars(select(TestStandardRelationshipRecord)))
     assert {item.referenced_standard_id for item in links} == {"is-4031-part-6-1988-auth", "is-4032-1985-auth"}
@@ -88,6 +89,6 @@ def test_phase_2e_api_surfaces(client, authoritative):
     stats = client.get("/api/v1/coverage/stats")
     guidance = client.get("/api/v1/hallmarking/guidance")
     assert coverage.status_code == stats.status_code == guidance.status_code == 200
-    assert len(coverage.json()) == 5
-    assert stats.json()["verified"] == 3
+    assert len(coverage.json()) == 20
+    assert stats.json()["verified"] == 13
     assert {item["topic"] for item in guidance.json()} == {"verify-huid", "identify-hallmark", "consumer-testing"}

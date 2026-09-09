@@ -1,10 +1,14 @@
 import re
 
 from ..schemas import Intent
+from ..coverage_registry import classify_from_registry
 
 
 def classify_intent(query: str) -> Intent:
     text = query.casefold()
+    classified = classify_from_registry(query)
+    if classified.get("category_slug") and any(term in text for term in ("manufactur", "import", "make ", "factory", "produce", "seller", "बनात", "निर्माण")):
+        return Intent.PRODUCT_COMPLIANCE
     if any(term in text for term in ("huid", "hallmark", "jewellery", "jewelry")):
         return Intent.HALLMARKING_QUERY
     if any(term in text for term in ("lab", "laboratory", "testing near", "test near")):

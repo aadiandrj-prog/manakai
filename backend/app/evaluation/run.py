@@ -35,7 +35,8 @@ def _check(case: EvaluationCase, response) -> dict[str, bool | None]:
     answer_folded = response.answer.casefold()
     refusal = "cannot verify" in answer_folded or "पुष्टि नहीं" in response.answer or "verify nahi" in answer_folded
     cited = {item.evidence_id for item in response.evidence}
-    referenced = {token.rstrip("]") for token in response.answer.split("[")[1:] for token in [token.split()[0]] if token.startswith("E")}
+    import re
+    referenced = set(re.findall(r"\[(E\d+)\]", response.answer))
     checks: dict[str, bool | None] = {
         "intent": response.intent.value == case.expected_intent,
         "language": response.language.value == case.expected_language,

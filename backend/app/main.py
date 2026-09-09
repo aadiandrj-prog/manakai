@@ -29,7 +29,9 @@ from .schemas import (
     CoverageStats,
     HallmarkingCentre,
     HallmarkingGuidance,
+    CoverageSuggestion,
 )
+from .coverage_registry import public_family_suggestions
 from .serializers import document_to_schema, recognitions_to_laboratories, relationship_to_schema, standard_to_schema
 from .services.compliance import ComplianceService
 from .services.conversations import ConversationService
@@ -40,7 +42,7 @@ logger = logging.getLogger("manakai")
 
 app = FastAPI(
     title="ManakAI API",
-    version="0.4.0",
+    version="0.5.0",
     description="Database-backed Indian Standards and BIS compliance intelligence prototype",
 )
 app.add_middleware(StagingSafetyMiddleware, config=settings)
@@ -68,8 +70,8 @@ def ready(session: Session = Depends(get_db)):
         authoritative_records = session.scalar(select(func.count()).select_from(SourceRecord).where(SourceRecord.verification_status == "AUTHORITATIVE")) or 0
         kettle_standard = session.get(StandardRecord, "is-302-2-15-auth")
         coverage_records = CoverageRepository(session).stats()["total"]
-        if not settings.demo_mode and (authoritative_records == 0 or kettle_standard is None or coverage_records < 5):
-            raise RuntimeError("Required authoritative multi-vertical coverage is unavailable")
+        if not settings.demo_mode and (authoritative_records == 0 or kettle_standard is None or coverage_records < 20):
+            raise RuntimeError("Required published Phase 3B coverage is unavailable")
     except Exception as exc:
         logger.exception("readiness_failed")
         raise HTTPException(status_code=503, detail="Service is not ready") from exc
@@ -78,12 +80,16 @@ def ready(session: Session = Depends(get_db)):
 
 def _coverage_schema(record) -> CoverageSummary:
     regime = record.regime
+    metadata = record.metadata_json or {}
     return CoverageSummary(
         id=record.id, category_slug=record.product_category.slug, category_name=record.product_category.name,
         primary_standard=f"{record.primary_standard.number}:{record.primary_standard.version}" if record.primary_standard else None,
         coverage_status=record.coverage_status, coverage_reason=record.coverage_reason, verified_at=record.verified_at,
         authoritative_sources_count=record.authoritative_sources_count, known_limitations=list(record.known_limitations or []),
         standard_metadata_available=record.standard_metadata_available, compliance_verified=record.compliance_verified,
+        lifecycle_status=record.lifecycle_status, product_group=metadata.get("product_group"),
+        aliases=list(metadata.get("aliases", [])), completeness=dict(record.completeness_json or {}),
+        lab_completeness=record.lab_completeness, last_refreshed_at=record.last_refreshed_at,
         regulatory_regime=regime,
     )
 
@@ -96,6 +102,12 @@ def list_coverage(session: Session = Depends(get_db)):
 @app.get("/api/v1/coverage/stats", response_model=CoverageStats)
 def coverage_stats(session: Session = Depends(get_db)):
     return CoverageRepository(session).stats()
+
+
+@app.get("/api/v1/coverage/suggestions", response_model=list[CoverageSuggestion])
+def coverage_suggestions(q: str = Query(default=""), limit: int = Query(default=12, ge=1, le=50), session: Session = Depends(get_db)):
+    published = {item.product_category.slug for item in CoverageRepository(session).list()}
+    return [item for item in public_family_suggestions(q, limit=limit) if item["slug"] in published]
 
 
 @app.get("/api/v1/hallmarking/centres", response_model=list[HallmarkingCentre])

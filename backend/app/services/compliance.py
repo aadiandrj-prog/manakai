@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..repositories import ComplianceRepository, CoverageRepository, DocumentRepository, LaboratoryRepository, ProductRepository, QCORepository, StandardRepository
-from ..schemas import ComplianceProfile, CoverageSummary, ExplanationNode, HallmarkingCentre, JourneyStep, ProductAnalyseRequest, ProductProfile, QCOEvidence, RegulatoryRegime
+from ..schemas import ComplianceProfile, CoverageSummary, ExplanationNode, HallmarkingCentre, JourneyStep, ProductAnalyseRequest, ProductProfile, QCOEvidence, RegulatoryRegime, RelatedStandardMetadata
 from ..serializers import citation_to_schema, recognitions_to_laboratories, standard_to_schema
 from .citations import CitationValidationService
 from .rules import QCORecord, evaluate_certification, temporal_status
@@ -97,7 +97,7 @@ class ComplianceService:
     def _analyse_unsupported(self, request, classified, as_of):
         ambiguous = bool(classified.get("ambiguous"))
         candidates = classified.get("structured", {}).get("candidate_categories", [])
-        reason = "The product description is ambiguous; choose the intended helmet use before a standard is selected." if ambiguous else "This product family has not yet been verified in ManakAI's authoritative coverage registry."
+        reason = "The product description is ambiguous; provide the product subtype or intended use before a standard is selected." if ambiguous else "This product family has not yet been verified in ManakAI's authoritative coverage registry."
         warnings = [reason]
         if candidates:
             warnings.append("Candidate categories: " + ", ".join(candidates) + ".")
@@ -106,11 +106,12 @@ class ComplianceService:
             language=request.language, attributes=classified["attributes"], missing_attributes=classified["missing"],
             structured_attributes={k: v for k, v in classified["structured"].items() if k != "candidate_categories"}, source_kind="AUTHORITATIVE",
         )
+        related = self._related_standard_metadata(request.description)
         profile = self.compliance.create(
             product_profile_id=product_profile.id, standard_id=None, confidence=classified["confidence"], mandatory_status="NOT_EVALUATED",
             qco_id=None, certification_scheme_id=None, tests=[], required_documents=[], warnings=warnings,
             journey_steps=[JourneyStep(title="Product coverage checked", status="attention", explanation=reason, next_action="Refine the product description or request a new authoritative vertical").model_dump()],
-            as_of_date=as_of, data_mode="AUTHORITATIVE", explanation_tree={"coverage_status": "UNSUPPORTED", "coverage_reason": reason, "candidate_categories": candidates},
+            as_of_date=as_of, data_mode="AUTHORITATIVE", explanation_tree={"coverage_status": "UNSUPPORTED", "coverage_reason": reason, "candidate_categories": candidates, "related_standard_ids": [item.id for item in related]},
         )
         self.session.commit()
         return self.get(profile.id)
@@ -127,7 +128,7 @@ class ComplianceService:
         qco, applicability = resolved if resolved else (None, None)
         successor = self.session.get(type(qco), qco.superseded_by_id) if qco and qco.superseded_by_id else None
         superseded_on_date = bool(successor and successor.notification_date and successor.notification_date <= as_of)
-        stored_status = qco.status if superseded_on_date or qco.status not in {"SUPERSEDED", "WITHDRAWN"} else "ACTIVE"
+        stored_status = qco.status if qco and (superseded_on_date or qco.status not in {"SUPERSEDED", "WITHDRAWN"}) else "ACTIVE" if qco else "UNKNOWN"
         record = QCORecord(
             standard.number,
             applicability.effective_from if applicability else None,
@@ -141,11 +142,8 @@ class ComplianceService:
         mandatory_status = evaluate_certification(record, as_of)
         scheme = self.standards.scheme_for_qco(qco.id) if qco else None
         tests = [item.name for item in self.standards.tests_for(standard.id)]
-        warnings = []
-        if classified["structured"].get("product_type") == "electric_kettle" and not classified["structured"].get("rated_power_w"):
-            warnings.append("Rated power was not supplied; model grouping implications cannot be evaluated.")
-        if classified["structured"].get("product_type") == "electric_kettle" and not classified["structured"].get("rated_voltage_v"):
-            warnings.append("Rated voltage was not supplied. The QCO voltage scope cannot be conclusively evaluated; confirm whether the appliance is within 250 V single-phase or the other stated voltage limits.")
+        warning_labels = {"rated_voltage_v": "Rated voltage was not supplied. Applicability may require clarification."}
+        warnings = [warning_labels.get(item, f"Missing product attribute: {item}. Applicability may require clarification.") for item in classified.get("missing", [])]
         if not classified["structured"].get("country"):
             warnings.append("Country was not explicit; this profile assumes the requested regulatory context is India.")
         product_profile = self.products.create_profile(
@@ -178,10 +176,6 @@ class ComplianceService:
             data_mode="AUTHORITATIVE", explanation_tree={"nodes": explanation, "enterprise_category": request.enterprise_category, "effective_from": effective.isoformat() if effective else None}, coverage_id=coverage.id, regime_id=coverage.regime_id,
         )
         evidence_specs = metadata.get("evidence", [])
-        if coverage.id == "coverage-electric-kettle":
-            evidence_specs = [("doc-bis-kettle-guide", "chunk-bis-kettle-guide", "BIS identifies electric kettles as appliances for heating liquids"), ("doc-qco-household-appliances-2026", "chunk-qco-household-appliances-2026", "QCO lists appliances for heating liquids and implementation dates"), ("doc-pm-is-302-2-15-2024", "chunk-kettle-manual-1", "IS 302-2-15:2009 appliances for heating liquids")]
-        elif coverage.regime and coverage.regime.regime_type == "HALLMARKING":
-            evidence_specs = [("doc-hallmarking-verify-huid", "chunk-hallmarking-verify-huid", "HUID verification is performed through the official BIS Care app"), ("doc-hallmarking-identify-hallmark", "chunk-hallmarking-identify-hallmark", "BIS hallmark elements")]
         validator = CitationValidationService(self.session)
         for document_id, chunk_id, claim in evidence_specs:
             citation = self.compliance.attach_evidence(profile.id, document_id=document_id, chunk_id=chunk_id, claim=claim, source_kind="AUTHORITATIVE")
@@ -231,6 +225,7 @@ class ComplianceService:
         if profile.regime and profile.regime.regime_type == "HALLMARKING":
             hallmarking_centres = [HallmarkingCentre.model_validate(item) for item in self.coverage.hallmarking_centres(as_of_date=profile.as_of_date)]
             consumer_actions = [step for guide in self.coverage.hallmarking_guidance() for step in (guide.guidance or [])]
+        related = [self.standards.get(item) for item in (profile.explanation_tree or {}).get("related_standard_ids", [])]
         return ComplianceProfile(
             id=profile.id,
             product=ProductProfile(interpreted_product=product_profile.input_description or product_profile.product.name, role=product_profile.role, category=product_profile.product.category or "Unclassified", attributes=list(product_profile.attributes or []), missing_attributes=list(product_profile.missing_attributes or []), structured_attributes=dict(product_profile.structured_attributes or {})),
@@ -244,23 +239,43 @@ class ComplianceService:
             regulatory_regime=RegulatoryRegime.model_validate(profile.regime) if profile.regime else None,
             hallmarking_centres=hallmarking_centres,
             consumer_actions=consumer_actions,
+            related_standard_metadata=[RelatedStandardMetadata(id=item.id, number=item.number, version=item.version, title=item.title) for item in related if item],
         )
 
     @staticmethod
     def _coverage_schema(coverage, fallback: dict | None = None) -> CoverageSummary:
         if coverage:
+            metadata = coverage.metadata_json or {}
             return CoverageSummary(
                 id=coverage.id, category_slug=coverage.product_category.slug, category_name=coverage.product_category.name,
                 primary_standard=f"{coverage.primary_standard.number}:{coverage.primary_standard.version}" if coverage.primary_standard else None,
                 coverage_status=coverage.coverage_status, coverage_reason=coverage.coverage_reason, verified_at=coverage.verified_at,
                 authoritative_sources_count=coverage.authoritative_sources_count, known_limitations=list(coverage.known_limitations or []),
                 standard_metadata_available=coverage.standard_metadata_available, compliance_verified=coverage.compliance_verified,
+                lifecycle_status=coverage.lifecycle_status, product_group=metadata.get("product_group"), aliases=list(metadata.get("aliases", [])),
+                completeness=dict(coverage.completeness_json or {}), lab_completeness=coverage.lab_completeness, last_refreshed_at=coverage.last_refreshed_at,
                 regulatory_regime=RegulatoryRegime.model_validate(coverage.regime) if coverage.regime else None,
             )
         fallback = fallback or {}
         if fallback.get("_demo"):
             return CoverageSummary(id="demo", category_slug="demo", category_name="Deterministic demonstration data", coverage_status="METADATA_ONLY", coverage_reason="This profile uses labelled synthetic DEMO data and is not authoritative BIS coverage.", known_limitations=["Verify every regulatory fact against current official sources."], standard_metadata_available=True, compliance_verified=False)
         return CoverageSummary(id="unsupported", category_slug="unsupported", category_name="Unsupported or ambiguous product", coverage_status="UNSUPPORTED", coverage_reason=fallback.get("coverage_reason", "No authoritative coverage record"), known_limitations=[], standard_metadata_available=False, compliance_verified=False)
+
+    def _related_standard_metadata(self, description: str):
+        """Return metadata candidates only; never promote lexical similarity to applicability."""
+        terms = {item for item in re.findall(r"[a-z0-9]+", description.casefold()) if len(item) >= 4}
+        if not terms:
+            return []
+        ranked = []
+        for standard in self.standards.list():
+            if standard.source_kind not in {"AUTHORITATIVE", "VERIFIED_DERIVED"}:
+                continue
+            haystack = f"{standard.number} {standard.title} {standard.category} {standard.scope}".casefold()
+            score = sum(term in haystack for term in terms)
+            if score:
+                ranked.append((score, standard.number, standard))
+        ranked.sort(key=lambda item: (-item[0], item[1]))
+        return [item[2] for item in ranked[:3]]
 
     @staticmethod
     def _regime_journey(coverage, standard, regulatory_status: str, has_scheme: bool, has_tests: bool) -> list[JourneyStep]:
@@ -273,7 +288,7 @@ class ComplianceService:
                 JourneyStep(title="HUID verification", status="attention", explanation="Use Verify HUID in the official BIS Care app; ManakAI does not perform verification."),
                 JourneyStep(title="Assaying and Hallmarking Centre", status="pending", explanation="Use the official BIS AHC directory and confirm current recognition."),
             ]
-        manual = (coverage.metadata_json or {}).get("manual_id", "current BIS product manual")
+        manual = (coverage.metadata_json or {}).get("manual_id") or "No current product manual has been verified"
         return [
             JourneyStep(title="Product classified", status="complete", explanation=coverage.product_category.name),
             JourneyStep(title="Applicable standard identified", status="complete", explanation=f"{standard.number}:{standard.version}"),
@@ -290,19 +305,6 @@ class ComplianceService:
         if journey is None:
             raise LookupError("Compliance journey not found")
         return [JourneyStep.model_validate(step) for step in journey.steps]
-
-    @staticmethod
-    def _authoritative_journey(standard_number: str, regulatory_status: str, has_scheme: bool, has_tests: bool) -> list[JourneyStep]:
-        return [
-            JourneyStep(title="Product classified", status="complete", explanation="Electric kettle → Appliances for Heating Liquids"),
-            JourneyStep(title="Applicable standards identified", status="complete", explanation=f"{standard_number}:2009 with IS 302 (Part 1):2024 general framework"),
-            JourneyStep(title="QCO status checked", status="attention" if regulatory_status == "UPCOMING" else "complete", explanation=f"Date-aware result: {regulatory_status}"),
-            JourneyStep(title="Certification scheme identified", status="complete" if has_scheme else "attention", explanation="Scheme I (ISI Mark Scheme)" if has_scheme else "No verified scheme relationship"),
-            JourneyStep(title="Product manual identified", status="complete", explanation="PM/IS 302-2-15/1/February 2024"),
-            JourneyStep(title="Testing requirements reviewed", status="complete" if has_tests else "attention", explanation="Clause-level test headings sourced from BIS LIMS"),
-            JourneyStep(title="Recognised laboratory search", status="pending", explanation="Filter BIS LIMS recognition by the intended test date"),
-            JourneyStep(title="Documentation preparation", status="pending", explanation="Prepare model, rating, construction and instruction declarations from the product manual"),
-        ]
 
     @staticmethod
     def _demo_journey(standard_number: str, category: str) -> list[JourneyStep]:

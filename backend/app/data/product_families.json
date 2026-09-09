@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-09-09",
+  "reviewed_by": "ManakAI Phase 3B source audit",
+  "families": [
+    {
+      "slug": "appliances-for-heating-liquids", "name": "Electric kettles / appliances for heating liquids", "product_type": "electric_kettle", "structured_category": "appliances_for_heating_liquids", "group": "Electrical appliances", "existing": true,
+      "aliases": ["electric kettle", "kettle", "electric jug", "water boiler", "केतली", "इलेक्ट्रिक केतली"],
+      "required_attributes": ["rated_voltage_v"], "optional_attributes": ["rated_power_w", "intended_use", "country"], "ambiguity_terms": [], "coverage_status": "VERIFIED"
+    },
+    {
+      "slug": "motorcycle-helmet", "name": "Protective helmets for motorcycle riders", "product_type": "motorcycle_helmet", "group": "Personal safety", "existing": true,
+      "aliases": ["motorcycle helmet", "motorcycle helmets", "motorbike helmet", "two wheeler helmet", "two-wheeler safety helmet", "bike rider helmet", "motorcycle rider helmet", "motorcycle rider helmets", "motorbike rider helmet", "protective helmet for motorbike riders", "protective helmets for motorcycle riders", "motorbike rider head protection helmet", "open-face motorbike rider helmet", "helmet for a motorbike passenger", "helmet intended specifically for motorcycle use", "दोपहिया सवार के लिए हेलमेट", "मोटरसाइकिल हेलमेट", "दोपहिया हेलमेट"],
+      "required_attributes": ["intended_use"], "optional_attributes": ["country"], "ambiguity_terms": ["helmet", "हेलमेट"], "coverage_status": "VERIFIED",
+      "ambiguity_candidates": ["motorcycle-helmet", "industrial-safety-helmet", "sports-helmet"]
+    },
+    {
+      "slug": "ordinary-portland-cement", "name": "Ordinary Portland Cement", "product_type": "ordinary_portland_cement", "group": "Construction materials", "existing": true,
+      "aliases": ["ordinary portland cement", "portland cement", "opc cement", "opc", "ओपीसी", "साधारण पोर्टलैंड सीमेंट"],
+      "required_attributes": ["grade"], "optional_attributes": ["country"], "ambiguity_terms": [], "coverage_status": "VERIFIED"
+    },
+    {
+      "slug": "domestic-pressure-cooker", "name": "Domestic pressure cookers", "product_type": "domestic_pressure_cooker", "group": "Domestic appliances", "existing": true,
+      "aliases": ["domestic pressure cooker", "domestic cooker", "domestic cookers", "household pressure cooker", "household pressure cookers", "pressure cooker", "pressure cookers", "cooker with composite induction base", "प्रेशर कुकर", "घरेलू कुकर", "लीटर कुकर"],
+      "required_attributes": ["material and construction type"], "optional_attributes": ["capacity_l", "country"], "ambiguity_terms": [], "coverage_status": "PARTIAL"
+    },
+    {
+      "slug": "gold-jewellery", "name": "Gold jewellery and gold artefacts", "product_type": "gold_jewellery", "group": "Hallmarking", "existing": true,
+      "aliases": ["gold jewellery", "gold jewelry", "gold ornament", "gold artefact", "gold ring", "hallmarked gold", "huid jewellery", "registered jeweller", "gold", "सोने के आभूषण", "सोने का गहना", "सोने के गहने"],
+      "required_attributes": ["declared_fineness"], "optional_attributes": ["country"], "ambiguity_terms": [], "coverage_status": "PARTIAL"
+    },
+
+    {
+      "slug": "electric-ceiling-fan", "name": "Electric ceiling type fans", "product_type": "electric_ceiling_fan", "group": "Electrical appliances",
+      "aliases": ["electric ceiling fan", "ceiling fan", "छत का पंखा", "सीलिंग फैन"], "required_attributes": [], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": ["fan", "पंखा"], "ambiguity_candidates": ["electric-ceiling-fan", "electrical-appliance-fan"],
+      "standard": {"id": "is-374-2019-auth", "number": "IS 374", "version": "2019", "title": "Electric ceiling type fans — Specification", "status": "ACTIVE", "scope": "Electric ceiling type fans represented by the official BIS Scheme I and product-manual listings."},
+      "qco": {"id": "qco-ceiling-fans-2023", "title": "Electric Ceiling Type Fans (Quality Control) Order, 2023", "notification_number": "S.O. 3641(E)", "notification_date": "2023-08-14", "effective_dates": {"GENERAL": "2024-02-14", "SMALL": "2024-05-14", "MICRO": "2024-08-14"}, "url": "https://bis.gov.in/wp-content/uploads/2023/08/Electric-Ceiling-Type-Fans-QCO-2023.pdf"},
+      "manual": {"id": "manual-is-374-jan-2023", "identifier": "PM/IS 374/2/January 2023", "published_at": "2023-01-01", "url": "https://www.bis.gov.in/wp-content/uploads/2023/01/PM_IS-374-final_compressed-V2.pdf"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=374",
+      "coverage_status": "VERIFIED", "coverage_reason": "The official Scheme I listing, QCO, product manual and LIMS standard query establish the current mapped regime.", "limitations": ["Individual laboratory recognition and scope must be reconfirmed for the intended test date."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "electrical-appliance-fan", "name": "Electrical appliance fans", "product_type": "electrical_appliance_fan", "group": "Electrical appliances",
+      "aliases": ["electrical appliance fan", "table fan appliance", "pedestal appliance fan", "उपकरण पंखा"], "required_attributes": ["fan_type"], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": ["fan", "पंखा"], "ambiguity_candidates": ["electric-ceiling-fan", "electrical-appliance-fan"],
+      "standard": {"id": "is-302-2-80-2017-auth", "number": "IS 302 (Part 2/Sec 80)", "version": "2017", "title": "Safety of household and similar electrical appliances — Particular requirements for fans", "status": "ACTIVE", "scope": "Electrical appliance fans represented by the official Scheme I listing."},
+      "qco": {"id": "qco-appliance-fans-2023", "title": "Electrical Appliance Fans (Quality Control) Order, 2023", "notification_number": "S.O. 1124(E)", "notification_date": "2024-03-07", "effective_dates": {"GENERAL": "2024-09-07", "SMALL": "2024-12-07", "MICRO": "2025-03-07"}, "url": "https://bis.gov.in/wp-content/uploads/2024/03/Electrical-appliance-fans-QCO-2023.pdf"},
+      "manual": {"id": "manual-is-302-2-80", "identifier": "Current BIS product-manual listing for IS 302-2-80:2017", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "Official BIS listings and the gazetted QCO establish standard and certification applicability.", "limitations": ["Specify the fan type; a generic fan query is intentionally ambiguous.", "Individual lab scope must be verified in LIMS."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "electric-iron", "name": "Electric irons", "product_type": "electric_iron", "group": "Electrical appliances",
+      "aliases": ["electric iron", "clothes iron", "steam iron", "इलेक्ट्रिक इस्त्री", "प्रेस iron"], "required_attributes": ["rated_voltage_v"], "optional_attributes": ["rated_power_w", "iron_type"], "ambiguity_terms": ["press"], "ambiguity_candidates": ["electric-iron", "printing-press"],
+      "standard": {"id": "is-302-2-3-2024-auth", "number": "IS 302 (Part 2/Sec 3)", "version": "2024", "title": "Safety of household and similar electrical appliances — Particular requirements for electric irons", "status": "ACTIVE", "scope": "Electric irons in the official BIS product-manual listing."},
+      "qco": {"id": "qco-household-appliances-2026", "title": "Safety of Household, Commercial and Similar Electrical Appliances (Quality Control) Order, 2026", "notification_number": "S.O. 1739(E)", "notification_date": "2026-04-06", "effective_dates": {"GENERAL": "2026-10-01", "SMALL": "2027-01-01", "MICRO": "2027-04-01"}, "url": "https://www.bis.gov.in/wp-content/uploads/2026/04/Safety-of-Household-Commercial-and-Similar-Electrical-Appliances-Quality-Control-Order-2026.pdf"},
+      "manual": {"id": "manual-is-302-2-3-2024", "identifier": "Current BIS product-manual listing for IS 302 Part 2/Sec 3:2024", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The current BIS product-manual listing and household-appliances QCO establish the mapped standard and transition dates.", "limitations": ["Voltage scope cannot be concluded without the rated voltage.", "Individual lab scope must be verified in LIMS."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 3
+    },
+    {
+      "slug": "electric-immersion-water-heater", "name": "Electric immersion water heaters", "product_type": "immersion_water_heater", "group": "Electrical appliances",
+      "aliases": ["electric immersion water heater", "immersion heater", "immersion rod", "इमर्शन हीटर", "पानी गरम करने की रॉड"], "required_attributes": [], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": ["heater"], "ambiguity_candidates": ["electric-immersion-water-heater", "room-heater", "stationary-storage-water-heater", "instantaneous-electric-water-heater"],
+      "standard": {"id": "is-368-2014-auth", "number": "IS 368", "version": "2014", "title": "Electric immersion water heaters — Specification", "status": "ACTIVE", "scope": "Electric immersion water heaters in the official water-heating QCO."},
+      "qco": {"id": "qco-domestic-water-heating-2025", "title": "Electrical Appliances for Domestic Water Heating (Quality Control) Order, 2025", "notification_number": "S.O. 355(E)", "notification_date": "2025-01-21", "effective_dates": {"GENERAL": "2025-03-01", "SMALL": "2025-06-01", "MICRO": "2025-09-01"}, "url": "https://bis.gov.in/wp-content/uploads/2025/01/Electrical-Appliances-for-domestic-water-heating-QCO-2025.pdf"},
+      "manual": {"id": "manual-is-368-2014", "identifier": "Current BIS product-manual listing for IS 368:2014", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=368",
+      "coverage_status": "VERIFIED", "coverage_reason": "The official 2025 QCO and BIS listings establish the standard and Scheme I requirement.", "limitations": ["Individual lab recognition must be checked for the requested date."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "room-heater", "name": "Room heaters", "product_type": "room_heater", "group": "Electrical appliances",
+      "aliases": ["electric room heater", "room heater", "space heater", "रूम हीटर", "कमरे का हीटर"], "required_attributes": ["rated_voltage_v"], "optional_attributes": ["rated_power_w", "heater_type"], "ambiguity_terms": ["heater"], "ambiguity_candidates": ["room-heater", "electric-immersion-water-heater", "stationary-storage-water-heater", "instantaneous-electric-water-heater"],
+      "standard": {"id": "is-302-2-30-2007-auth", "number": "IS 302 (Part 2/Sec 30)", "version": "2007", "title": "Safety of household and similar electrical appliances — Particular requirements for room heaters", "status": "ACTIVE", "scope": "Room heaters in the official BIS product-manual listing."},
+      "qco": {"id": "qco-household-appliances-2026", "title": "Safety of Household, Commercial and Similar Electrical Appliances (Quality Control) Order, 2026", "notification_number": "S.O. 1739(E)", "notification_date": "2026-04-06", "effective_dates": {"GENERAL": "2026-10-01", "SMALL": "2027-01-01", "MICRO": "2027-04-01"}, "url": "https://www.bis.gov.in/wp-content/uploads/2026/04/Safety-of-Household-Commercial-and-Similar-Electrical-Appliances-Quality-Control-Order-2026.pdf"},
+      "manual": {"id": "manual-is-302-2-30", "identifier": "Current BIS product-manual listing for IS 302-2-30:2007", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The BIS manual listing and common-appliance QCO establish the mapped transition.", "limitations": ["Rated voltage is needed for conclusive scope evaluation.", "Individual lab scope must be verified."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 3
+    },
+    {
+      "slug": "toaster-grill-roaster", "name": "Toasters, grills and roasters", "product_type": "toaster_grill_roaster", "group": "Kitchen electrical appliances",
+      "aliases": ["electric toaster", "bread toaster", "electric grill", "electric roaster", "टोस्टर", "इलेक्ट्रिक ग्रिल"], "required_attributes": [], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": [],
+      "standard": {"id": "is-302-2-9-2009-auth", "number": "IS 302 (Part 2/Sec 9)", "version": "2009", "title": "Safety requirements for grills, toasters and similar portable cooking appliances", "status": "ACTIVE", "scope": "Products listed against IS 302-2-9:2009 by BIS."},
+      "qco": {"id": "qco-kitchen-appliances-2023", "title": "Electrical Appliances for Kitchen (Quality Control) Order, 2023", "notification_number": "S.O. 1128(E)", "notification_date": "2024-03-07", "effective_dates": {"GENERAL": "2024-09-07", "SMALL": "2024-12-07", "MICRO": "2025-03-07"}, "url": "https://bis.gov.in/wp-content/uploads/2024/03/Electrical-Appliances-for-Kitchen-QCO-2023.pdf"},
+      "manual": {"id": "manual-is-302-2-9", "identifier": "Current BIS product-manual listing for IS 302-2-9:2009", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The official Scheme I listing and kitchen-appliances QCO establish the product-standard-certification chain.", "limitations": ["Individual lab scope must be confirmed in LIMS."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "range-hood", "name": "Range hoods", "product_type": "range_hood", "group": "Kitchen electrical appliances",
+      "aliases": ["range hood", "kitchen chimney", "cooker hood", "रेंज हुड", "किचन चिमनी"], "required_attributes": [], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": [],
+      "standard": {"id": "is-302-2-31-2009-auth", "number": "IS 302 (Part 2/Sec 31)", "version": "2009", "title": "Safety requirements for range hoods", "status": "ACTIVE", "scope": "Range hoods represented by the official Scheme I listing."},
+      "qco": {"id": "qco-kitchen-appliances-2023", "title": "Electrical Appliances for Kitchen (Quality Control) Order, 2023", "notification_number": "S.O. 1128(E)", "notification_date": "2024-03-07", "effective_dates": {"GENERAL": "2024-09-07", "SMALL": "2024-12-07", "MICRO": "2025-03-07"}, "url": "https://bis.gov.in/wp-content/uploads/2024/03/Electrical-Appliances-for-Kitchen-QCO-2023.pdf"},
+      "manual": {"id": "manual-is-302-2-31", "identifier": "Current BIS product-manual listing for IS 302-2-31:2009", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The official Scheme I listing and kitchen-appliances QCO establish the mapped requirement.", "limitations": ["Individual lab scope must be confirmed in LIMS."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "skin-hair-care-appliance", "name": "Electrical appliances for skin or hair care", "product_type": "skin_hair_care_appliance", "group": "Personal-care electrical appliances",
+      "aliases": ["hair dryer", "hair straightener", "hair curler", "skin care appliance", "हेयर ड्रायर", "बाल सुखाने की मशीन"], "required_attributes": ["appliance_type"], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": [],
+      "standard": {"id": "is-302-2-23-2009-auth", "number": "IS 302 (Part 2/Sec 23)", "version": "2009", "title": "Safety requirements for appliances for skin or hair care", "status": "ACTIVE", "scope": "Skin and hair-care appliances represented by the official Scheme I listing."},
+      "qco": {"id": "qco-skin-hair-care-2023", "title": "Electrical Appliances for Skin or Hair Care (Quality Control) Order, 2023", "notification_number": "S.O. 1125(E)", "notification_date": "2024-03-07", "effective_dates": {"GENERAL": "2025-03-07", "SMALL": "2025-06-07", "MICRO": "2025-09-07"}, "url": "https://bis.gov.in/wp-content/uploads/2024/03/Electrical-Appliances-for-Skin-or-Hair-care-QCO-2023.pdf"},
+      "manual": {"id": "manual-is-302-2-23", "identifier": "Current BIS product-manual listing for IS 302-2-23:2009", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "Official BIS and gazetted QCO sources establish the product-standard-regime relationship.", "limitations": ["The exact appliance subtype remains a required classification attribute.", "Individual lab scope must be confirmed."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "stationary-storage-water-heater", "name": "Stationary storage type electric water heaters", "product_type": "stationary_storage_water_heater", "group": "Electrical appliances",
+      "aliases": ["storage water heater", "storage geyser", "electric geyser", "स्टोरेज गीजर", "पानी का गीजर"], "required_attributes": [], "optional_attributes": ["capacity_l", "rated_power_w", "rated_voltage_v"], "ambiguity_terms": ["heater", "geyser"], "ambiguity_candidates": ["stationary-storage-water-heater", "instantaneous-electric-water-heater", "electric-immersion-water-heater"],
+      "standard": {"id": "is-302-2-21-2018-auth", "number": "IS 302 (Part 2/Sec 21)", "version": "2018", "title": "Particular requirements for storage water heaters", "status": "ACTIVE", "scope": "Stationary storage electric water heaters listed in the official QCO."},
+      "qco": {"id": "qco-domestic-water-heating-2025", "title": "Electrical Appliances for Domestic Water Heating (Quality Control) Order, 2025", "notification_number": "S.O. 355(E)", "notification_date": "2025-01-21", "effective_dates": {"GENERAL": "2025-03-01", "SMALL": "2025-06-01", "MICRO": "2025-09-01"}, "url": "https://bis.gov.in/wp-content/uploads/2025/01/Electrical-Appliances-for-domestic-water-heating-QCO-2025.pdf"},
+      "manual": {"id": "manual-is-302-2-21", "identifier": "Current BIS product-manual listing for IS 302-2-21:2018", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The 2025 water-heating QCO and BIS listings establish the current mapped requirement.", "limitations": ["A generic heater/geyser query requires subtype clarification.", "Individual lab scope must be confirmed."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+    {
+      "slug": "instantaneous-electric-water-heater", "name": "Instantaneous electric water heaters", "product_type": "instantaneous_water_heater", "group": "Electrical appliances",
+      "aliases": ["instantaneous water heater", "instant geyser", "tankless electric water heater", "इंस्टेंट गीजर", "तात्कालिक जल तापक"], "required_attributes": [], "optional_attributes": ["rated_power_w", "rated_voltage_v"], "ambiguity_terms": ["heater", "geyser"], "ambiguity_candidates": ["instantaneous-electric-water-heater", "stationary-storage-water-heater", "electric-immersion-water-heater"],
+      "standard": {"id": "is-302-2-35-2017-auth", "number": "IS 302 (Part 2/Sec 35)", "version": "2017", "title": "Particular requirements for instantaneous water heaters", "status": "ACTIVE", "scope": "Instantaneous water heaters listed in the official QCO."},
+      "qco": {"id": "qco-domestic-water-heating-2025", "title": "Electrical Appliances for Domestic Water Heating (Quality Control) Order, 2025", "notification_number": "S.O. 355(E)", "notification_date": "2025-01-21", "effective_dates": {"GENERAL": "2025-03-01", "SMALL": "2025-06-01", "MICRO": "2025-09-01"}, "url": "https://bis.gov.in/wp-content/uploads/2025/01/Electrical-Appliances-for-domestic-water-heating-QCO-2025.pdf"},
+      "manual": {"id": "manual-is-302-2-35", "identifier": "Current BIS product-manual listing for IS 302-2-35:2017", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=302",
+      "coverage_status": "VERIFIED", "coverage_reason": "The 2025 water-heating QCO and BIS listings establish the current mapped requirement.", "limitations": ["A generic heater/geyser query requires subtype clarification.", "Individual lab scope must be confirmed."], "lab_completeness": "DIRECTORY_QUERY", "source_count": 4
+    },
+
+    {
+      "slug": "self-ballasted-led-lamp", "name": "Self-ballasted LED lamps", "product_type": "self_ballasted_led_lamp", "group": "Lighting", "aliases": ["self ballasted led lamp", "led bulb", "एलईडी बल्ब"], "required_attributes": ["rated_voltage_v"], "optional_attributes": ["rated_power_w"], "ambiguity_terms": [],
+      "standard": {"id": "is-16102-part-1-auth", "number": "IS 16102 (Part 1)", "version": "2026", "title": "Self-ballasted LED lamps for general lighting services — Safety requirements", "status": "ACTIVE", "scope": "Current LIMS listings show a 2026 revision; transition resolution is incomplete."},
+      "standard_source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=16102", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=16102", "coverage_status": "PARTIAL", "coverage_reason": "Official metadata is discoverable, but current revision, product-manual and regulatory transition alignment require human resolution.", "limitations": ["Do not treat the discovered 2026 LIMS revision as a concluded current QCO mapping.", "Product manual and transition history need review."], "lab_completeness": "CONFLICT_REVIEW", "source_count": 2
+    },
+    {
+      "slug": "plywood-general-purposes", "name": "Plywood for general purposes", "product_type": "plywood_general_purposes", "group": "Wood products", "aliases": ["general purpose plywood", "plywood for general purposes", "commercial plywood", "प्लाईवुड"], "required_attributes": ["grade_type"], "optional_attributes": ["thickness_mm"], "ambiguity_terms": [],
+      "standard": {"id": "is-303-2024-auth", "number": "IS 303", "version": "2024", "title": "Plywood for general purposes — Specification", "status": "ACTIVE", "scope": "Current BIS product-manual listing identifies IS 303:2024."},
+      "historical_standard": {"id": "is-303-1989-auth", "number": "IS 303", "version": "1989", "title": "Plywood for general purposes", "status": "SUPERSEDED"},
+      "qco": {"id": "qco-plywood-2024", "title": "Plywood and Wooden Flush Door Shutters (Quality Control) Order, 2024", "notification_number": "S.O. 1377(E)", "notification_date": "2024-03-15", "effective_dates": {"GENERAL": "2025-02-28", "SMALL": "2025-05-28", "MICRO": "2025-08-28"}, "url": "https://bis.gov.in/wp-content/uploads/2024/03/Plywood-and-Wooden-flush-door-shutters-QCO-2024.pdf", "standard_reference": "IS 303:1989"},
+      "manual": {"id": "manual-is-303-2024", "identifier": "Current BIS product-manual listing for IS 303:2024", "published_at": "2024-01-01", "url": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en"},
+      "standard_source": "https://www.bis.gov.in/product-certification/product-specific-information-2/product-manualsmk/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=303",
+      "regulatory_conclusion": false, "coverage_status": "PARTIAL", "coverage_reason": "The current manual listing says IS 303:2024 while the 2024 QCO schedule names IS 303:1989; the successor-standard effect has not been silently inferred.", "limitations": ["QCO-to-standard revision transition requires an authoritative amendment or legal latest-version rule review.", "Compliance is not marked verified while the references conflict."], "lab_completeness": "CONFLICT_REVIEW", "source_count": 4
+    },
+    {
+      "slug": "domestic-lpg-gas-stove", "name": "Domestic gas stoves for LPG", "product_type": "domestic_lpg_stove", "group": "Domestic appliances", "aliases": ["domestic lpg stove", "lpg gas stove", "gas chulha", "एलपीजी गैस चूल्हा"], "required_attributes": ["fuel_type"], "optional_attributes": ["burner_count"], "ambiguity_terms": ["gas stove"],
+      "standard": {"id": "is-4246-2002-auth", "number": "IS 4246", "version": "2002", "title": "Domestic gas stoves for use with liquefied petroleum gases", "status": "ACTIVE", "scope": "Product-standard metadata shown in the official Scheme I listing."},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4246", "coverage_status": "PARTIAL", "coverage_reason": "The official Scheme I listing establishes product metadata, but the full current QCO/version chain has not yet passed review.", "limitations": ["Current QCO instrument and amendments must be resolved before a mandatory conclusion.", "No current lab recommendation is published."], "lab_completeness": "METADATA_ONLY", "source_count": 2
+    },
+    {
+      "slug": "safety-glass", "name": "Safety glass", "product_type": "safety_glass", "group": "Glass products", "aliases": ["safety glass", "automotive safety glass", "architectural safety glass", "सुरक्षा कांच"], "required_attributes": ["intended_use", "glass_part"], "optional_attributes": ["thickness_mm"], "ambiguity_terms": ["glass", "कांच"], "ambiguity_candidates": ["safety-glass", "transparent-float-glass", "toughened-glass"],
+      "standard": {"id": "is-2553-part-1-2018-auth", "number": "IS 2553 (Part 1)", "version": "2018", "title": "Safety glass — General purpose", "status": "ACTIVE", "scope": "One part of the safety-glass family; exact part depends on intended use."},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2553", "coverage_status": "PARTIAL", "coverage_reason": "Official BIS metadata confirms the family, but part selection and the amendment chain depend on intended use.", "limitations": ["IS 2553 Part 1 and Part 2 must not be collapsed; intended use is required.", "Current QCO amendments require version resolution."], "lab_completeness": "METADATA_ONLY", "source_count": 2
+    },
+    {
+      "slug": "plugs-socket-outlets", "name": "Plugs and socket-outlets", "product_type": "plugs_socket_outlets", "group": "Electrical accessories", "aliases": ["plug and socket outlet", "electrical plug", "socket outlet", "प्लग और सॉकेट"], "required_attributes": ["rated_current_a", "rated_voltage_v"], "optional_attributes": ["pin_configuration"], "ambiguity_terms": [],
+      "standard": {"id": "is-1293-metadata-auth", "number": "IS 1293", "version": "2005", "title": "Plugs and socket-outlets of rated voltage up to and including 250 V and rated current up to and including 16 A", "status": "UNKNOWN", "scope": "Version displayed in the official Scheme I page; current revision alignment is unresolved."},
+      "standard_source": "https://www.bis.gov.in/product-certification/products-under-compulsory-certification/scheme-i-mark-scheme/?lang=en", "lims_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=1293", "coverage_status": "PARTIAL", "coverage_reason": "Official metadata exists, but the Scheme I page's displayed 2005 reference may not represent the complete current revision regime.", "limitations": ["Resolve current standard revision and QCO amendments before compliance conclusions.", "Current lab scope is not published from this record."], "lab_completeness": "CONFLICT_REVIEW", "source_count": 2
+    }
+  ]
+}
